@@ -22,3 +22,15 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes loaderBar {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+.animate-loaderBar {
+  animation: loaderBar 3s ease-in-out forwards;
+}

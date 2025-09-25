@@ -4,6 +4,7 @@ import i18nConfig from './next-i18next.config';
 const nextConfig: NextConfig = {
   i18n: i18nConfig.i18n,
   // outras configs aqui
+  devIndicators: false,
 };
 
 export default nextConfig;

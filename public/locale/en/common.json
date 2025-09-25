@@ -1,0 +1,13 @@
+{
+  "welcome": "Welcome to ChatCheckout!",
+  "login": "Login",
+  "register": "Register",
+  "email": "Email",
+  "password": "Password",
+  "forgotPassword": "Forgot my password",
+  "name": "First name",
+  "lastName": "Last name",
+  "cpf": "CPF",
+  "companyName": "Company name",
+  "cnpj": "CNPJ"
+}

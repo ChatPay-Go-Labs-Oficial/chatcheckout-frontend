@@ -1,11 +1,12 @@
 import React from 'react';
 
 interface RegisterSuccessProps {
-  countdown: number;
   showLoader: boolean;
+  message?: string;
+  loading?: boolean;
 }
 
-export default function RegisterSuccess({ countdown, showLoader }: RegisterSuccessProps) {
+const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ showLoader, message, loading }) => {
   return (
     <div className="flex flex-col items-center gap-8 w-full">
       <span className="text-[#181b4a] text-2xl sm:text-3xl font-extrabold text-center">
@@ -19,10 +20,14 @@ export default function RegisterSuccess({ countdown, showLoader }: RegisterSucce
       </div>
       <div className="flex flex-col items-center mt-2">
         <span className="text-[#6f43d0] text-lg font-semibold tracking-wide">
-          Redirecionando para login
+          {message || 'Preparando sua conta para você...'}
         </span>
-        <span className="text-3xl font-bold text-[#181b4a] mt-1 animate-pulse">{countdown}s</span>
+        {loading && (
+          <span className="text-3xl font-bold text-[#181b4a] mt-1 animate-pulse">Aguarde…</span>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default RegisterSuccess;

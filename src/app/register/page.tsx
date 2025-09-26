@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserRole } from '@/types/user';
 import { useUser } from '@/hooks/useUser';
+import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import RightShowcase from '@/components/RightShowcase';
 import RegisterSuccess from '@/components/RegisterSuccess';
@@ -12,6 +13,7 @@ const DEFAULT_ROLE = UserRole.Infoproducer;
 export default function RegisterPage() {
   const router = useRouter();
   const { register, loading, error } = useUser();
+  const { login } = useAuth();
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -25,7 +27,7 @@ export default function RegisterPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [showLoader, setShowLoader] = useState(false);
-  const [countdown, setCountdown] = useState(5);
+  const [loginLoading, setLoginLoading] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
@@ -37,6 +39,7 @@ export default function RegisterPage() {
     setFormError(null);
     setSuccess(false);
     setShowLoader(false);
+    setLoginLoading(false);
     if (!form.firstName || !form.lastName || !form.email || !form.cpf || !form.password) {
       setFormError('Preencha todos os campos obrigatórios');
       return;
@@ -45,32 +48,24 @@ export default function RegisterPage() {
       await register(form);
       setSuccess(true);
       setShowLoader(true);
+      setLoginLoading(false);
+      // aguarda 2 segundos antes do login automático
+      setTimeout(async () => {
+        setLoginLoading(true);
+        try {
+          await login({ email: form.email, password: form.password });
+          router.replace('/dashboard');
+        } finally {
+          setLoginLoading(false);
+        }
+      }, 2000);
     } catch {
+      setLoginLoading(false);
       // erro já tratado pelo hook
     }
   }
 
-  useEffect(() => {
-    if (success && showLoader) {
-      setCountdown(3);
-      const interval = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [success, showLoader]);
-
-  useEffect(() => {
-    if (success && countdown === 0) {
-      router.replace('/login');
-    }
-  }, [success, countdown, router]);
+  // Removido o redirecionamento por countdown
 
   return (
     <main className="min-h-screen w-full flex bg-[#0a0b15]">
@@ -79,7 +74,11 @@ export default function RegisterPage() {
         <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-10">
           {/* sucesso: só texto, loader e contador */}
           {success ? (
-            <RegisterSuccess countdown={countdown} showLoader={showLoader} />
+            <RegisterSuccess
+              showLoader={showLoader}
+              message="Preparando sua conta para você..."
+              loading={loginLoading}
+            />
           ) : (
             <>
               {/* headline + descrição padrão */}

@@ -14,7 +14,7 @@ function validateCNPJ(cnpj: string) {
 }
 
 export default function ProfileForm() {
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, setUserGlobal } = useAuth();
   const { update, error } = useUser(accessToken ?? undefined);
   const userProfile = user as UserProfile | undefined;
   const [form, setForm] = useState<UserUpdatePayload>({});
@@ -68,7 +68,10 @@ export default function ProfileForm() {
       return;
     }
     try {
-      await update(userProfile?.id || '', form);
+      const updatedUser = await update(userProfile?.id || '', form);
+      if (updatedUser && typeof updatedUser === 'object') {
+        setUserGlobal(updatedUser);
+      }
       setSuccess(true);
     } catch {
       setFormError(error || 'Erro ao salvar alterações');

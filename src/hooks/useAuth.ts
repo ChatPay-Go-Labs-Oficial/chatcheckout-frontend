@@ -48,7 +48,7 @@ export function useAuth() {
     setLoading(true);
     setError(null);
     try {
-      const res: LoginResponse = await authService.login(payload.email, payload.password);
+      const res: LoginResponse = await authService.login(payload);
       setAccessToken(res.access_token);
       setRefreshToken(res.refresh_token);
 

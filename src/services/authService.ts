@@ -1,21 +1,19 @@
-import { NEXT_PUBLIC_API_URL } from '@/utils/env';
+import { apiClient } from '@/utils/api-client';
+import { LoginPayload, LoginResponse, RefreshResponse, RefreshPayload } from '@/types/auth';
 
 export const authService = {
-  async login(email: string, password: string) {
-    const res = await fetch(`${NEXT_PUBLIC_API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    return res.json();
+  async login(payload: LoginPayload): Promise<LoginResponse> {
+    try {
+      const result = await apiClient.post<LoginResponse>('/auth/login', payload);
+
+      return result;
+    } catch (error) {
+      console.error('Erro no login authService:', error);
+      throw error;
+    }
   },
 
-  async refresh(refresh_token: string) {
-    const res = await fetch(`${NEXT_PUBLIC_API_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token }),
-    });
-    return res.json();
+  async refresh(payload: RefreshPayload): Promise<RefreshResponse> {
+    return apiClient.post<RefreshResponse>('/auth/refresh', payload);
   },
 };

@@ -84,13 +84,19 @@ export default function RegisterPage() {
         try {
           await login({ email: form.email, password: form.password });
           router.replace('/dashboard');
+        } catch (loginError) {
+          console.error('Erro no login automático:', loginError);
+          setFormError('Cadastro realizado com sucesso! Faça login para continuar.');
+          setTimeout(() => {
+            router.replace('/login');
+          }, 2000);
         } finally {
           setLoginLoading(false);
         }
       }, 2000);
-    } catch {
+    } catch (registrationError) {
       setLoginLoading(false);
-      // erro já tratado pelo hook
+      console.error('Erro no cadastro:', registrationError);
     }
   }
 
@@ -99,7 +105,6 @@ export default function RegisterPage() {
       {/* ESQUERDA — CADASTRO */}
       <section className="flex-1 flex items-center justify-center px-6 md:px-12 py-12 bg-white rounded-r-none rounded-l-3xl shadow-xl">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-10">
-          {/* sucesso: só texto, loader e contador */}
           {success ? (
             <RegisterSuccess
               showLoader={success}
@@ -108,7 +113,6 @@ export default function RegisterPage() {
             />
           ) : (
             <>
-              {/* headline + descrição padrão */}
               <div className="space-y-2 mb-6">
                 <h1
                   className="text-[22px] sm:text-[26px] font-extrabold tracking-tight text-[#181b4a]"

@@ -76,7 +76,7 @@ export function useAuth() {
 
       try {
         const profile = await userService.getProfile(res.access_token);
-        userData = { ...userData, ...profile };
+        userData = { ...userData, ...profile } as UserProfile;
       } catch {
         // TODO Se falhar, mantém dados do token
       }

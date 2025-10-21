@@ -69,7 +69,7 @@ export default function ProfileForm() {
     }
     try {
       const updatedUser = await update(userProfile?.id || '', form);
-      if (updatedUser && typeof updatedUser === 'object') {
+      if (updatedUser) {
         setUserGlobal(updatedUser);
       }
       setSuccess(true);

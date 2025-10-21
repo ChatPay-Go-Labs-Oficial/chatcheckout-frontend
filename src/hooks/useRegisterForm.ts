@@ -4,13 +4,12 @@ import { ValidationError } from '@/types/validation';
 import {
   validateName,
   validateEmail,
-  validateCPF,
   validatePassword,
   validatePasswordConfirmation,
   validateCompanyName,
-  validateCNPJ,
-  validateRegistrationForm,
-} from '@/utils/validations';
+} from '@/utils/validations/field-validators';
+import { validateCPF, validateCNPJ } from '@/utils/validations/document-validators';
+import { validateRegistrationForm } from '@/utils/validations/form-validators';
 import { useFormValidation } from './useFormValidation';
 
 export interface RegisterFormData extends Record<string, unknown> {

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { formatCPF, formatCNPJ } from '@/utils/validations';
+import { formatCPF, formatCNPJ } from '@/utils/validations/formatters';
 
 /**
  * Hook para gerenciar formatação de documentos (CPF/CNPJ)

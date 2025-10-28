@@ -1,5 +1,7 @@
 import { ValidationError } from '@/types/validation';
 import { VALIDATION_RULES } from './validation-rules';
+import { isValidCPF, isValidCNPJ } from './document-validators';
+import { sanitizeDocument } from './formatters';
 
 /**
  * Validadores básicos reutilizáveis
@@ -77,4 +79,26 @@ export function validateCompanyName(companyName: string): ValidationError | null
   }
 
   return null;
+}
+
+/**
+ * Valida um identificador que pode ser email, CPF ou CNPJ
+ * Retorna o identificador limpo se válido ou null se inválido
+ */
+export function validateIdentifier(identifier: string): { isValid: boolean; value: string } {
+  if (!validateEmail(identifier)) {
+    return { isValid: true, value: identifier };
+  }
+
+  const clean = sanitizeDocument(identifier);
+
+  if (isValidCPF(clean)) {
+    return { isValid: true, value: clean };
+  }
+
+  if (isValidCNPJ(clean)) {
+    return { isValid: true, value: clean };
+  }
+
+  return { isValid: false, value: identifier };
 }

@@ -4,20 +4,35 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import RightShowcase from '@/components/RightShowcase';
+import IdentifierInput from '@/components/IdentifierInput';
+import { validateIdentifier } from '@/utils/validations/field-validators';
 
 export default function LoginPage() {
   const { login, loading, error } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
-    if (!email || !password) return setFormError('Preencha todos os campos');
-    await login({ email, password });
-    if (!error) router.replace('/dashboard');
+
+    if (!identifier || !password) {
+      return setFormError('Preencha todos os campos');
+    }
+
+    const { isValid, value } = validateIdentifier(identifier);
+    if (!isValid) {
+      return setFormError('Digite um e-mail, CPF ou CNPJ válido');
+    }
+
+    try {
+      await login({ identifier: value, password });
+      if (!error) router.replace('/dashboard');
+    } catch {
+      // erro já é tratado pelo hook useAuth
+    }
   }
 
   return (
@@ -44,18 +59,10 @@ export default function LoginPage() {
           {/* formulário */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="sr-only">
-                E-mail
+              <label htmlFor="identifier" className="sr-only">
+                E-mail, CPF ou CNPJ
               </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="E-mail"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-5 py-4 bg-white text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#6f43d0] shadow-sm transition-all text-base"
-              />
+              <IdentifierInput value={identifier} onChange={setIdentifier} required />
             </div>
 
             <div>

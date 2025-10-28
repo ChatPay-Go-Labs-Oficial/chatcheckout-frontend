@@ -48,13 +48,22 @@ export function useAuth() {
     setLoading(true);
     setError(null);
     try {
-      const res: LoginResponse = await authService.login(payload);
+      // Remove formatação de CPF/CNPJ antes de enviar ao servidor, preservando e-mail
+      const cleanPayload = {
+        ...payload,
+        identifier: payload.identifier.includes('@')
+          ? payload.identifier
+          : payload.identifier.replace(/[^\w]/g, ''),
+      };
+      const res: LoginResponse = await authService.login(cleanPayload);
       setAccessToken(res.access_token);
       setRefreshToken(res.refresh_token);
 
       type JwtPayload = {
         sub: string;
-        email: string;
+        email?: string;
+        cpf?: string;
+        cnpj?: string;
         firstName?: string;
         lastName?: string;
         role?: string;
@@ -62,16 +71,16 @@ export function useAuth() {
       const decoded: JwtPayload = jwtDecode(res.access_token);
       let userData: UserProfile = {
         id: decoded.sub,
-        email: decoded.email,
+        email: decoded.email ?? '',
+        cpf: decoded.cpf ?? '',
         firstName: decoded.firstName ?? '',
         lastName: decoded.lastName ?? '',
-        cpf: '',
         role:
           decoded.role && Object.values(UserRole).includes(decoded.role as UserRole)
             ? (decoded.role as UserRole)
             : UserRole.Client,
         companyName: undefined,
-        cnpj: undefined,
+        cnpj: decoded.cnpj,
       };
 
       try {
@@ -88,11 +97,19 @@ export function useAuth() {
       }
       return { ...res, user: userData };
     } catch (err: unknown) {
+      let errorMessage = 'Erro ao fazer login';
+
       if (err instanceof Error) {
-        setError(err.message || 'Erro ao fazer login');
-      } else {
-        setError('Erro ao fazer login');
+        if (err.message.includes('not found') || err.message.includes('Invalid credentials')) {
+          errorMessage = 'Credenciais inválidas';
+        } else if (err.message.includes('rate limit')) {
+          errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos';
+        } else {
+          errorMessage = 'Erro ao fazer login. Tente novamente';
+        }
       }
+
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
@@ -103,7 +120,9 @@ export function useAuth() {
     setLoading(true);
     setError(null);
     try {
-      const res: RefreshResponse = await authService.refresh(payload.refresh_token);
+      const res: RefreshResponse = await authService.refresh({
+        refresh_token: payload.refresh_token,
+      });
       setAccessToken(res.access_token);
       setRefreshToken(res.refresh_token);
       if (typeof window !== 'undefined') {
@@ -123,14 +142,22 @@ export function useAuth() {
     }
   }
 
-  function logout() {
-    setUser(null);
-    setAccessToken(null);
-    setRefreshToken(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
+  async function logout() {
+    try {
+      if (accessToken) {
+        await authService.logout({ token: accessToken });
+      }
+    } catch (error) {
+      console.error('Erro ao invalidar token no servidor:', error);
+    } finally {
+      setUser(null);
+      setAccessToken(null);
+      setRefreshToken(null);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+      }
     }
   }
 

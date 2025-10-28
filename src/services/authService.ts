@@ -1,5 +1,12 @@
 import { apiClient } from '@/utils/api-client';
-import { LoginPayload, LoginResponse, RefreshResponse, RefreshPayload } from '@/types/auth';
+import {
+  LoginPayload,
+  LoginResponse,
+  RefreshResponse,
+  RefreshPayload,
+  LogoutPayload,
+  LogoutResponse,
+} from '@/types/auth';
 
 export const authService = {
   async login(payload: LoginPayload): Promise<LoginResponse> {
@@ -15,5 +22,9 @@ export const authService = {
 
   async refresh(payload: RefreshPayload): Promise<RefreshResponse> {
     return apiClient.post<RefreshResponse>('/auth/refresh', payload);
+  },
+
+  async logout(payload: LogoutPayload): Promise<LogoutResponse> {
+    return apiClient.post<LogoutResponse>('/auth/logout', payload);
   },
 };

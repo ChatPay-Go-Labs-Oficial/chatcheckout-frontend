@@ -20,6 +20,7 @@ export {
   validatePasswordConfirmation,
   validateName,
   validateCompanyName,
+  validateIdentifier,
 } from './field-validators';
 
 // Validadores de formulário

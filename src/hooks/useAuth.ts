@@ -142,14 +142,22 @@ export function useAuth() {
     }
   }
 
-  function logout() {
-    setUser(null);
-    setAccessToken(null);
-    setRefreshToken(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
+  async function logout() {
+    try {
+      if (accessToken) {
+        await authService.logout({ token: accessToken });
+      }
+    } catch (error) {
+      console.error('Erro ao invalidar token no servidor:', error);
+    } finally {
+      setUser(null);
+      setAccessToken(null);
+      setRefreshToken(null);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+      }
     }
   }
 

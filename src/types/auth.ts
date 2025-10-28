@@ -23,3 +23,11 @@ export type RefreshResponse = {
   access_token: string;
   refresh_token: string;
 };
+
+export type LogoutPayload = {
+  token: string;
+};
+
+export type LogoutResponse = {
+  message: string;
+};

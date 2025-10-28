@@ -158,13 +158,68 @@ describe('useAuth', () => {
     expect(result.current.refreshToken).toBe('new-refresh-token');
   });
 
-  it('should logout correctly', () => {
-    const { result } = renderHook(() => useAuth());
-
-    act(() => {
-      result.current.logout();
+  it('should logout correctly', async () => {
+    (authService.logout as jest.Mock).mockResolvedValueOnce({
+      message: 'Logout realizado com sucesso',
     });
 
+    const { result } = renderHook(() => useAuth());
+
+    // Simula que o usuário está logado fazendo login primeiro
+    const mockLoginResponse = {
+      access_token: mockAccessToken,
+      refresh_token: mockRefreshToken,
+      user: mockUser,
+    };
+    (authService.login as jest.Mock).mockResolvedValueOnce(mockLoginResponse);
+    (userService.getProfile as jest.Mock).mockResolvedValueOnce(mockUser);
+
+    await act(async () => {
+      await result.current.login({
+        identifier: 'test@example.com',
+        password: 'password123',
+      });
+    });
+
+    // Realiza logout
+    await act(async () => {
+      await result.current.logout();
+    });
+
+    expect(authService.logout).toHaveBeenCalledWith({ token: mockAccessToken });
+    expect(result.current.user).toBeNull();
+    expect(result.current.accessToken).toBeNull();
+    expect(result.current.refreshToken).toBeNull();
+    expect(localStorage.getItem('chatcheckout_access_token')).toBeNull();
+  });
+
+  it('should logout and clear local data even if backend call fails', async () => {
+    (authService.logout as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+    const { result } = renderHook(() => useAuth());
+
+    // Simula que o usuário está logado fazendo login primeiro
+    const mockLoginResponse = {
+      access_token: mockAccessToken,
+      refresh_token: mockRefreshToken,
+      user: mockUser,
+    };
+    (authService.login as jest.Mock).mockResolvedValueOnce(mockLoginResponse);
+    (userService.getProfile as jest.Mock).mockResolvedValueOnce(mockUser);
+
+    await act(async () => {
+      await result.current.login({
+        identifier: 'test@example.com',
+        password: 'password123',
+      });
+    });
+
+    // Realiza logout com erro
+    await act(async () => {
+      await result.current.logout();
+    });
+
+    // Mesmo com erro, deve limpar dados locais
     expect(result.current.user).toBeNull();
     expect(result.current.accessToken).toBeNull();
     expect(result.current.refreshToken).toBeNull();

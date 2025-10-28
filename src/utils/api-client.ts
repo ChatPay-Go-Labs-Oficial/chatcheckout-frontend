@@ -70,6 +70,10 @@ export function handleApiError(response: Response, data: unknown): string {
       return 'Dados fornecidos não puderam ser processados';
     }
 
+    case 429: {
+      return 'Muitas tentativas. Aguarde alguns instantes e tente novamente';
+    }
+
     case 500: {
       return 'Erro interno do servidor. Tente novamente mais tarde';
     }

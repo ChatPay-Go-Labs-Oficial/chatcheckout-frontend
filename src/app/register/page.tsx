@@ -31,7 +31,6 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
 
-  // Handlers para campos com formatação especial
   const handleCPF = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       handleCPFChange(e.target.value, (value) => handleFieldChange('cpf', value));
@@ -53,14 +52,12 @@ export default function RegisterPage() {
     setSuccess(false);
     setLoginLoading(false);
 
-    // Validar formulário usando nossos utilitários
     if (!validateForm()) {
       setFormError('Por favor, corrija os erros abaixo');
       return;
     }
 
     try {
-      // Sanitizar dados antes de enviar (remover máscaras)
       const sanitizedForm = {
         firstName: form.firstName,
         lastName: form.lastName,
@@ -69,7 +66,6 @@ export default function RegisterPage() {
         password: form.password,
         confirmPassword: form.confirmPassword,
         role: form.role,
-        // Só inclui campos opcionais se preenchidos
         companyName:
           form.companyName && form.companyName.trim() ? form.companyName.trim() : undefined,
         cnpj: form.cnpj && form.cnpj.trim() ? sanitizeDocument(form.cnpj) : undefined,
@@ -78,11 +74,10 @@ export default function RegisterPage() {
       await register(sanitizedForm);
       setSuccess(true);
 
-      // Aguarda 2 segundos antes do login automático
       setTimeout(async () => {
         setLoginLoading(true);
         try {
-          await login({ email: form.email, password: form.password });
+          await login({ identifier: form.email, password: form.password });
           router.replace('/dashboard');
         } catch (loginError) {
           console.error('Erro no login automático:', loginError);
@@ -236,7 +231,6 @@ export default function RegisterPage() {
                     />
                   </div>
                 </div>
-                {/* role não é exibido, mas é enviado como DEFAULT_ROLE no payload */}
 
                 {(formError || error) && (
                   <div className="text-red-600 text-sm sm:text-base text-center font-semibold">

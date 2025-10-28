@@ -1,5 +1,5 @@
-import { NEXT_PUBLIC_API_URL } from '@/utils/env';
-import { UserUpdatePayload } from '@/types/user';
+import { UserUpdatePayload, UserProfile } from '@/types/user';
+import { apiClient } from '@/utils/api-client';
 
 export const userService = {
   async register(data: {
@@ -8,42 +8,29 @@ export const userService = {
     email: string;
     cpf: string;
     password: string;
+    confirmPassword: string;
     role: string;
     companyName?: string;
     cnpj?: string;
   }) {
-    const res = await fetch(`${NEXT_PUBLIC_API_URL}/user/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    return res.json();
+    // Remove campos undefined antes de enviar
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined),
+    );
+
+    return apiClient.post('/user/register', cleanData);
   },
 
-  async getProfile(token: string) {
-    const res = await fetch(`${NEXT_PUBLIC_API_URL}/user/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.json();
+  async getProfile(token: string): Promise<UserProfile> {
+    return apiClient.get<UserProfile>('/user/profile', token);
   },
 
-  async update(id: string, data: UserUpdatePayload, token: string) {
-    const res = await fetch(`${NEXT_PUBLIC_API_URL}/user/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-    return res.json();
+  async update(id: string, data: UserUpdatePayload, token: string): Promise<UserProfile> {
+    return apiClient.put<UserProfile>(`/user/${id}`, data, token);
   },
 
   async remove(id: string, token: string) {
-    const res = await fetch(`${NEXT_PUBLIC_API_URL}/user/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.json();
+    await apiClient.delete(`/user/${id}`, token);
+    return { success: true };
   },
 };

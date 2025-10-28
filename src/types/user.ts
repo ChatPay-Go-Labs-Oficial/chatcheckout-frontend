@@ -9,6 +9,7 @@ export type UserRegisterPayload = {
   email: string;
   cpf: string;
   password: string;
+  confirmPassword: string;
   role: UserRole;
   companyName?: string;
   cnpj?: string;

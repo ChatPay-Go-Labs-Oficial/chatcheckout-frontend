@@ -25,12 +25,11 @@ export function useUser(accessToken?: string) {
     }
   }
 
-  async function getProfile() {
-    if (!accessToken) return;
+  async function getProfile(accessToken: string) {
     setLoading(true);
     setError(null);
     try {
-      const res: UserProfile = await userService.getProfile(accessToken);
+      const res = await userService.getProfile(accessToken);
       setProfile(res);
       return res;
     } catch (err: unknown) {
@@ -45,8 +44,10 @@ export function useUser(accessToken?: string) {
     }
   }
 
-  async function update(id: string, payload: UserUpdatePayload) {
-    if (!accessToken) return;
+  async function update(id: string, payload: UserUpdatePayload): Promise<UserProfile | null> {
+    if (!accessToken) {
+      throw new Error('Token de acesso não encontrado');
+    }
     setLoading(true);
     setError(null);
     try {

@@ -71,6 +71,24 @@ export default function Sidebar({ onLogout, user }: SidebarProps) {
           {open && 'Dashboard'}
         </Link>
         <Link
+          href="/produtos"
+          className={`flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-[#f2f4f7] transition text-base font-medium group ${open ? '' : 'justify-center'}`}
+        >
+          <svg
+            width="20"
+            height="20"
+            fill="none"
+            viewBox="0 0 24 24"
+            className="text-[#6f43d0] group-hover:text-[#181b4a]"
+          >
+            <path
+              d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM9 5a2 2 0 012-2h2a2 2 0 012 2v2H9V5z"
+              fill="currentColor"
+            />
+          </svg>
+          {open && 'Produtos'}
+        </Link>
+        <Link
           href="/profile"
           className={`flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-[#f2f4f7] transition text-base font-medium group ${open ? '' : 'justify-center'}`}
         >

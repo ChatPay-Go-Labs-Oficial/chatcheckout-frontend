@@ -30,3 +30,14 @@ export {
   getFieldError,
   hasFieldError,
 } from './form-validators';
+
+// Validadores de produto
+export {
+  validateProductName,
+  validateProductDescription,
+  validateProductPrice,
+  validateCurrency,
+  validateUrl,
+  validateAiPrompt,
+  validateProductFile,
+} from './product-validators';

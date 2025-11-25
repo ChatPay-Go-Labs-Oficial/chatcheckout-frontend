@@ -35,4 +35,27 @@ export const VALIDATION_RULES = {
     maxLength: 100,
     message: 'Nome da empresa deve ter no máximo 100 caracteres',
   },
+
+  product: {
+    name: {
+      minLength: 3,
+      maxLength: 100,
+    },
+    description: {
+      minLength: 10,
+      maxLength: 1000,
+    },
+    price: {
+      min: 0.01,
+      max: 999999999.99,
+    },
+    aiPrompt: {
+      minLength: 20,
+      maxLength: 2000,
+    },
+    url: {
+      pattern: /^https?:\/\/.+/,
+      message: 'URL deve começar com http:// ou https://',
+    },
+  },
 } as const;

@@ -32,7 +32,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   return (
     <div className="h-screen flex bg-[#f7f8fa]">
       <Sidebar user={user} onLogout={handleLogout} />
-      <main className="flex-1 p-8 text-primary overflow-hidden">{children}</main>
+      <main className="flex-1 p-8 text-primary overflow-y-auto">{children}</main>
     </div>
   );
 }

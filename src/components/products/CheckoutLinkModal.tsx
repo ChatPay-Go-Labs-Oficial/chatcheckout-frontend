@@ -3,15 +3,19 @@
 import React, { useState } from 'react';
 import { Product } from '@/types/product';
 
+type ModalMode = 'create' | 'update';
+
 interface CheckoutLinkModalProps {
   product: Product;
   checkoutUrl: string;
   isOpen: boolean;
   onClose: () => void;
+  mode?: ModalMode;
+  hashChanged?: boolean;
 }
 
 /**
- * Modal exibido após criação do produto com sucesso
+ * Modal exibido após criação/edição do produto
  * Mostra o link único de checkout para compartilhar
  */
 export function CheckoutLinkModal({
@@ -19,6 +23,8 @@ export function CheckoutLinkModal({
   checkoutUrl,
   isOpen,
   onClose,
+  mode = 'create',
+  hashChanged = false,
 }: CheckoutLinkModalProps) {
   const [copied, setCopied] = useState(false);
 
@@ -46,12 +52,32 @@ export function CheckoutLinkModal({
 
   const supportsShare = typeof navigator !== 'undefined' && !!navigator.share;
 
+  // Configurações dinâmicas baseadas no modo
+  const config = {
+    create: {
+      title: 'Produto Criado com Sucesso!',
+      subtitle: `Seu produto ${product.name} está pronto para vender`,
+      iconColor: 'from-green-400 to-green-600',
+    },
+    update: {
+      title: hashChanged ? 'Link Atualizado!' : 'Produto Atualizado com Sucesso!',
+      subtitle: hashChanged
+        ? `O link de checkout foi alterado. Use o novo link abaixo.`
+        : `Seu produto ${product.name} foi atualizado`,
+      iconColor: hashChanged ? 'from-yellow-400 to-orange-500' : 'from-blue-400 to-blue-600',
+    },
+  };
+
+  const currentConfig = config[mode];
+
   return (
     <div className="fixed inset-0 bg-gray-500/15 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 animate-in fade-in slide-in-from-bottom-5 duration-300">
         {/* Success Header */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-tr from-green-400 to-green-600 flex items-center justify-center shadow-lg">
+          <div
+            className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-tr ${currentConfig.iconColor} flex items-center justify-center shadow-lg`}
+          >
             <svg width="32" height="32" fill="none" viewBox="0 0 24 24" className="text-white">
               <path
                 d="M5 13l4 4L19 7"
@@ -62,12 +88,40 @@ export function CheckoutLinkModal({
               />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Produto Criado com Sucesso!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{currentConfig.title}</h2>
           <p className="text-sm text-gray-600">
-            Seu produto <span className="font-semibold text-[#6f43d0]">{product.name}</span> está
-            pronto para vender
+            <span className="font-semibold text-[#6f43d0]">{currentConfig.subtitle}</span>
           </p>
         </div>
+
+        {/* Alert para hash alterado */}
+        {mode === 'update' && hashChanged && (
+          <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg">
+            <div className="flex items-start gap-3">
+              <svg
+                className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <div>
+                <h4 className="text-sm font-semibold text-yellow-800 mb-1">Atenção!</h4>
+                <p className="text-sm text-yellow-700">
+                  Você alterou a <strong>URL da página de vendas</strong> ou o{' '}
+                  <strong>prompt de IA</strong>. Um novo link de checkout foi gerado. Certifique-se
+                  de usar o link atualizado abaixo.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Product Info Card */}
         <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4 mb-6 border border-purple-100">

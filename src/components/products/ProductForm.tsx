@@ -59,17 +59,13 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
 
     // Se produto foi criado/atualizado com sucesso
     if (result) {
+      setCreatedProduct(result);
+      setShowCheckoutModal(true);
+
       if (isCreate) {
-        // Modo criação: exibe modal com link de checkout
-        setCreatedProduct(result);
-        setShowCheckoutModal(true);
         toast.success('Produto criado com sucesso!');
       } else {
-        // Modo edição: apenas exibe toast e redireciona
         toast.success('Produto atualizado com sucesso!');
-        setTimeout(() => {
-          onSuccess();
-        }, 1500);
       }
     }
   };
@@ -305,15 +301,15 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
         </div>
       </form>
 
-      {/* Modal de Link de Checkout (apenas para criação) */}
+      {/* Modal de Link de Checkout */}
       {createdProduct && (
         <CheckoutLinkModal
           product={createdProduct}
-          checkoutUrl={
-            createdProduct.salesPageUrl || `https://checkout.chatpay.com.br/p/${createdProduct.id}`
-          }
+          checkoutUrl={`${process.env.NEXT_PUBLIC_CHECKOUT_URL}?hash=${createdProduct.productHash}`}
           isOpen={showCheckoutModal}
           onClose={handleCloseModal}
+          mode={mode === 'create' ? 'create' : 'update'}
+          hashChanged={!isCreate && initialProduct?.productHash !== createdProduct.productHash}
         />
       )}
     </div>

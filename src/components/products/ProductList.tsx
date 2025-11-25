@@ -222,11 +222,15 @@ export function ProductList({ products, isLoading, onEdit, onDelete }: ProductLi
 
                   {/* Link de Venda */}
                   <td className="px-6 py-4">
-                    {product.salesPageUrl ? (
+                    {product.productHash ? (
                       <button
-                        onClick={() => copyToClipboard(product.salesPageUrl!)}
+                        onClick={() =>
+                          copyToClipboard(
+                            `${process.env.NEXT_PUBLIC_CHECKOUT_URL}?hash=${product.productHash}`,
+                          )
+                        }
                         className="group relative inline-flex items-center justify-center w-9 h-9 bg-gradient-to-br from-slate-100 to-slate-200 hover:from-indigo-50 hover:to-purple-50 border border-slate-300 hover:border-indigo-300 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95"
-                        title="Copiar link"
+                        title="Copiar link do checkout"
                       >
                         <svg
                           width="16"

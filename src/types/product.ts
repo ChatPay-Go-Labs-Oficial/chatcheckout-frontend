@@ -21,6 +21,7 @@ export interface Product {
   promptAi: string;
   imageUrl?: string;
   productUrl: string;
+  productHash: string;
   createdAt: string;
   updatedAt: string;
 }

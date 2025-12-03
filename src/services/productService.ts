@@ -1,5 +1,6 @@
 import { Product, CreateProductDTO, UpdateProductDTO } from '@/types/product';
 import { NEXT_PUBLIC_API_URL } from '@/utils/env';
+import { AuthInterceptor } from '@/utils/authInterceptor';
 
 /**
  * Serviço responsável pelas operações CRUD de produtos
@@ -12,32 +13,17 @@ class ProductService {
   }
 
   /**
-   * Obtém o token de autenticação do localStorage
-   */
-  private getAuthToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('chatcheckout_access_token');
-  }
-
-  /**
    * Busca todos os produtos do usuário autenticado
    * @returns Lista de produtos
    * @throws Error se a busca falhar
    */
   async getProducts(): Promise<Product[]> {
     try {
-      const token = this.getAuthToken();
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${this.baseUrl}/product`, {
+      const response = await AuthInterceptor.fetch(`${this.baseUrl}/product`, {
         method: 'GET',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) {
@@ -62,18 +48,11 @@ class ProductService {
    */
   async getProductById(id: string): Promise<Product> {
     try {
-      const token = this.getAuthToken();
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${this.baseUrl}/product/${id}`, {
+      const response = await AuthInterceptor.fetch(`${this.baseUrl}/product/${id}`, {
         method: 'GET',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) {
@@ -122,33 +101,12 @@ class ProductService {
         formData.append('productFile', productFile);
       }
 
-      const token = this.getAuthToken();
-      const headers: HeadersInit = {};
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${this.baseUrl}/product`, {
+      const response = await AuthInterceptor.fetch(`${this.baseUrl}/product`, {
         method: 'POST',
-        headers,
         body: formData,
       });
 
       if (!response.ok) {
-        // Tratamento específico para erro 401 (não autorizado)
-        if (response.status === 401) {
-          // Limpar token inválido
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('chatcheckout_access_token');
-            localStorage.removeItem('chatcheckout_refresh_token');
-            localStorage.removeItem('chatcheckout_user');
-            // Redirecionar para login
-            window.location.href = '/login';
-          }
-          throw new Error('Token inválido ou expirado');
-        }
-
         const errorData = await response.json();
         const message = errorData.message || 'Erro ao criar produto';
         throw new Error(message);
@@ -172,18 +130,11 @@ class ProductService {
    */
   async updateProduct(id: string, data: UpdateProductDTO): Promise<Product> {
     try {
-      const token = this.getAuthToken();
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${this.baseUrl}/product/${id}`, {
+      const response = await AuthInterceptor.fetch(`${this.baseUrl}/product/${id}`, {
         method: 'PUT',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
       });
 
@@ -207,16 +158,8 @@ class ProductService {
    */
   async deleteProduct(id: string): Promise<void> {
     try {
-      const token = this.getAuthToken();
-      const headers: HeadersInit = {};
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${this.baseUrl}/product/${id}`, {
+      const response = await AuthInterceptor.fetch(`${this.baseUrl}/product/${id}`, {
         method: 'DELETE',
-        headers,
       });
 
       if (!response.ok) {

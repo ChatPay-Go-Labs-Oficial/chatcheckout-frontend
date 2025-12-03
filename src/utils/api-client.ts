@@ -4,6 +4,7 @@
  */
 
 import { NEXT_PUBLIC_API_URL } from '@/utils/env';
+import { AuthInterceptor } from '@/utils/authInterceptor';
 
 /**
  * Tipos para respostas de erro da API
@@ -128,8 +129,8 @@ export class ApiClient {
       requestConfig.body = JSON.stringify(body);
     }
 
-    // Executa requisição
-    const response = await fetch(`${this.baseUrl}${endpoint}`, requestConfig);
+    // Executa requisição usando AuthInterceptor para detectar 401
+    const response = await AuthInterceptor.fetch(`${this.baseUrl}${endpoint}`, requestConfig);
 
     // Verifica se a resposta é JSON válido
     const contentType = response.headers.get('content-type');

@@ -36,7 +36,7 @@ export function FormField({
   className = '',
 }: FormFieldProps) {
   const baseClasses = `
-    border rounded-xl px-5 py-4 bg-white text-black placeholder-gray-400 
+    border rounded-xl px-5 py-3 bg-white text-black placeholder-gray-400 
     focus:outline-none focus:ring-2 focus:ring-[#6f43d0] shadow-sm 
     transition-all text-base
   `;

@@ -4,9 +4,14 @@ import ProfileForm from '@/components/ProfileForm';
 
 export default function ProfilePage() {
   return (
-    <div className="min-h-screen w-full bg-[#f7f8fa] flex">
-      <div className="flex flex-col justify-start items-start w-full max-w-2xl px-16 py-16">
-        <h2 className="text-2xl font-bold text-[#181b4a] mb-8">Editar Perfil</h2>
+    <div className="w-full flex">
+      <div className="flex flex-col w-full max-w-4xl">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-[#181b4a]">Perfil do Usuário</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Gerencie suas informações pessoais e configurações
+          </p>
+        </div>
         <ProfileForm />
       </div>
     </div>

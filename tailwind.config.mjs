@@ -109,7 +109,16 @@ const config = {
   content: ['./src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
-      colors,
+      colors: {
+        ...colors,
+        // Checkout-specific colors (based on the prototype)
+        'background-light': '#F7F8FC',
+        'card-light': '#FFFFFF',
+        'border-light': '#E5E7EB',
+        'gradient-from': '#3B82F6',
+        'gradient-to': '#A855F7',
+        'gradient-via': '#EC4899',
+      },
       // Documentação rápida dos tokens
       // primary: azul principal
       // secondary: roxo secundário

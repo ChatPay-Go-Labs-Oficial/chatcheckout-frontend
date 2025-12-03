@@ -4,7 +4,8 @@
 
 'use client';
 
-import { Message, CheckoutActions, CheckoutState } from '@/types/checkout';
+import { Message } from '@/types/checkout';
+import { UseCheckoutReturn } from '@/types/checkout-hook';
 import {
   ActionButtons,
   CustomerDataForm,
@@ -16,11 +17,10 @@ import {
 
 interface MessageBubbleProps {
   message: Message;
-  actions: CheckoutActions;
-  state: CheckoutState;
+  checkout: UseCheckoutReturn;
 }
 
-export function MessageBubble({ message, actions, state }: MessageBubbleProps) {
+export function MessageBubble({ message, checkout }: MessageBubbleProps) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
@@ -54,39 +54,39 @@ export function MessageBubble({ message, actions, state }: MessageBubbleProps) {
         {message.componentType && message.isTypingComplete && (
           <div className="mt-3 animate-slideIn">
             {message.componentType === 'buttons' && message.componentData && (
-              <ActionButtons data={message.componentData} actions={actions} />
+              <ActionButtons data={message.componentData} checkout={checkout} />
             )}
 
             {message.componentType === 'form' && message.componentData && (
               <CustomerDataForm
                 data={message.componentData}
-                actions={actions}
-                initialData={state.customerData}
+                checkout={checkout}
+                initialData={checkout.customerData}
               />
             )}
 
             {message.componentType === 'payment-options' && (
-              <PaymentOptions data={message.componentData || {}} actions={actions} />
+              <PaymentOptions data={message.componentData || {}} checkout={checkout} />
             )}
 
             {message.componentType === 'payment-review' && message.componentData && (
               <PaymentReview
                 data={message.componentData}
-                actions={actions}
-                product={state.product!}
+                checkout={checkout}
+                product={checkout.product!}
               />
             )}
 
             {message.componentType === 'qr-code' && message.componentData && (
               <QrCodePayment
                 data={message.componentData}
-                actions={actions}
-                product={state.product!}
+                checkout={checkout}
+                product={checkout.product!}
               />
             )}
 
             {message.componentType === 'success' && message.componentData && (
-              <SuccessScreen data={message.componentData} actions={actions} />
+              <SuccessScreen data={message.componentData} checkout={checkout} />
             )}
           </div>
         )}

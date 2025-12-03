@@ -5,15 +5,16 @@
 'use client';
 
 import Image from 'next/image';
-import { CheckoutActions, MessageComponentData, ProductInfo } from '@/types/checkout';
+import { MessageComponentData, ProductInfo } from '@/types/checkout';
+import { UseCheckoutReturn } from '@/types/checkout-hook';
 
 interface PaymentReviewProps {
   data: MessageComponentData;
-  actions: CheckoutActions;
+  checkout: UseCheckoutReturn;
   product: ProductInfo;
 }
 
-export function PaymentReview({ data, actions, product }: PaymentReviewProps) {
+export function PaymentReview({ data, checkout, product }: PaymentReviewProps) {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -108,7 +109,7 @@ export function PaymentReview({ data, actions, product }: PaymentReviewProps) {
                   Seus Dados
                 </h3>
                 <button
-                  onClick={actions.editCustomerData}
+                  onClick={checkout.editCustomerData}
                   className="text-xs font-medium text-gray-600 hover:text-gray-800 transition-colors flex items-center gap-1 px-2 py-1 rounded-md hover:bg-gray-50"
                 >
                   <span className="material-symbols-outlined text-[16px]">edit</span>
@@ -165,7 +166,7 @@ export function PaymentReview({ data, actions, product }: PaymentReviewProps) {
       {/* Botões de Ação - compactos */}
       <div className="space-y-2">
         <button
-          onClick={actions.confirmPayment}
+          onClick={checkout.confirmPayment}
           className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-white px-4 py-3 rounded-xl gradient-bg shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-200"
         >
           <span className="material-symbols-outlined text-[20px]">shopping_cart_checkout</span>
@@ -173,7 +174,7 @@ export function PaymentReview({ data, actions, product }: PaymentReviewProps) {
         </button>
 
         <button
-          onClick={actions.changePaymentMethod}
+          onClick={checkout.changePaymentMethod}
           className="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-gray-600 px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
         >
           <span className="material-symbols-outlined text-[18px]">swap_horiz</span>

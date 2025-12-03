@@ -4,17 +4,17 @@
 
 'use client';
 
-import { Message, CheckoutActions, CheckoutState } from '@/types/checkout';
+import { Message } from '@/types/checkout';
+import { UseCheckoutReturn } from '@/types/checkout-hook';
 import { MessageBubble } from './index';
 import { useEffect, useRef } from 'react';
 
 interface MessageListProps {
   messages: Message[];
-  actions: CheckoutActions;
-  state: CheckoutState;
+  checkout: UseCheckoutReturn;
 }
 
-export function MessageList({ messages, actions, state }: MessageListProps) {
+export function MessageList({ messages, checkout }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll para última mensagem
@@ -25,10 +25,10 @@ export function MessageList({ messages, actions, state }: MessageListProps) {
   return (
     <div className="flex flex-col space-y-4 p-4">
       {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} actions={actions} state={state} />
+        <MessageBubble key={message.id} message={message} checkout={checkout} />
       ))}
 
-      {state.isAiTyping && (
+      {checkout.aiTyping && (
         <div className="flex items-start space-x-3 max-w-xs">
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-gradient-from to-gradient-to flex items-center justify-center">
             <span className="material-symbols-outlined text-white text-lg">support_agent</span>

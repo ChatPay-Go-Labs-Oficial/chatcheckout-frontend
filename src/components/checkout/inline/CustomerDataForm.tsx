@@ -5,15 +5,16 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { CheckoutActions, MessageComponentData, CustomerData } from '@/types/checkout';
+import { MessageComponentData, CustomerData } from '@/types/checkout';
+import { UseCheckoutReturn } from '@/types/checkout-hook';
 
 interface CustomerDataFormProps {
   data: MessageComponentData;
-  actions: CheckoutActions;
+  checkout: UseCheckoutReturn;
   initialData: CustomerData | null;
 }
 
-export function CustomerDataForm({ actions, initialData }: CustomerDataFormProps) {
+export function CustomerDataForm({ checkout, initialData }: CustomerDataFormProps) {
   const [formData, setFormData] = useState<CustomerData>({
     name: initialData?.name || '',
     email: initialData?.email || '',
@@ -23,7 +24,7 @@ export function CustomerDataForm({ actions, initialData }: CustomerDataFormProps
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    actions.submitCustomerData(formData);
+    checkout.submitCustomerData(formData);
   };
 
   const formatWhatsApp = (value: string) => {

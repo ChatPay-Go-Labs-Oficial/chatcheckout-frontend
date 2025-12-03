@@ -4,11 +4,12 @@
 
 'use client';
 
-import { CheckoutActions, MessageComponentData } from '@/types/checkout';
+import { MessageComponentData } from '@/types/checkout';
+import { UseCheckoutReturn } from '@/types/checkout-hook';
 
 interface SuccessScreenProps {
   data: MessageComponentData;
-  actions: CheckoutActions;
+  checkout: UseCheckoutReturn;
 }
 
 export function SuccessScreen({ data }: SuccessScreenProps) {

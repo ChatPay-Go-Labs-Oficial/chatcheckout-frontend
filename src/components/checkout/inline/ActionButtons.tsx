@@ -4,23 +4,24 @@
 
 'use client';
 
-import { CheckoutActions, MessageComponentData } from '@/types/checkout';
+import { MessageComponentData } from '@/types/checkout';
+import { UseCheckoutReturn } from '@/types/checkout-hook';
 
 interface ActionButtonsProps {
   data: MessageComponentData;
-  actions: CheckoutActions;
+  checkout: UseCheckoutReturn;
 }
 
-export function ActionButtons({ data, actions }: ActionButtonsProps) {
+export function ActionButtons({ data, checkout }: ActionButtonsProps) {
   const buttons = data.buttons || [];
 
   const handleAction = (action: string) => {
     if (action === 'start-checkout') {
-      actions.startCheckout();
+      checkout.startCheckout();
     } else if (action === 'start-qa') {
-      actions.startQA();
+      checkout.startQA();
     } else if (action === 'continue-checkout') {
-      actions.continueCheckout();
+      checkout.continueCheckout();
     }
   };
 

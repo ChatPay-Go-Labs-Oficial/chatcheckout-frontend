@@ -5,12 +5,13 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckoutActions, MessageComponentData, ProductInfo } from '@/types/checkout';
+import { MessageComponentData, ProductInfo } from '@/types/checkout';
+import { UseCheckoutReturn } from '@/types/checkout-hook';
 import Image from 'next/image';
 
 interface QrCodePaymentProps {
   data: MessageComponentData;
-  actions: CheckoutActions;
+  checkout: UseCheckoutReturn;
   product: ProductInfo;
 }
 

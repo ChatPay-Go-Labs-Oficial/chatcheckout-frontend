@@ -4,16 +4,17 @@
 
 'use client';
 
-import { CheckoutActions, MessageComponentData, PaymentMethod } from '@/types/checkout';
+import { MessageComponentData, PaymentMethod } from '@/types/checkout';
+import { UseCheckoutReturn } from '@/types/checkout-hook';
 
 interface PaymentOptionsProps {
   data: MessageComponentData;
-  actions: CheckoutActions;
+  checkout: UseCheckoutReturn;
 }
 
-export function PaymentOptions({ actions }: PaymentOptionsProps) {
+export function PaymentOptions({ checkout }: PaymentOptionsProps) {
   const handleSelect = (method: PaymentMethod) => {
-    actions.selectPaymentMethod(method);
+    checkout.selectPaymentMethod(method);
   };
 
   return (

@@ -30,9 +30,9 @@ export default function CheckoutPage() {
 }
 
 function CheckoutContainer({ hash }: { hash: string }) {
-  const { state, actions } = useCheckout(hash);
+  const checkout = useCheckout(hash);
 
-  if (state.loading) {
+  if (checkout.loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background-light">
         <div className="text-center">
@@ -43,19 +43,21 @@ function CheckoutContainer({ hash }: { hash: string }) {
     );
   }
 
-  if (state.error || !state.product) {
+  if (checkout.error || !checkout.product) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background-light">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Erro</h1>
-          <p className="text-gray-600">{state.error || 'Produto não encontrado'}</p>
+          <p className="text-gray-600">{checkout.error || 'Produto não encontrado'}</p>
         </div>
       </div>
     );
   }
 
   const showInput =
-    state.showMessageInput && state.checkoutStep !== 'confirmation' && state.mode !== 'initial';
+    checkout.showMessageInput &&
+    checkout.checkoutStep !== 'confirmation' &&
+    checkout.mode !== 'initial';
 
   return (
     <div
@@ -74,24 +76,24 @@ function CheckoutContainer({ hash }: { hash: string }) {
         </div>
 
         {/* Product Header */}
-        <ProductHeader product={state.product} />
+        <ProductHeader product={checkout.product} />
       </header>
 
       {/* Messages */}
       <main className="flex-1 overflow-y-auto bg-background-light pb-2">
-        <MessageList messages={state.messages} actions={actions} state={state} />
+        <MessageList messages={checkout.messages} checkout={checkout} />
       </main>
 
       {/* Footer */}
       {showInput && (
         <MessageInput
-          onSend={actions.sendMessage}
-          isTyping={state.isAiTyping}
-          disabled={state.checkoutStep === 'confirmation'}
+          onSend={checkout.sendMessage}
+          isTyping={checkout.aiTyping}
+          disabled={checkout.checkoutStep === 'confirmation'}
         />
       )}
 
-      {state.checkoutStep === 'confirmation' && (
+      {checkout.checkoutStep === 'confirmation' && (
         <footer className="p-4 bg-white border-t border-border-light">
           <div className="relative">
             <input

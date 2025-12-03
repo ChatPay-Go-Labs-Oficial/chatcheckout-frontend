@@ -59,7 +59,9 @@ export function useCheckoutActions(
       const messageId = messageActions.createAiMessage(componentType, componentData);
       await typingActions.typeMessage(messageId, content);
     },
-    [stateActions, messageActions, typingActions],
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   /**
@@ -78,58 +80,75 @@ export function useCheckoutActions(
         stateActions.setError(error instanceof Error ? error.message : 'Erro ao carregar produto');
       }
     },
-    [stateActions],
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   /**
    * Adiciona mensagem de boas-vindas
    */
-  const addWelcomeMessage = useCallback(async () => {
-    const brandName = state.product?.infoproducer.companyName || 'nossa marca';
-    const productName = state.product?.name || 'este produto';
+  const addWelcomeMessage = useCallback(
+    async () => {
+      const brandName = state.product?.infoproducer.companyName || 'nossa marca';
+      const productName = state.product?.name || 'este produto';
 
-    await addAiMessage(
-      `Olá! Sou a assistente da ${brandName}. Quer saber mais sobre ${productName} ou já deseja finalizar sua compra?`,
-      'buttons',
-      {
-        buttons: [
-          { label: 'Finalizar compra', action: 'start-checkout', variant: 'primary' },
-          { label: 'Tirar dúvidas', action: 'start-qa', variant: 'secondary' },
-        ],
-      },
-      TYPING_DELAYS.WELCOME_DELAY,
-    );
-  }, [state.product, addAiMessage]);
+      await addAiMessage(
+        `Olá! Sou a assistente da ${brandName}. Quer saber mais sobre ${productName} ou já deseja finalizar sua compra?`,
+        'buttons',
+        {
+          buttons: [
+            { label: 'Finalizar compra', action: 'start-checkout', variant: 'primary' },
+            { label: 'Tirar dúvidas', action: 'start-qa', variant: 'secondary' },
+          ],
+        },
+        TYPING_DELAYS.WELCOME_DELAY,
+      );
+    },
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.product],
+  );
 
   /**
    * Inicia o modo de perguntas e respostas
    */
-  const startQA = useCallback(async () => {
-    messageActions.clearComponentsOfType('buttons');
-    stateActions.setMode('qa');
-    stateActions.setShowMessageInput(true);
+  const startQA = useCallback(
+    async () => {
+      messageActions.clearComponentsOfType('buttons');
+      stateActions.setMode('qa');
+      stateActions.setShowMessageInput(true);
 
-    messageActions.addUserMessage('Tirar dúvidas');
+      messageActions.addUserMessage('Tirar dúvidas');
 
-    const productName = state.product?.name || 'este produto';
-    await addAiMessage(`Ótimo! Em que posso ajudar com o ${productName}?`);
-  }, [state.product, messageActions, stateActions, addAiMessage]);
+      const productName = state.product?.name || 'este produto';
+      await addAiMessage(`Ótimo! Em que posso ajudar com o ${productName}?`);
+    },
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.product],
+  );
 
   /**
    * Inicia o fluxo de checkout
    */
-  const startCheckout = useCallback(async () => {
-    messageActions.clearComponentsOfType('buttons');
-    stateActions.setMode('checkout');
-    stateActions.setCheckoutStep('customer-data');
-    stateActions.setShowMessageInput(false);
+  const startCheckout = useCallback(
+    async () => {
+      messageActions.clearComponentsOfType('buttons');
+      stateActions.setMode('checkout');
+      stateActions.setCheckoutStep('customer-data');
+      stateActions.setShowMessageInput(false);
 
-    messageActions.addUserMessage('Finalizar compra');
+      messageActions.addUserMessage('Finalizar compra');
 
-    await addAiMessage('Ótimo! Para finalizar, por favor, preencha seus dados abaixo.', 'form', {
-      formType: 'customer-data',
-    });
-  }, [messageActions, stateActions, addAiMessage]);
+      await addAiMessage('Ótimo! Para finalizar, por favor, preencha seus dados abaixo.', 'form', {
+        formType: 'customer-data',
+      });
+    },
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   /**
    * Envia uma mensagem para a IA com efeito de digitação
@@ -186,31 +205,38 @@ export function useCheckoutActions(
         );
       }
     },
-    [state.product, state.mode, messageActions, stateActions, streamingActions, addAiMessage],
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.product, state.mode],
   );
 
   /**
    * Continua o checkout após Q&A
    */
-  const continueCheckout = useCallback(async () => {
-    const targetStep = state.savedStep || 'customer-data';
+  const continueCheckout = useCallback(
+    async () => {
+      const targetStep = state.savedStep || 'customer-data';
 
-    // Remove o botão de continuar
-    messageActions.clearComponentsOfType('buttons');
-    stateActions.setMode('checkout');
-    stateActions.setCheckoutStep(targetStep);
-    stateActions.setSavedStep(null);
-    stateActions.setShowMessageInput(false);
+      // Remove o botão de continuar
+      messageActions.clearComponentsOfType('buttons');
+      stateActions.setMode('checkout');
+      stateActions.setCheckoutStep(targetStep);
+      stateActions.setSavedStep(null);
+      stateActions.setShowMessageInput(false);
 
-    // Reexibe o componente da etapa salva
-    if (targetStep === 'customer-data') {
-      await addAiMessage('Certo! Voltando... Por favor, preencha seus dados abaixo.', 'form', {
-        formType: 'customer-data',
-      });
-    } else if (targetStep === 'payment-method') {
-      await addAiMessage('Agora, como você prefere pagar?', 'payment-options');
-    }
-  }, [state.savedStep, messageActions, stateActions, addAiMessage]);
+      // Reexibe o componente da etapa salva
+      if (targetStep === 'customer-data') {
+        await addAiMessage('Certo! Voltando... Por favor, preencha seus dados abaixo.', 'form', {
+          formType: 'customer-data',
+        });
+      } else if (targetStep === 'payment-method') {
+        await addAiMessage('Agora, como você prefere pagar?', 'payment-options');
+      }
+    },
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.savedStep],
+  );
 
   /**
    * Submete os dados do cliente
@@ -245,7 +271,9 @@ export function useCheckoutActions(
         );
       }
     },
-    [state.paymentMethod, messageActions, stateActions, addAiMessage],
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.paymentMethod],
   );
 
   /**
@@ -270,105 +298,125 @@ export function useCheckoutActions(
         },
       );
     },
-    [state.customerData, messageActions, stateActions, addAiMessage],
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.customerData],
   );
 
   /**
    * Confirmação de pagamento bem-sucedido
    */
-  const confirmPaymentSuccess = useCallback(async () => {
-    stateActions.setCheckoutStep('confirmation');
-    stateActions.setShowMessageInput(false);
+  const confirmPaymentSuccess = useCallback(
+    async () => {
+      stateActions.setCheckoutStep('confirmation');
+      stateActions.setShowMessageInput(false);
 
-    await addAiMessage(
-      'Pagamento confirmado com sucesso! Acesse agora o seu produto digital ou verifique seu e-mail para mais detalhes.',
-      'success',
-      {
-        downloadUrl: '#', // TODO: Backend deve retornar URL de download após pagamento confirmado
-      },
-    );
-  }, [stateActions, addAiMessage]);
+      await addAiMessage(
+        'Pagamento confirmado com sucesso! Acesse agora o seu produto digital ou verifique seu e-mail para mais detalhes.',
+        'success',
+        {
+          downloadUrl: '#', // TODO: Backend deve retornar URL de download após pagamento confirmado
+        },
+      );
+    },
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   /**
    * Confirma o pagamento
    */
-  const confirmPayment = useCallback(async () => {
-    if (!state.customerData || !state.paymentMethod) return;
+  const confirmPayment = useCallback(
+    async () => {
+      if (!state.customerData || !state.paymentMethod) return;
 
-    // Remove o componente payment-review
-    messageActions.clearComponentsOfType('payment-review');
-    stateActions.setCheckoutStep('payment');
-    stateActions.setShowMessageInput(false);
+      // Remove o componente payment-review
+      messageActions.clearComponentsOfType('payment-review');
+      stateActions.setCheckoutStep('payment');
+      stateActions.setShowMessageInput(false);
 
-    messageActions.addUserMessage('Efetuar pagamento');
+      messageActions.addUserMessage('Efetuar pagamento');
 
-    // Simula processamento
-    try {
-      const result = await processPayment(
-        state.product?.id || '',
-        state.customerData,
-        state.paymentMethod,
-      );
+      // Simula processamento
+      try {
+        const result = await processPayment(
+          state.product?.id || '',
+          state.customerData,
+          state.paymentMethod,
+        );
 
-      if (state.paymentMethod === 'pix' && result.qrCode) {
-        await addAiMessage('Pagamento via Pix iniciado. Escaneie o QR Code abaixo:', 'qr-code', {
-          qrCodeUrl: result.qrCode,
-          pixCode: result.pixCode,
-          expiresIn: '10 minutos',
-        });
+        if (state.paymentMethod === 'pix' && result.qrCode) {
+          await addAiMessage('Pagamento via Pix iniciado. Escaneie o QR Code abaixo:', 'qr-code', {
+            qrCodeUrl: result.qrCode,
+            pixCode: result.pixCode,
+            expiresIn: '10 minutos',
+          });
 
-        // REMOVIDO: Não simula mais confirmação automática
-        // O pagamento deve ser confirmado via webhook ou polling real
+          // REMOVIDO: Não simula mais confirmação automática
+          // O pagamento deve ser confirmado via webhook ou polling real
+        }
+      } catch {
+        await addAiMessage('Houve um erro ao processar o pagamento. Tente novamente.');
       }
-    } catch {
-      await addAiMessage('Houve um erro ao processar o pagamento. Tente novamente.');
-    }
-  }, [
-    state.customerData,
-    state.paymentMethod,
-    state.product,
-    messageActions,
-    stateActions,
-    addAiMessage,
-  ]);
+    },
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.customerData, state.paymentMethod, state.product],
+  );
 
   /**
    * Edita dados do cliente
    */
-  const editCustomerData = useCallback(async () => {
-    // Remove o componente payment-review
-    messageActions.clearComponentsOfType('payment-review');
-    stateActions.setCheckoutStep('customer-data');
-    stateActions.setShowMessageInput(false);
+  const editCustomerData = useCallback(
+    async () => {
+      // Remove o componente payment-review
+      messageActions.clearComponentsOfType('payment-review');
+      stateActions.setCheckoutStep('customer-data');
+      stateActions.setShowMessageInput(false);
 
-    await addAiMessage('Certo! Você pode editar seus dados abaixo:', 'form', {
-      formType: 'customer-data',
-    });
-  }, [messageActions, stateActions, addAiMessage]);
+      await addAiMessage('Certo! Você pode editar seus dados abaixo:', 'form', {
+        formType: 'customer-data',
+      });
+    },
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   /**
    * Muda método de pagamento
    */
-  const changePaymentMethod = useCallback(async () => {
-    // Remove o componente payment-review
-    messageActions.clearComponentsOfType('payment-review');
-    stateActions.setCheckoutStep('payment-method');
-    stateActions.setPaymentMethod(null);
-    stateActions.setShowMessageInput(false);
+  const changePaymentMethod = useCallback(
+    async () => {
+      // Remove o componente payment-review
+      messageActions.clearComponentsOfType('payment-review');
+      stateActions.setCheckoutStep('payment-method');
+      stateActions.setPaymentMethod(null);
+      stateActions.setShowMessageInput(false);
 
-    await addAiMessage('Sem problemas! Escolha outra forma de pagamento:', 'payment-options');
-  }, [messageActions, stateActions, addAiMessage]);
+      await addAiMessage('Sem problemas! Escolha outra forma de pagamento:', 'payment-options');
+    },
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   /**
    * Pausa checkout para fazer perguntas
    */
-  const askQuestion = useCallback(async () => {
-    stateActions.setMode('interrupted');
-    stateActions.setSavedStep(state.checkoutStep);
-    stateActions.setShowMessageInput(true);
+  const askQuestion = useCallback(
+    async () => {
+      stateActions.setMode('interrupted');
+      stateActions.setSavedStep(state.checkoutStep);
+      stateActions.setShowMessageInput(true);
 
-    await addAiMessage('Claro! Como posso ajudar?');
-  }, [state.checkoutStep, stateActions, addAiMessage]);
+      await addAiMessage('Claro! Como posso ajudar?');
+    },
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.checkoutStep],
+  );
 
   return {
     loadProduct,

@@ -48,7 +48,9 @@ export function useCheckout(hash: string) {
     if (hash) {
       businessActions.loadProduct(hash);
     }
-  }, [hash, businessActions]);
+    // Removido businessActions das dependências para evitar loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hash]);
 
   /**
    * Adiciona mensagem de boas-vindas após carregar produto
@@ -57,7 +59,9 @@ export function useCheckout(hash: string) {
     if (state.product && state.messages.length === 0) {
       businessActions.addWelcomeMessage();
     }
-  }, [state.product, state.messages.length, businessActions]);
+    // Removido businessActions das dependências para evitar loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.product, state.messages.length]);
 
   // ========================================
   // API Pública (Mantém compatibilidade)

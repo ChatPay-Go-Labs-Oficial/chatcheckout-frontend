@@ -1,204 +1,61 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useUser } from '@/hooks/useUser';
-import { UserProfile, UserUpdatePayload } from '@/types/user';
+'use client';
 
-function validateEmail(email: string) {
-  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
-}
-function validateCPF(cpf: string) {
-  return /^\d{11}$/.test(cpf.replace(/\D/g, ''));
-}
-function validateCNPJ(cnpj: string) {
-  return /^\d{14}$/.test(cnpj.replace(/\D/g, ''));
-}
+import { useState } from 'react';
+import PersonalInfoTab from '@/components/profile/PersonalInfoTab';
+import PaymentInfoTab from '@/components/profile/PaymentInfoTab';
+import PasswordTab from '@/components/profile/PasswordTab';
+
+type TabType = 'personal' | 'payment' | 'password';
+
+const tabs = [
+  {
+    id: 'personal' as TabType,
+    name: 'Informações Pessoais',
+    icon: <span className="material-symbols-outlined text-[18px]">person</span>,
+  },
+  {
+    id: 'payment' as TabType,
+    name: 'Pagamentos',
+    icon: <span className="material-symbols-outlined text-[18px]">credit_card</span>,
+  },
+  {
+    id: 'password' as TabType,
+    name: 'Senha',
+    icon: <span className="material-symbols-outlined text-[18px]">lock</span>,
+  },
+];
 
 export default function ProfileForm() {
-  const { user, accessToken, setUserGlobal } = useAuth();
-  const { update, error } = useUser(accessToken ?? undefined);
-  const userProfile = user as UserProfile | undefined;
-  const [form, setForm] = useState<UserUpdatePayload>({});
-  const [formError, setFormError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (userProfile) {
-      setForm({
-        firstName: userProfile.firstName || '',
-        lastName: userProfile.lastName || '',
-        email: userProfile.email || '',
-        cpf: userProfile.cpf || '',
-        companyName: userProfile.companyName || '',
-        cnpj: userProfile.cnpj || '',
-      });
-    }
-  }, [userProfile]);
-
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setFormError(null);
-    setSuccess(false);
-  }, []);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setFormError(null);
-    setSuccess(false);
-    setSaving(true);
-    // Validação
-    if (!form.firstName || !form.lastName || !form.email || !form.cpf) {
-      setFormError('Preencha todos os campos obrigatórios');
-      setSaving(false);
-      return;
-    }
-    if (!validateEmail(form.email!)) {
-      setFormError('E-mail inválido');
-      setSaving(false);
-      return;
-    }
-    if (!validateCPF(form.cpf!)) {
-      setFormError('CPF inválido');
-      setSaving(false);
-      return;
-    }
-    if (form.cnpj && !validateCNPJ(form.cnpj)) {
-      setFormError('CNPJ inválido');
-      setSaving(false);
-      return;
-    }
-    try {
-      const updatedUser = await update(userProfile?.id || '', form);
-      if (updatedUser) {
-        setUserGlobal(updatedUser);
-      }
-      setSuccess(true);
-    } catch {
-      setFormError(error || 'Erro ao salvar alterações');
-    } finally {
-      setSaving(false);
-    }
-  }
+  const [activeTab, setActiveTab] = useState<TabType>('personal');
 
   return (
-    <form
-      className="w-full grid grid-cols-2 gap-x-6 gap-y-4 mb-8"
-      onSubmit={handleSubmit}
-      aria-label="Formulário de perfil"
-    >
-      <div className="col-span-1">
-        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-          Nome
-        </label>
-        <input
-          name="firstName"
-          id="firstName"
-          type="text"
-          placeholder="Seu nome"
-          value={form.firstName || ''}
-          onChange={handleChange}
-          className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-[#6fdcff] focus:outline-none bg-[#f7f8fa]"
-          required
-          disabled={saving}
-        />
+    <div className="w-full">
+      {/* Tabs */}
+      <div className="flex gap-6 mb-6 border-b border-gray-200">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`pb-3 px-2 text-sm font-medium transition-colors relative flex items-center gap-2 ${
+              activeTab === tab.id ? 'text-[#6f43d0]' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {tab.icon}
+            {tab.name}
+            {activeTab === tab.id && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6fdcff] to-[#6f43d0]" />
+            )}
+          </button>
+        ))}
       </div>
-      <div className="col-span-1">
-        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-          Sobrenome
-        </label>
-        <input
-          name="lastName"
-          id="lastName"
-          type="text"
-          placeholder="Seu sobrenome"
-          value={form.lastName || ''}
-          onChange={handleChange}
-          className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-[#6fdcff] focus:outline-none bg-[#f7f8fa]"
-          required
-          disabled={saving}
-        />
+
+      {/* Conteúdo das Abas */}
+      <div>
+        {activeTab === 'personal' && <PersonalInfoTab />}
+        {activeTab === 'payment' && <PaymentInfoTab />}
+        {activeTab === 'password' && <PasswordTab />}
       </div>
-      <div className="col-span-2">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-          Email
-        </label>
-        <input
-          name="email"
-          id="email"
-          type="email"
-          placeholder="Seu e-mail"
-          value={form.email || ''}
-          onChange={handleChange}
-          className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-[#6fdcff] focus:outline-none bg-[#f7f8fa]"
-          required
-          disabled={saving}
-        />
-      </div>
-      <div className="col-span-1">
-        <label htmlFor="cpf" className="block text-sm font-medium text-gray-700 mb-1">
-          CPF
-        </label>
-        <input
-          name="cpf"
-          id="cpf"
-          type="text"
-          placeholder="Seu CPF"
-          value={form.cpf || ''}
-          onChange={handleChange}
-          className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-[#6fdcff] focus:outline-none bg-[#f7f8fa]"
-          required
-          disabled={saving}
-        />
-      </div>
-      <div className="col-span-1">
-        <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-1">
-          Empresa
-        </label>
-        <input
-          name="companyName"
-          id="companyName"
-          type="text"
-          placeholder="Nome da empresa"
-          value={form.companyName || ''}
-          onChange={handleChange}
-          className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-[#6fdcff] focus:outline-none bg-[#f7f8fa]"
-          disabled={saving}
-        />
-      </div>
-      <div className="col-span-1">
-        <label htmlFor="cnpj" className="block text-sm font-medium text-gray-700 mb-1">
-          CNPJ
-        </label>
-        <input
-          name="cnpj"
-          id="cnpj"
-          type="text"
-          placeholder="CNPJ da empresa"
-          value={form.cnpj || ''}
-          onChange={handleChange}
-          className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-[#6fdcff] focus:outline-none bg-[#f7f8fa]"
-          disabled={saving}
-        />
-      </div>
-      <div className="col-span-2 mt-2">
-        <button
-          type="submit"
-          className="w-full bg-gradient-to-r from-[#6fdcff] to-[#6f43d0] text-white font-semibold py-3 rounded-xl shadow hover:scale-[1.01] hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-[#6fdcff]"
-          disabled={saving}
-        >
-          {saving ? 'Salvando...' : 'Salvar Alterações'}
-        </button>
-      </div>
-      {formError && (
-        <div className="col-span-2 text-red-600 text-sm text-center font-semibold mt-2">
-          {formError}
-        </div>
-      )}
-      {success && (
-        <div className="col-span-2 text-green-600 text-sm text-center font-semibold mt-2">
-          Perfil atualizado com sucesso!
-        </div>
-      )}
-    </form>
+    </div>
   );
 }

@@ -76,18 +76,10 @@ export default function PersonalInfoTab() {
       return;
     }
 
-    if (isCompanyOpen) {
-      if (form.cnpj && !validateCNPJ(form.cnpj)) {
-        setFormError('CNPJ inválido');
-        setSaving(false);
-        return;
-      }
-
-      if (!form.companyName?.trim()) {
-        setFormError('Nome da empresa é obrigatório');
-        setSaving(false);
-        return;
-      }
+    if (form.cnpj && !validateCNPJ(form.cnpj)) {
+      setFormError('CNPJ inválido');
+      setSaving(false);
+      return;
     }
 
     try {

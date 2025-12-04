@@ -26,7 +26,7 @@ export const userService = {
   },
 
   async update(id: string, data: UserUpdatePayload, token: string): Promise<UserProfile> {
-    return apiClient.put<UserProfile>(`/user/${id}`, data, token);
+    return apiClient.patch<UserProfile>(`/user/${id}`, data, token);
   },
 
   async remove(id: string, token: string) {

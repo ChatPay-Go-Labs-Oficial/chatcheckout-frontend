@@ -161,6 +161,10 @@ export class ApiClient {
     return this.request<T>(endpoint, { method: 'PUT', body: data, token });
   }
 
+  async patch<T>(endpoint: string, data: unknown, token?: string): Promise<T> {
+    return this.request<T>(endpoint, { method: 'PATCH', body: data, token });
+  }
+
   async delete<T>(endpoint: string, token?: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'DELETE', token });
   }

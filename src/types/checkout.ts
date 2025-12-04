@@ -38,6 +38,7 @@ export interface CustomerData {
   email: string;
   whatsapp: string;
   cpf: string;
+  phone?: string;
 }
 
 /**
@@ -74,6 +75,7 @@ export type MessageComponentType =
   | 'payment-options' // Botões de seleção de pagamento
   | 'payment-review' // Card de revisão da compra
   | 'qr-code' // Tela de pagamento Pix
+  | 'card-payment' // Tela de pagamento com cartão
   | 'success' // Tela de confirmação
   | null; // Mensagem simples de texto
 
@@ -106,6 +108,10 @@ export interface MessageComponentData {
   qrCodeUrl?: string;
   pixCode?: string;
   expiresIn?: string;
+
+  // Para 'card-payment'
+  clientSecret?: string;
+  onPaymentSuccess?: () => void;
 
   // Para 'success'
   downloadUrl?: string;

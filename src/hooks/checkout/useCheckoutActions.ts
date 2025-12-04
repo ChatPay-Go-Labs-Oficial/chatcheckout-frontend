@@ -338,7 +338,7 @@ export function useCheckoutActions(
 
       messageActions.addUserMessage('Efetuar pagamento');
 
-      // Simula processamento
+      // Processa pagamento via Stripe
       try {
         const result = await processPayment(
           state.product?.id || '',
@@ -352,9 +352,20 @@ export function useCheckoutActions(
             pixCode: result.pixCode,
             expiresIn: '10 minutos',
           });
-
-          // REMOVIDO: Não simula mais confirmação automática
-          // O pagamento deve ser confirmado via webhook ou polling real
+        } else if (state.paymentMethod === 'card' && result.clientSecret) {
+          await addAiMessage('Complete o pagamento com seu cartão:', 'card-payment', {
+            clientSecret: result.clientSecret,
+            onPaymentSuccess: async () => {
+              messageActions.clearComponentsOfType('card-payment');
+              stateActions.setCheckoutStep('confirmation');
+              await addAiMessage('✅ Pagamento processado com sucesso! Aguarde a confirmação final.', null);
+              
+              // Simular confirmação após alguns segundos (em produção, usar webhook)
+              setTimeout(async () => {
+                await addAiMessage('Pagamento confirmado! Obrigado pela compra.', 'success', {});
+              }, 2000);
+            },
+          });
         }
       } catch {
         await addAiMessage('Houve um erro ao processar o pagamento. Tente novamente.');

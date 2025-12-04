@@ -108,7 +108,7 @@ export default function PersonalInfoTab() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="bg-white rounded-2xl shadow-sm p-5">
-        <h3 className="text-base font-semibold text-[#181b4a] mb-3">Informações Pessoais</h3>
+        <h3 className="text-xl font-semibold text-gray-900 pb-4">Informações Pessoais</h3>
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div>

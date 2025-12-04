@@ -26,6 +26,14 @@ export function PaymentOptions({ checkout }: PaymentOptionsProps) {
         <span className="material-symbols-outlined">qr_code_2</span>
         <span>Pix</span>
       </button>
+
+      <button
+        onClick={() => handleSelect('card')}
+        className="w-full flex items-center justify-center space-x-2 text-sm font-semibold text-white p-3 rounded-lg bg-blue-600 shadow-md hover:bg-blue-700 transition-colors"
+      >
+        <span className="material-symbols-outlined">credit_card</span>
+        <span>Cartão de Crédito</span>
+      </button>
     </div>
   );
 }

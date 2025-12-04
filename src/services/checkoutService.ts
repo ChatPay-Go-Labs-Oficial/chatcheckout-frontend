@@ -3,6 +3,7 @@
  */
 
 import { ProductInfo, ChatAiResponse, CustomerData, PaymentMethod } from '@/types/checkout';
+import { paymentService } from './paymentService';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -107,28 +108,36 @@ export async function sendChatMessage(
 }
 
 /**
- * Simula processamento de pagamento
- * TODO: Integrar com gateway de pagamento real
+ * Processa pagamento via Stripe Payment Intent
  */
 export async function processPayment(
   productId: string,
   customerData: CustomerData,
   paymentMethod: PaymentMethod,
-): Promise<{ success: boolean; qrCode?: string; pixCode?: string }> {
-  // Simulação - substituir por integração real
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (paymentMethod === 'pix') {
-        resolve({
-          success: true,
-          qrCode: 'https://via.placeholder.com/200x200?text=QR+Code+Pix',
-          pixCode: '00020126580014br.gov.bcb.pix...',
-        });
-      } else {
-        resolve({ success: true });
-      }
-    }, 1000);
-  });
+): Promise<{ success: boolean; qrCode?: string; pixCode?: string; clientSecret?: string; orderId?: string }> {
+  try {
+    const response = await paymentService.createPaymentIntent({
+      productId,
+      paymentMethod,
+      customerData: {
+        name: customerData.name,
+        email: customerData.email,
+        cpf: customerData.cpf,
+        phone: customerData.phone || customerData.whatsapp,
+      },
+    });
+
+    return {
+      success: true,
+      clientSecret: response.clientSecret,
+      orderId: response.orderId,
+      qrCode: response.qrCode,
+      pixCode: response.pixCode,
+    };
+  } catch (error) {
+    console.error('Erro ao processar pagamento:', error);
+    throw error;
+  }
 }
 
 /**

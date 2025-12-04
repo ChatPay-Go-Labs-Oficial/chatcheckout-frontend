@@ -12,6 +12,7 @@ import {
   PaymentOptions,
   PaymentReview,
   QrCodePayment,
+  CardPayment,
   SuccessScreen,
 } from './inline';
 
@@ -82,6 +83,15 @@ export function MessageBubble({ message, checkout }: MessageBubbleProps) {
                 data={message.componentData}
                 checkout={checkout}
                 product={checkout.product!}
+              />
+            )}
+
+            {message.componentType === 'card-payment' && message.componentData && (
+              <CardPayment
+                data={message.componentData}
+                product={checkout.product!}
+                clientSecret={message.componentData.clientSecret || ''}
+                onSuccess={message.componentData.onPaymentSuccess}
               />
             )}
 

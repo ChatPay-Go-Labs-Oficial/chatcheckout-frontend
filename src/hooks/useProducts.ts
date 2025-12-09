@@ -1,99 +1,54 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productService } from '@/services/productService';
 import { Product } from '@/types/product';
 
 /**
- * Estado do hook de produtos
- */
-export interface ProductsState {
-  products: Product[];
-  isLoading: boolean;
-  error: string | null;
-}
-
-/**
  * Hook customizado para gerenciar listagem e operações de produtos
- * Responsável por buscar, deletar e manter estado atualizado
- *
- * @param autoFetch - Se deve buscar produtos automaticamente ao montar (default: true)
- * @returns Estado e métodos para gerenciar produtos
+ * Utiliza TanStack Query para gerenciamento de estado e cache
  */
-export function useProducts(autoFetch = true) {
-  const [state, setState] = useState<ProductsState>({
-    products: [],
-    isLoading: false,
-    error: null,
+export function useProducts(userId: string) {
+  const queryClient = useQueryClient();
+
+  /**
+   * Busca lista de produtos pelo usuário autenticado
+   */
+  const {
+    data: products = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['products', userId],
+    queryFn: () => productService.getProductsByUser(userId),
+    staleTime: 1000 * 60 * 5, // 5 minutos de cache
+    enabled: !!userId, // Somente busca se tiver ID do usuário
   });
 
   /**
-   * Busca lista de produtos
+   * Deleta um produto pelo usuário autenticado
    */
-  const fetchProducts = useCallback(async () => {
-    setState((prev) => ({
-      ...prev,
-      isLoading: true,
-      error: null,
-    }));
-
-    try {
-      const products = await productService.getProducts();
-
-      setState({
-        products,
-        isLoading: false,
-        error: null,
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao buscar produtos';
-
-      setState({
-        products: [],
-        isLoading: false,
-        error: errorMessage,
-      });
-    }
-  }, []);
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => productService.deleteProduct(id),
+    onSuccess: () => {
+      // Invalida a query de produtos para recarregar a lista
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
 
   /**
-   * Deleta um produto
+   * Wrapper para a função de deletar, mantendo compatibilidade
    */
-  const deleteProduct = useCallback(async (id: string): Promise<void> => {
-    try {
-      await productService.deleteProduct(id);
-
-      // Remove o produto da lista local
-      setState((prev) => ({
-        ...prev,
-        products: prev.products.filter((p) => p.id !== id),
-      }));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao deletar produto';
-      throw new Error(errorMessage);
-    }
-  }, []);
-
-  /**
-   * Recarrega a lista de produtos
-   */
-  const refetch = useCallback(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
-  /**
-   * Busca produtos automaticamente ao montar o componente
-   */
-  useEffect(() => {
-    if (autoFetch) {
-      fetchProducts();
-    }
-  }, [autoFetch, fetchProducts]);
+  const deleteProduct = async (id: string) => {
+    return deleteMutation.mutateAsync(id);
+  };
 
   return {
-    products: state.products,
-    isLoading: state.isLoading,
-    error: state.error,
-    fetchProducts,
+    products,
+    isLoading,
+    error: error instanceof Error ? error.message : error ? String(error) : null,
+    fetchProducts: refetch, // Mantém compatibilidade com nome antigo, mas usa refetch do React Query
     deleteProduct,
     refetch,
+    isDeleting: deleteMutation.isPending,
   };
 }

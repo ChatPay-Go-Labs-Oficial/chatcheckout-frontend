@@ -17,9 +17,9 @@ class ProductService {
    * @returns Lista de produtos
    * @throws Error se a busca falhar
    */
-  async getProducts(): Promise<Product[]> {
+  async getProductsByUser(userId: string): Promise<Product[]> {
     try {
-      const response = await AuthInterceptor.fetch(`${this.baseUrl}/product`, {
+      const response = await AuthInterceptor.fetch(`${this.baseUrl}/product/user/${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -31,7 +31,7 @@ class ProductService {
       }
 
       const result = await response.json();
-      return result.data || [];
+      return Array.isArray(result) ? result : result.data || [];
     } catch (error) {
       if (error instanceof Error) {
         throw error;

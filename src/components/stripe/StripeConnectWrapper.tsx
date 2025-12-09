@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY } from '@/utils/env';
 import { loadConnectAndInitialize } from '@stripe/connect-js';
 import { ConnectComponentsProvider } from '@stripe/react-connect-js';
@@ -11,11 +12,9 @@ interface StripeConnectWrapperProps {
 }
 
 export const StripeConnectWrapper = ({ children }: StripeConnectWrapperProps) => {
-  const [stripeConnectInstance, setStripeConnectInstance] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const initStripe = async () => {
+  const { data: stripeConnectInstance, isLoading, error } = useQuery({
+    queryKey: ['stripe-connect-instance'],
+    queryFn: async () => {
       try {
         const instance = loadConnectAndInitialize({
           publishableKey: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -30,19 +29,17 @@ export const StripeConnectWrapper = ({ children }: StripeConnectWrapperProps) =>
             },
           },
         });
-
-        setStripeConnectInstance(instance);
+        return instance;
       } catch (err) {
-        console.error('Failed to initialize Stripe Connect:', err);
-        setError('Falha ao carregar o sistema de pagamentos.');
+        throw new Error('Falha ao carregar o sistema de pagamentos.');
       }
-    };
+    },
+    staleTime: Infinity, // Instância deve ser carregada uma única vez
+    refetchOnWindowFocus: false,
+  });
 
-    initStripe();
-  }, []);
-
-  if (error) return <div className="text-red-500">{error}</div>;
-  if (!stripeConnectInstance) return <div>Carregando sistema de pagamentos...</div>;
+  if (error) return <div className="text-red-500">{(error as Error).message}</div>;
+  if (isLoading || !stripeConnectInstance) return <div>Carregando sistema de pagamentos...</div>;
 
   return (
     <ConnectComponentsProvider connectInstance={stripeConnectInstance}>

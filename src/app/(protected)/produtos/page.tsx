@@ -4,13 +4,17 @@ import { useRouter } from 'next/navigation';
 import { ProductList } from '@/components/products';
 import { useProducts } from '@/hooks/useProducts';
 
+import { useAuth } from '@/hooks/useAuth';
+
 export default function ProductsPage() {
   const router = useRouter();
-  const { products, isLoading, deleteProduct } = useProducts();
+  const { user } = useAuth();
+  const { products, isLoading, deleteProduct } = useProducts(user?.id || '');
   const handleEdit = (id: string) => {
     router.push(`/produtos/${id}/editar`);
   };
 
+  console.log(user?.id);
   const handleDelete = async (id: string) => {
     await deleteProduct(id);
   };

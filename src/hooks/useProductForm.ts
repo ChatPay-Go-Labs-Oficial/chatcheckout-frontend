@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { productService } from '@/services/productService';
 import { Product, ProductFormData, Currency, CreateProductDTO } from '@/types/product';
 import { useFileUpload } from './useFileUpload';
@@ -35,6 +36,7 @@ export interface FormErrors {
 /**
  * Hook customizado para gerenciar formulário de produto
  * Responsável por validação, submissão e integração com uploads
+ * Utiliza TanStack Query para mutations
  *
  * @param mode - Modo de operação (create ou edit)
  * @param initialProduct - Produto inicial para edição
@@ -46,6 +48,8 @@ export function useProductForm(
   initialProduct?: Product,
   onSuccess?: (product: Product) => void,
 ) {
+  const queryClient = useQueryClient();
+
   // Estado do formulário
   const [formData, setFormData] = useState<ProductFormData>({
     name: initialProduct?.name || '',
@@ -59,12 +63,34 @@ export function useProductForm(
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Hooks de upload
   const imageUpload = useFileUpload('image', FILE_VALIDATIONS.image);
   const productFileUpload = useFileUpload('product', FILE_VALIDATIONS.product);
+
+  // Mutation para criar produto
+  const createMutation = useMutation({
+    mutationFn: async (data: { productData: CreateProductDTO; imageFile?: File; productFile?: File }) =>
+      productService.createProduct(data.productData, data.imageFile, data.productFile),
+    onSuccess: (savedProduct) => {
+      // Invalidar lista de produtos
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      if (onSuccess) onSuccess(savedProduct);
+    },
+  });
+
+  // Mutation para atualizar produto
+  const updateMutation = useMutation({
+    mutationFn: async (data: { id: string; productData: Partial<CreateProductDTO> }) =>
+      productService.updateProduct(data.id, data.productData),
+    onSuccess: (savedProduct) => {
+      // Invalidar lista de produtos e produto específico
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product', savedProduct.id] });
+      if (onSuccess) onSuccess(savedProduct);
+    },
+  });
 
   /**
    * Valida um campo específico usando os validadores centralizados
@@ -176,8 +202,6 @@ export function useProductForm(
       return null;
     }
 
-    setIsSubmitting(true);
-
     try {
       // Preparar dados para envio (nomes dos campos devem corresponder ao DTO do backend)
       const productData: CreateProductDTO = {
@@ -192,39 +216,34 @@ export function useProductForm(
       let savedProduct: Product;
 
       if (mode === 'create') {
-        // Criar produto - backend faz o upload dos arquivos
-        savedProduct = await productService.createProduct(
+        // Criar produto usando mutation
+        savedProduct = await createMutation.mutateAsync({
           productData,
-          imageUpload.file || undefined,
-          productFileUpload.file || undefined,
-        );
+          imageFile: imageUpload.file || undefined,
+          productFile: productFileUpload.file || undefined,
+        });
       } else {
         if (!initialProduct?.id) {
           throw new Error('ID do produto não encontrado');
         }
-        // Atualizar produto
-        savedProduct = await productService.updateProduct(initialProduct.id, {
-          name: productData.name,
-          description: productData.description,
-          price: productData.price,
-          currency: productData.currency,
-          salesPageUrl: productData.salesPageUrl,
-          promptAi: productData.promptAi,
+        // Atualizar produto usando mutation
+        savedProduct = await updateMutation.mutateAsync({
+          id: initialProduct.id,
+          productData: {
+            name: productData.name,
+            description: productData.description,
+            price: productData.price,
+            currency: productData.currency,
+            salesPageUrl: productData.salesPageUrl,
+            promptAi: productData.promptAi,
+          },
         });
-      }
-
-      setIsSubmitting(false);
-
-      // Executar callback de sucesso
-      if (onSuccess) {
-        onSuccess(savedProduct);
       }
 
       return savedProduct;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao salvar produto';
       setSubmitError(errorMessage);
-      setIsSubmitting(false);
       return null;
     }
   }, [
@@ -234,7 +253,8 @@ export function useProductForm(
     imageUpload.file,
     productFileUpload.file,
     validateForm,
-    onSuccess,
+    createMutation,
+    updateMutation,
   ]);
 
   /**
@@ -274,6 +294,8 @@ export function useProductForm(
     setErrors({});
     setSubmitError(null);
   }, []);
+
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return {
     formData,

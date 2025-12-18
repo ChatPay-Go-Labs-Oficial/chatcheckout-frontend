@@ -34,7 +34,7 @@ export const StripeConnectWrapper = ({ children }: StripeConnectWrapperProps) =>
         throw new Error('Falha ao carregar o sistema de pagamentos.');
       }
     },
-    staleTime: Infinity, // Instância deve ser carregada uma única vez
+    staleTime: Infinity, // Evita recarregamentos: a instância do Stripe Connect deve ser inicializada apenas uma vez por sessão
     refetchOnWindowFocus: false,
   });
 

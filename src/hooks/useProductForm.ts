@@ -77,7 +77,7 @@ export function useProductForm(
       productFile?: File;
     }) => productService.createProduct(data.productData, data.imageFile, data.productFile),
     onSuccess: (savedProduct) => {
-      // Invalidar lista de produtos usando prefix pattern para invalidar todas as queries de produtos
+      // Invalidar lista de produtos usando prefix pattern para garantir que todas as queries ['products', userId] sejam invalidadas
       queryClient.invalidateQueries({ queryKey: ['products'], exact: false });
       if (onSuccess) onSuccess(savedProduct);
     },
@@ -88,7 +88,7 @@ export function useProductForm(
     mutationFn: async (data: { id: string; productData: Partial<CreateProductDTO> }) =>
       productService.updateProduct(data.id, data.productData),
     onSuccess: (savedProduct) => {
-      // Invalidar lista de produtos usando prefix pattern e produto específico
+      // Invalidar lista de produtos usando prefix pattern para garantir que todas as queries ['products', userId] sejam invalidadas
       queryClient.invalidateQueries({ queryKey: ['products'], exact: false });
       queryClient.invalidateQueries({ queryKey: ['product', savedProduct.id] });
       if (onSuccess) onSuccess(savedProduct);

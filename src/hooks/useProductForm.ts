@@ -71,11 +71,14 @@ export function useProductForm(
 
   // Mutation para criar produto
   const createMutation = useMutation({
-    mutationFn: async (data: { productData: CreateProductDTO; imageFile?: File; productFile?: File }) =>
-      productService.createProduct(data.productData, data.imageFile, data.productFile),
+    mutationFn: async (data: {
+      productData: CreateProductDTO;
+      imageFile?: File;
+      productFile?: File;
+    }) => productService.createProduct(data.productData, data.imageFile, data.productFile),
     onSuccess: (savedProduct) => {
-      // Invalidar lista de produtos
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      // Invalidar lista de produtos usando prefix pattern para invalidar todas as queries de produtos
+      queryClient.invalidateQueries({ queryKey: ['products'], exact: false });
       if (onSuccess) onSuccess(savedProduct);
     },
   });
@@ -85,8 +88,8 @@ export function useProductForm(
     mutationFn: async (data: { id: string; productData: Partial<CreateProductDTO> }) =>
       productService.updateProduct(data.id, data.productData),
     onSuccess: (savedProduct) => {
-      // Invalidar lista de produtos e produto específico
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      // Invalidar lista de produtos usando prefix pattern e produto específico
+      queryClient.invalidateQueries({ queryKey: ['products'], exact: false });
       queryClient.invalidateQueries({ queryKey: ['product', savedProduct.id] });
       if (onSuccess) onSuccess(savedProduct);
     },

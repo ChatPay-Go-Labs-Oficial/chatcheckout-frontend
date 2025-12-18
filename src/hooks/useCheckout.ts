@@ -13,7 +13,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCheckoutState } from './checkout/useCheckoutState';
 import { useCheckoutMessages } from './checkout/useCheckoutMessages';
 import { useCheckoutTyping } from './checkout/useCheckoutTyping';
@@ -68,26 +68,33 @@ export function useCheckout(hash: string) {
   // Sincronização e Inicialização
   // ========================================
 
+  // Track if welcome message has been sent to avoid duplicates
+  const welcomeMessageSent = useRef(false);
+
   /**
-   * Sincroniza dados da query com o estado local e dispara mensagem de boas-vindas
+   * Sincroniza dados da query com o estado local
    */
   useEffect(() => {
     if (product) {
       // Se o produto mudou ou ainda não temos no estado
       if (!state.product || state.product.id !== product.id) {
         stateActions.setProduct(product);
-      }
-
-      // Se já temos produto no estado e nenhuma mensagem, envia boas vindas
-      // Movemos a lógica de boas vindas para aqui para garantir que temos o produto
-      if (state.messages.length === 0) {
-        // Pequeno delay para garantir que o estado atualizou se necessário
-        setTimeout(() => {
-          businessActions.addWelcomeMessage();
-        }, 100);
+        // Reset welcome message flag when product changes
+        welcomeMessageSent.current = false;
       }
     }
-  }, [product, state.product, state.messages.length, businessActions, stateActions]);
+  }, [product, state.product, stateActions]);
+
+  /**
+   * Dispara mensagem de boas-vindas quando produto está carregado e sincronizado
+   */
+  useEffect(() => {
+    if (state.product && state.messages.length === 0 && !welcomeMessageSent.current) {
+      // Set flag immediately to prevent race conditions from multiple renders
+      welcomeMessageSent.current = true;
+      void businessActions.addWelcomeMessage();
+    }
+  }, [state.product, state.messages.length, businessActions]);
 
   // Sincroniza erros e loading
   useEffect(() => {

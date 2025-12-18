@@ -71,8 +71,11 @@ export function useProductForm(
 
   // Mutation para criar produto
   const createMutation = useMutation({
-    mutationFn: async (data: { productData: CreateProductDTO; imageFile?: File; productFile?: File }) =>
-      productService.createProduct(data.productData, data.imageFile, data.productFile),
+    mutationFn: async (data: {
+      productData: CreateProductDTO;
+      imageFile?: File;
+      productFile?: File;
+    }) => productService.createProduct(data.productData, data.imageFile, data.productFile),
     onSuccess: (savedProduct) => {
       // Invalidar lista de produtos
       queryClient.invalidateQueries({ queryKey: ['products'] });

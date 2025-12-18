@@ -12,7 +12,11 @@ interface StripeConnectWrapperProps {
 }
 
 export const StripeConnectWrapper = ({ children }: StripeConnectWrapperProps) => {
-  const { data: stripeConnectInstance, isLoading, error } = useQuery({
+  const {
+    data: stripeConnectInstance,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['stripe-connect-instance'],
     queryFn: async () => {
       try {

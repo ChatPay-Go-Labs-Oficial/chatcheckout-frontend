@@ -114,7 +114,13 @@ export async function processPayment(
   productId: string,
   customerData: CustomerData,
   paymentMethod: PaymentMethod,
-): Promise<{ success: boolean; qrCode?: string; pixCode?: string; clientSecret?: string; orderId?: string }> {
+): Promise<{
+  success: boolean;
+  qrCode?: string;
+  pixCode?: string;
+  clientSecret?: string;
+  orderId?: string;
+}> {
   try {
     const response = await paymentService.createPaymentIntent({
       productId,

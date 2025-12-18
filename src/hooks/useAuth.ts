@@ -54,10 +54,10 @@ export function useAuth() {
           ? payload.identifier
           : payload.identifier.replace(/[^\w]/g, ''),
       };
-      
+
       const res: LoginResponse = await authService.login(cleanPayload);
-      
-       type JwtPayload = {
+
+      type JwtPayload = {
         sub: string;
         email?: string;
         cpf?: string;
@@ -66,7 +66,7 @@ export function useAuth() {
         lastName?: string;
         role?: string;
       };
-      
+
       const decoded: JwtPayload = jwtDecode(res.access_token);
       let userData: UserProfile = {
         id: decoded.sub,
@@ -95,7 +95,7 @@ export function useAuth() {
       setAccessToken(data.access_token);
       setRefreshToken(data.refresh_token);
       setUser(data.user);
-      
+
       if (typeof window !== 'undefined') {
         localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
         localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
@@ -103,8 +103,8 @@ export function useAuth() {
       }
     },
     onError: (err: unknown) => {
-        // React Query handles error state, functionality preserved here for clarity if needed
-    }
+      // React Query handles error state, functionality preserved here for clarity if needed
+    },
   });
 
   const refreshMutation = useMutation({
@@ -121,7 +121,7 @@ export function useAuth() {
         localStorage.setItem(ACCESS_TOKEN_KEY, res.access_token);
         localStorage.setItem(REFRESH_TOKEN_KEY, res.refresh_token);
       }
-    }
+    },
   });
 
   async function login(payload: LoginPayload) {
@@ -151,19 +151,20 @@ export function useAuth() {
     }
   }
 
-  const error = 
-    (loginMutation.error as Error)?.message || 
-    (refreshMutation.error as Error)?.message || 
-    null;
-    
-  // Helper para formatar mensagem de erro amigável, seguindo lógica original
-  const friendlyError = error ? (() => {
-      const msg = error;
-      if (msg.includes('not found') || msg.includes('Invalid credentials')) return 'Credenciais inválidas';
-      if (msg.includes('rate limit')) return 'Muitas tentativas. Tente novamente em alguns minutos';
-      return msg || 'Erro na autenticação';
-  })() : null;
+  const error =
+    (loginMutation.error as Error)?.message || (refreshMutation.error as Error)?.message || null;
 
+  // Helper para formatar mensagem de erro amigável, seguindo lógica original
+  const friendlyError = error
+    ? (() => {
+        const msg = error;
+        if (msg.includes('not found') || msg.includes('Invalid credentials'))
+          return 'Credenciais inválidas';
+        if (msg.includes('rate limit'))
+          return 'Muitas tentativas. Tente novamente em alguns minutos';
+        return msg || 'Erro na autenticação';
+      })()
+    : null;
 
   return {
     user,

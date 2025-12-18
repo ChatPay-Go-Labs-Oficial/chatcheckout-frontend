@@ -50,11 +50,9 @@ function CheckoutForm({ onSuccess }: { onSuccess?: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <PaymentElement />
-      
+
       {errorMessage && (
-        <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-          {errorMessage}
-        </div>
+        <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{errorMessage}</div>
       )}
 
       <button
@@ -92,9 +90,7 @@ export function CardPayment({ data, product, clientSecret, onSuccess }: CardPaym
       {/* Header */}
       <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
         <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-xl">
-          <span className="material-symbols-outlined text-blue-600 text-2xl">
-            credit_card
-          </span>
+          <span className="material-symbols-outlined text-blue-600 text-2xl">credit_card</span>
         </div>
         <div>
           <h3 className="font-semibold text-gray-900">Pagamento com Cartão</h3>

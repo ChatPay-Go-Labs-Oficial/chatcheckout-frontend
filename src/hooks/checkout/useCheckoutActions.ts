@@ -358,8 +358,11 @@ export function useCheckoutActions(
             onPaymentSuccess: async () => {
               messageActions.clearComponentsOfType('card-payment');
               stateActions.setCheckoutStep('confirmation');
-              await addAiMessage('✅ Pagamento processado com sucesso! Aguarde a confirmação final.', null);
-              
+              await addAiMessage(
+                '✅ Pagamento processado com sucesso! Aguarde a confirmação final.',
+                null,
+              );
+
               // Simular confirmação após alguns segundos (em produção, usar webhook)
               setTimeout(async () => {
                 await addAiMessage('Pagamento confirmado! Obrigado pela compra.', 'success', {});

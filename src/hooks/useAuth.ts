@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { authService } from '@/services/authService';
 import { userService } from '@/services/userService';
 import { LoginPayload, LoginResponse, RefreshPayload, RefreshResponse } from '@/types/auth';
@@ -13,8 +14,7 @@ export function useAuth() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loadingInitialization, setLoadingInitialization] = useState(true);
 
   function setUserGlobal(newUser: UserProfile | null) {
     setUser(newUser);
@@ -42,12 +42,11 @@ export function useAuth() {
         setUser(null);
       }
     }
+    setLoadingInitialization(false);
   }, []);
 
-  async function login(payload: LoginPayload) {
-    setLoading(true);
-    setError(null);
-    try {
+  const loginMutation = useMutation({
+    mutationFn: async (payload: LoginPayload) => {
       // Remove formatação de CPF/CNPJ antes de enviar ao servidor, preservando e-mail
       const cleanPayload = {
         ...payload,
@@ -55,9 +54,8 @@ export function useAuth() {
           ? payload.identifier
           : payload.identifier.replace(/[^\w]/g, ''),
       };
+
       const res: LoginResponse = await authService.login(cleanPayload);
-      setAccessToken(res.access_token);
-      setRefreshToken(res.refresh_token);
 
       type JwtPayload = {
         sub: string;
@@ -68,6 +66,7 @@ export function useAuth() {
         lastName?: string;
         role?: string;
       };
+
       const decoded: JwtPayload = jwtDecode(res.access_token);
       let userData: UserProfile = {
         id: decoded.sub,
@@ -87,59 +86,50 @@ export function useAuth() {
         const profile = await userService.getProfile(res.access_token);
         userData = { ...userData, ...profile } as UserProfile;
       } catch {
-        // TODO Se falhar, mantém dados do token
+        // Ignora erro de perfil e usa dados básicos do token
       }
-      setUser(userData);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(ACCESS_TOKEN_KEY, res.access_token);
-        localStorage.setItem(REFRESH_TOKEN_KEY, res.refresh_token);
-        localStorage.setItem(USER_KEY, JSON.stringify(userData));
-      }
+
       return { ...res, user: userData };
-    } catch (err: unknown) {
-      let errorMessage = 'Erro ao fazer login';
+    },
+    onSuccess: (data) => {
+      setAccessToken(data.access_token);
+      setRefreshToken(data.refresh_token);
+      setUser(data.user);
 
-      if (err instanceof Error) {
-        if (err.message.includes('not found') || err.message.includes('Invalid credentials')) {
-          errorMessage = 'Credenciais inválidas';
-        } else if (err.message.includes('rate limit')) {
-          errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos';
-        } else {
-          errorMessage = 'Erro ao fazer login. Tente novamente';
-        }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
       }
+    },
+    onError: (err: unknown) => {
+      // React Query handles error state, functionality preserved here for clarity if needed
+    },
+  });
 
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function refresh(payload: RefreshPayload) {
-    setLoading(true);
-    setError(null);
-    try {
+  const refreshMutation = useMutation({
+    mutationFn: async (payload: RefreshPayload) => {
       const res: RefreshResponse = await authService.refresh({
         refresh_token: payload.refresh_token,
       });
+      return res;
+    },
+    onSuccess: (res) => {
       setAccessToken(res.access_token);
       setRefreshToken(res.refresh_token);
       if (typeof window !== 'undefined') {
         localStorage.setItem(ACCESS_TOKEN_KEY, res.access_token);
         localStorage.setItem(REFRESH_TOKEN_KEY, res.refresh_token);
       }
-      return res;
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || 'Erro ao renovar token');
-      } else {
-        setError('Erro ao renovar token');
-      }
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  async function login(payload: LoginPayload) {
+    return loginMutation.mutateAsync(payload);
+  }
+
+  async function refresh(payload: RefreshPayload) {
+    return refreshMutation.mutateAsync(payload);
   }
 
   async function logout() {
@@ -161,12 +151,27 @@ export function useAuth() {
     }
   }
 
+  const error =
+    (loginMutation.error as Error)?.message || (refreshMutation.error as Error)?.message || null;
+
+  // Helper para formatar mensagem de erro amigável, seguindo lógica original
+  const friendlyError = error
+    ? (() => {
+        const msg = error;
+        if (msg.includes('not found') || msg.includes('Invalid credentials'))
+          return 'Credenciais inválidas';
+        if (msg.includes('rate limit'))
+          return 'Muitas tentativas. Tente novamente em alguns minutos';
+        return msg || 'Erro na autenticação';
+      })()
+    : null;
+
   return {
     user,
     accessToken,
     refreshToken,
-    loading,
-    error,
+    loading: loadingInitialization || loginMutation.isPending || refreshMutation.isPending,
+    error: friendlyError,
     login,
     refresh,
     logout,

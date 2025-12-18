@@ -13,12 +13,25 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCheckoutState } from './checkout/useCheckoutState';
 import { useCheckoutMessages } from './checkout/useCheckoutMessages';
 import { useCheckoutTyping } from './checkout/useCheckoutTyping';
 import { useCheckoutStreaming } from './checkout/useCheckoutStreaming';
 import { useCheckoutActions } from './checkout/useCheckoutActions';
+import { useQuery } from '@tanstack/react-query';
+import { decodeProduct } from '@/services/checkoutService';
+
+// Query interna para buscar produto
+function useCheckoutQuery(hash: string) {
+  return useQuery({
+    queryKey: ['checkout-product', hash],
+    queryFn: () => decodeProduct(hash),
+    enabled: !!hash,
+    staleTime: 1000 * 60 * 30, // 30 minutos (produto não muda muito rápido)
+    retry: 1,
+  });
+}
 
 export function useCheckout(hash: string) {
   // ========================================
@@ -41,27 +54,62 @@ export function useCheckout(hash: string) {
   // Efeitos de Inicialização
   // ========================================
 
-  /**
-   * Carrega produto na inicialização
-   */
-  useEffect(() => {
-    if (hash) {
-      businessActions.loadProduct(hash);
-    }
-    // Removido businessActions das dependências para evitar loop infinito
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hash]);
+  // ========================================
+  // Data Fetching com TanStack Query
+  // ========================================
+
+  const {
+    data: product,
+    isLoading: isLoadingProduct,
+    error: productError,
+  } = useCheckoutQuery(hash);
+
+  // ========================================
+  // Sincronização e Inicialização
+  // ========================================
+
+  // Track if welcome message has been sent to avoid duplicates
+  const welcomeMessageSent = useRef(false);
 
   /**
-   * Adiciona mensagem de boas-vindas após carregar produto
+   * Sincroniza dados da query com o estado local
    */
   useEffect(() => {
-    if (state.product && state.messages.length === 0) {
-      businessActions.addWelcomeMessage();
+    if (product) {
+      // Se o produto mudou ou ainda não temos no estado
+      if (!state.product || state.product.id !== product.id) {
+        stateActions.setProduct(product);
+        // Reset welcome message flag when product changes
+        welcomeMessageSent.current = false;
+      }
     }
-    // Removido businessActions das dependências para evitar loop infinito
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.product, state.messages.length]);
+  }, [product, state.product, stateActions]);
+
+  /**
+   * Dispara mensagem de boas-vindas quando produto está carregado e sincronizado
+   */
+  useEffect(() => {
+    if (state.product && state.messages.length === 0 && !welcomeMessageSent.current) {
+      // Set flag immediately to prevent race conditions from multiple renders
+      welcomeMessageSent.current = true;
+      void businessActions.addWelcomeMessage();
+    }
+  }, [state.product, state.messages.length, businessActions]);
+
+  // Sincroniza erros e loading
+  useEffect(() => {
+    if (isLoadingProduct) {
+      stateActions.setLoading(true);
+    } else {
+      stateActions.setLoading(false);
+    }
+
+    if (productError) {
+      stateActions.setError(
+        productError instanceof Error ? productError.message : 'Erro ao carregar produto',
+      );
+    }
+  }, [isLoadingProduct, productError, stateActions]);
 
   // ========================================
   // API Pública (Mantém compatibilidade)

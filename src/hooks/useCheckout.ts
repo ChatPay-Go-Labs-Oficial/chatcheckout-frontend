@@ -28,7 +28,7 @@ function useCheckoutQuery(hash: string) {
         queryKey: ['checkout-product', hash],
         queryFn: () => decodeProduct(hash),
         enabled: !!hash,
-        staleTime: 1000 * 60 * 30, // 30 minutos (produto não muda mto rapido)
+        staleTime: 1000 * 60 * 30, // 30 minutos (produto não muda muito rápido)
         retry: 1
     });
 }

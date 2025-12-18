@@ -14,7 +14,6 @@ export default function ProductsPage() {
     router.push(`/produtos/${id}/editar`);
   };
 
-  console.log(user?.id);
   const handleDelete = async (id: string) => {
     await deleteProduct(id);
   };

@@ -90,8 +90,9 @@ export function useCheckout(hash: string) {
    */
   useEffect(() => {
     if (state.product && state.messages.length === 0 && !welcomeMessageSent.current) {
+      // Set flag immediately to prevent race conditions from multiple renders
       welcomeMessageSent.current = true;
-      businessActions.addWelcomeMessage();
+      void businessActions.addWelcomeMessage();
     }
   }, [state.product, state.messages.length, businessActions]);
 

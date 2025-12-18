@@ -31,7 +31,7 @@ export function useProducts(userId: string) {
     mutationFn: (id: string) => productService.deleteProduct(id),
     onSuccess: () => {
       // Invalida a query de produtos para recarregar a lista
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['products', userId] });
     },
   });
 

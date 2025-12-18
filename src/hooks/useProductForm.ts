@@ -255,6 +255,7 @@ export function useProductForm(
     validateForm,
     createMutation,
     updateMutation,
+    onSuccess,
   ]);
 
   /**

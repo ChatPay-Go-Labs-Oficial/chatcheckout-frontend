@@ -4,6 +4,7 @@ import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AuthGuard } from '@/components/AuthGuard';
 import QueryProvider from '@/components/providers/QueryProvider';
+import { StellarWalletProvider } from '@/contexts/StellarWalletContext';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -40,8 +41,12 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryProvider>
-          <AuthGuard />
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <StellarWalletProvider>
+              <AuthGuard />
+              {children}
+            </StellarWalletProvider>
+          </ToastProvider>
         </QueryProvider>
       </body>
     </html>

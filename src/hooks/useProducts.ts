@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productService } from '@/services/productService';
-import { Product } from '@/types/product';
 
 /**
  * Hook customizado para gerenciar listagem e operações de produtos

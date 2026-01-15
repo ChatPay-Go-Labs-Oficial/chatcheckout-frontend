@@ -84,8 +84,8 @@ export function WalletConnectionModal({ isOpen, onClose }: WalletConnectionModal
 
         <div className="mt-6 p-4 bg-blue-50 rounded-xl">
           <p className="text-xs text-blue-800 text-center">
-            <strong>Nota:</strong> Você usará biometria (impressão digital, Face ID) para
-            autorizar transações. Suas chaves nunca saem do seu dispositivo.
+            <strong>Nota:</strong> Você usará biometria (impressão digital, Face ID) para autorizar
+            transações. Suas chaves nunca saem do seu dispositivo.
           </p>
         </div>
       </div>

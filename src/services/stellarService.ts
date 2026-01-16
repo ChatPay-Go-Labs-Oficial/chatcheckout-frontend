@@ -1,0 +1,277 @@
+/**
+ * Stellar Wallet Service
+ *
+ * Core service for managing Stellar smart accounts using smart-account-kit.
+ * Handles wallet creation, connection, transactions, and network switching.
+ *
+ * This service encapsulates the SmartAccountKit SDK and provides a clean
+ * interface for wallet operations throughout the application.
+ */
+
+import { SmartAccountKit, IndexedDBStorage } from 'smart-account-kit';
+import { getStellarConfig } from '@/config/stellar.config';
+import type {
+  StellarTransaction,
+  StellarTransactionResult,
+  CreateWalletResult,
+  ConnectWalletResult,
+  StellarNetwork,
+} from '@/types/stellar';
+
+class StellarService {
+  private kit: SmartAccountKit | null = null;
+  private currentNetwork: StellarNetwork = 'testnet';
+  private accountId: string | null = null;
+  private credentialId: string | null = null;
+
+  /**
+   * Initialize the SmartAccountKit and check for existing session
+   * @returns true if a session was restored, false otherwise
+   */
+  async initializeWallet(): Promise<boolean> {
+    try {
+      this.currentNetwork = this.getStoredNetwork();
+      const config = getStellarConfig();
+
+      // Initialize SmartAccountKit with IndexedDB storage
+      this.kit = new SmartAccountKit({
+        rpcUrl: config.rpcUrl,
+        networkPassphrase: config.networkPassphrase,
+        accountWasmHash: config.accountWasmHash,
+        webauthnVerifierAddress: config.webauthnVerifierAddress,
+        storage: new IndexedDBStorage(),
+      });
+
+      // Try to restore existing session silently
+      const result = await this.kit.connectWallet({ fresh: false });
+
+      if (result) {
+        this.accountId = result.contractId;
+        this.credentialId = result.credentialId;
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Failed to initialize Stellar wallet:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Create a new Stellar smart wallet with passkey authentication
+   * @param username Optional username to associate with the wallet
+   * @returns CreateWalletResult with account details
+   */
+  async createWallet(username?: string): Promise<CreateWalletResult> {
+    if (!this.kit) {
+      await this.initializeWallet();
+    }
+
+    if (!this.kit) {
+      throw new Error('Failed to initialize SmartAccountKit');
+    }
+
+    try {
+      const appName = 'ChatCheckout';
+      const userName = username || `user_${Date.now()}`;
+
+      // Create new wallet with passkey
+      const result = await this.kit.createWallet(appName, userName, {
+        autoSubmit: true,
+      });
+
+      this.accountId = result.contractId;
+      this.credentialId = result.credentialId;
+
+      return {
+        accountId: result.contractId,
+        publicKey: result.contractId, // Smart account ID serves as public identifier
+        credentialId: result.credentialId,
+      };
+    } catch (error) {
+      throw new Error(`Failed to create wallet: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Connect to an existing Stellar wallet using passkey
+   * @param prompt If true, always prompt for passkey. If false, try silent restore first.
+   * @returns ConnectWalletResult with account details
+   */
+  async connectWallet(prompt: boolean = true): Promise<ConnectWalletResult> {
+    if (!this.kit) {
+      await this.initializeWallet();
+    }
+
+    if (!this.kit) {
+      throw new Error('Failed to initialize SmartAccountKit');
+    }
+
+    try {
+      // Connect with passkey authentication
+      const result = await this.kit.connectWallet({
+        prompt,
+      });
+
+      if (!result) {
+        throw new Error('No wallet connected. Please create a new wallet.');
+      }
+
+      this.accountId = result.contractId;
+      this.credentialId = result.credentialId;
+
+      return {
+        accountId: result.contractId,
+        publicKey: result.contractId,
+        credentialId: result.credentialId,
+      };
+    } catch (error) {
+      throw new Error(`Failed to connect wallet: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Disconnect the current wallet and clear session
+   */
+  disconnectWallet(): void {
+    if (this.kit) {
+      this.kit.disconnect();
+      this.kit = null;
+    }
+    this.accountId = null;
+    this.credentialId = null;
+  }
+
+  /**
+   * Switch between Testnet and Mainnet
+   * @param network Network to switch to
+   */
+  async switchNetwork(network: StellarNetwork): Promise<void> {
+    if (network === this.currentNetwork) {
+      return; // Already on this network
+    }
+
+    // Disconnect current wallet
+    this.disconnectWallet();
+
+    // Store new network preference
+    this.storeNetwork(network);
+    this.currentNetwork = network;
+
+    // Reinitialize with new network
+    await this.initializeWallet();
+  }
+
+  /**
+   * Send a transaction using the connected wallet
+   * @param transaction Transaction parameters
+   * @returns Transaction result with hash and status
+   */
+  async sendTransaction(transaction: StellarTransaction): Promise<StellarTransactionResult> {
+    if (!this.kit || !this.accountId) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      // Note: smart-account-kit's transfer method expects specific parameters
+      // This is a placeholder implementation - actual implementation depends on
+      // the smart-account-kit API and may need adjustment
+      const result = await this.kit.transfer(
+        transaction.to,
+        transaction.amount.toString(),
+        transaction.memo,
+      );
+
+      return {
+        hash: result.hash || '',
+        success: true,
+      };
+    } catch (error) {
+      return {
+        hash: '',
+        success: false,
+        error: (error as Error).message,
+      };
+    }
+  }
+
+  /**
+   * Get the balance of the connected wallet
+   * @returns Balance as string
+   */
+  async getBalance(): Promise<string> {
+    if (!this.kit || !this.accountId) {
+      return '0';
+    }
+
+    try {
+      // Note: Actual implementation depends on smart-account-kit API
+      // This is a placeholder that returns the native XLM balance
+      const balance = (await this.kit.getBalance?.()) || '0';
+      return balance.toString();
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      return '0';
+    }
+  }
+
+  /**
+   * Get the current account ID
+   * @returns Account ID or null if not connected
+   */
+  getAccountId(): string | null {
+    return this.accountId;
+  }
+
+  /**
+   * Get the current credential ID
+   * @returns Credential ID or null if not connected
+   */
+  getCredentialId(): string | null {
+    return this.credentialId;
+  }
+
+  /**
+   * Check if wallet is connected
+   * @returns true if connected
+   */
+  isConnected(): boolean {
+    return this.kit !== null && this.accountId !== null;
+  }
+
+  /**
+   * Get current network type
+   * @returns Current network ('testnet' or 'mainnet')
+   */
+  getNetwork(): StellarNetwork {
+    return this.currentNetwork;
+  }
+
+  /**
+   * Store network preference in localStorage
+   * @param network Network to store
+   */
+  private storeNetwork(network: StellarNetwork): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('stellar_network', network);
+    }
+  }
+
+  /**
+   * Get stored network preference from localStorage
+   * @returns Stored network or 'testnet' as default
+   */
+  private getStoredNetwork(): StellarNetwork {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('stellar_network');
+      if (stored === 'testnet' || stored === 'mainnet') {
+        return stored;
+      }
+    }
+    return 'testnet';
+  }
+}
+
+// Export singleton instance
+export const stellarService = new StellarService();

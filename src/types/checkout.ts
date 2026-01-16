@@ -2,8 +2,6 @@
  * Tipos para o fluxo de checkout conversacional
  */
 
-import { ReactNode } from 'react';
-
 /**
  * Informações do infoprodutor/vendedor
  */

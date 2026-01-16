@@ -133,6 +133,29 @@ export default function Sidebar({ onLogout, user }: SidebarProps) {
           {open && 'Perfil'}
         </Link>
 
+        <Link
+          href="/settings/wallet"
+          title={!open ? 'Carteira' : ''}
+          className={`relative flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 text-base font-medium group ${open ? '' : 'justify-center'} ${isActive('/settings/wallet') ? 'bg-gradient-to-r from-purple-50 to-cyan-50 text-[#6f43d0] font-semibold shadow-sm' : 'text-gray-700 hover:bg-gray-50 hover:text-[#6f43d0] hover:shadow-sm'}`}
+        >
+          {isActive('/settings/wallet') && (
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-[#6f43d0] to-[#6fdcff] rounded-r-full" />
+          )}
+          {!open && (
+            <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-900 text-white text-sm font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              Carteira
+              <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+            </div>
+          )}
+          <span
+            className={`material-symbols-outlined text-[22px] transition-colors ${isActive('/settings/wallet') ? 'text-[#6f43d0]' : 'text-gray-500 group-hover:text-[#6f43d0]'}`}
+            style={{ fontVariationSettings: '"FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24' }}
+          >
+            account_balance_wallet
+          </span>
+          {open && 'Carteira'}
+        </Link>
+
         <div className={`border-t border-gray-200 my-4 ${open ? '' : 'mx-2'}`} />
       </nav>
 

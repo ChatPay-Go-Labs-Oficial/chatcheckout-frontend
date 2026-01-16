@@ -9,7 +9,7 @@
  */
 
 import { SmartAccountKit, IndexedDBStorage } from 'smart-account-kit';
-import { getStellarConfig, STELLAR_CONFIG } from '@/config/stellar.config';
+import { getStellarConfig } from '@/config/stellar.config';
 import type {
   StellarTransaction,
   StellarTransactionResult,
@@ -180,7 +180,7 @@ class StellarService {
       const result = await this.kit.transfer(
         transaction.to,
         transaction.amount.toString(),
-        transaction.memo
+        transaction.memo,
       );
 
       return {
@@ -208,7 +208,7 @@ class StellarService {
     try {
       // Note: Actual implementation depends on smart-account-kit API
       // This is a placeholder that returns the native XLM balance
-      const balance = await this.kit.getBalance?.() || '0';
+      const balance = (await this.kit.getBalance?.()) || '0';
       return balance.toString();
     } catch (error) {
       console.error('Error fetching balance:', error);

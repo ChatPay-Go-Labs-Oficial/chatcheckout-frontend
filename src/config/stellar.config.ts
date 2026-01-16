@@ -18,10 +18,12 @@ export const STELLAR_CONFIG: Record<'testnet' | 'mainnet', StellarNetworkConfig>
     networkPassphrase: 'Test SDF Network ; September 2015',
     rpcUrl: 'https://soroban-testnet.stellar.org',
     // Smart Account WASM Hash from smart-account-kit demo (testnet)
-    accountWasmHash: process.env.NEXT_PUBLIC_STELLAR_ACCOUNT_WASM_HASH ||
+    accountWasmHash:
+      process.env.NEXT_PUBLIC_STELLAR_ACCOUNT_WASM_HASH ||
       'a12e8fa9621efd20315753bd4007d974390e31fbcb4a7ddc4dd0a0dec728bf2e',
     // WebAuthn Verifier from smart-account-kit demo (testnet)
-    webauthnVerifierAddress: process.env.NEXT_PUBLIC_STELLAR_WEBAUTHN_VERIFIER ||
+    webauthnVerifierAddress:
+      process.env.NEXT_PUBLIC_STELLAR_WEBAUTHN_VERIFIER ||
       'CBSHV66WG7UV6FQVUTB67P3DZUEJ2KJ5X6JKQH5MFRAAFNFJUAJVXJYV',
     salt: 0,
   },

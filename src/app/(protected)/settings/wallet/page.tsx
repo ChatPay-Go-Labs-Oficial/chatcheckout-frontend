@@ -77,15 +77,15 @@ export default function WalletSettingsPage() {
         <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
           <h3 className="font-semibold text-blue-900 mb-2">Sobre Passkeys</h3>
           <p className="text-sm text-blue-800 mb-3">
-            Esta carteira utiliza a tecnologia WebAuthn para proteger seus ativos com
-            biometria. Suas chaves privadas nunca saem do seu dispositivo e você pode
-            autorizar transações usando impressão digital, Face ID, ou PIN do dispositivo.
+            Esta carteira utiliza a tecnologia WebAuthn para proteger seus ativos com biometria.
+            Suas chaves privadas nunca saem do seu dispositivo e você pode autorizar transações
+            usando impressão digital, Face ID, ou PIN do dispositivo.
           </p>
           <h3 className="font-semibold text-blue-900 mb-2 mt-4">Sobre Stellar</h3>
           <p className="text-sm text-blue-800">
-            Stellar é uma rede blockchain projetada para facilitar pagamentos rápidos e
-            de baixo custo. Com sua Smart Account, você pode enviar e receber XLM e outros
-            ativos digitais com segurança.
+            Stellar é uma rede blockchain projetada para facilitar pagamentos rápidos e de baixo
+            custo. Com sua Smart Account, você pode enviar e receber XLM e outros ativos digitais
+            com segurança.
           </p>
         </div>
 
@@ -93,17 +93,13 @@ export default function WalletSettingsPage() {
         {isConnected && (
           <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-200">
             <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-yellow-600 text-2xl">
-                warning
-              </span>
+              <span className="material-symbols-outlined text-yellow-600 text-2xl">warning</span>
               <div>
-                <h3 className="font-semibold text-yellow-900 mb-1">
-                  Modo Testnet Ativado
-                </h3>
+                <h3 className="font-semibold text-yellow-900 mb-1">Modo Testnet Ativado</h3>
                 <p className="text-sm text-yellow-800">
-                  Você está conectado à rede de teste. Os tokens XLM na Testnet não têm valor
-                  real e são usados apenas para fins de teste. Use a Mainnet para transações
-                  com valor real.
+                  Você está conectado à rede de teste. Os tokens XLM na Testnet não têm valor real e
+                  são usados apenas para fins de teste. Use a Mainnet para transações com valor
+                  real.
                 </p>
               </div>
             </div>

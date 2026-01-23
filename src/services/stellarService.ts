@@ -9,7 +9,7 @@
  */
 
 import { SmartAccountKit, IndexedDBStorage } from 'smart-account-kit';
-import { getStellarConfig, STELLAR_CONFIG } from '@/config/stellar.config';
+import { getStellarConfig } from '@/config/stellar.config';
 import type {
   StellarTransaction,
   StellarTransactionResult,

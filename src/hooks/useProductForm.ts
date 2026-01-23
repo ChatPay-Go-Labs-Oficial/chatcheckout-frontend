@@ -213,7 +213,7 @@ export function useProductForm(
         price: parseFloat(formData.price),
         currency: formData.currency as Currency,
         salesPageUrl: formData.salesPageUrl.trim(),
-        promptAi: formData.aiTrainingPrompt.trim(),
+        promptAi: formData.aiTrainingPrompt?.trim() || '',
       };
 
       let savedProduct: Product;

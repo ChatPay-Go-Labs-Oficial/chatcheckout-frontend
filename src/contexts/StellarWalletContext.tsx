@@ -14,7 +14,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useGlobalToast } from '@/contexts/ToastContext';
-import { StellarWalletState, StellarNetwork, StellarTransaction, StellarTransactionResult } from '@/types/stellar';
+import {
+  StellarWalletState,
+  StellarNetwork,
+  StellarTransaction,
+  StellarTransactionResult,
+} from '@/types/stellar';
 import { stellarService } from '@/services/stellarService';
 
 interface StellarWalletContextValue extends StellarWalletState {
@@ -203,26 +208,35 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     await connectMutation.mutateAsync();
   }, [connectMutation]);
 
-  const createWallet = useCallback(async (username?: string) => {
-    await createMutation.mutateAsync(username);
-  }, [createMutation]);
+  const createWallet = useCallback(
+    async (username?: string) => {
+      await createMutation.mutateAsync(username);
+    },
+    [createMutation],
+  );
 
-  const switchNetwork = useCallback(async (network: StellarNetwork) => {
-    await switchNetworkMutation.mutateAsync(network);
-  }, [switchNetworkMutation]);
+  const switchNetwork = useCallback(
+    async (network: StellarNetwork) => {
+      await switchNetworkMutation.mutateAsync(network);
+    },
+    [switchNetworkMutation],
+  );
 
-  const sendTransaction = useCallback(async (transaction: StellarTransaction) => {
-    try {
-      const result = await sendTransactionMutation.mutateAsync(transaction);
-      return result;
-    } catch (error) {
-      return {
-        hash: '',
-        success: false,
-        error: (error as Error).message,
-      };
-    }
-  }, [sendTransactionMutation]);
+  const sendTransaction = useCallback(
+    async (transaction: StellarTransaction) => {
+      try {
+        const result = await sendTransactionMutation.mutateAsync(transaction);
+        return result;
+      } catch (error) {
+        return {
+          hash: '',
+          success: false,
+          error: (error as Error).message,
+        };
+      }
+    },
+    [sendTransactionMutation],
+  );
 
   const getBalance = useCallback(async () => {
     if (state.isConnected) {
@@ -272,11 +286,7 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     refreshConnection,
   };
 
-  return (
-    <StellarWalletContext.Provider value={value}>
-      {children}
-    </StellarWalletContext.Provider>
-  );
+  return <StellarWalletContext.Provider value={value}>{children}</StellarWalletContext.Provider>;
 }
 
 /**

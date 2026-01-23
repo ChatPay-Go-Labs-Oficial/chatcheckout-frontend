@@ -184,7 +184,7 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
             <TextAreaField
               name="aiTrainingPrompt"
               placeholder="Ex: Curso online para iniciantes em Python. Público-alvo: estudantes e profissionais que buscam nova carreira."
-              value={formData.aiTrainingPrompt}
+              value={formData.aiTrainingPrompt ?? ''}
               rows={2}
               maxLength={VALIDATION_RULES.product.aiPrompt.maxLength}
               onChange={(e) => handleChange('aiTrainingPrompt', e.target.value)}

@@ -180,7 +180,7 @@ class StellarService {
       const result = await this.kit.transfer(
         transaction.to,
         transaction.amount.toString(),
-        transaction.memo
+        transaction.memo ? Number(transaction.memo) : 0,
       );
 
       return {
@@ -206,10 +206,10 @@ class StellarService {
     }
 
     try {
-      // Note: Actual implementation depends on smart-account-kit API
-      // This is a placeholder that returns the native XLM balance
-      const balance = await this.kit.getBalance?.() || '0';
-      return balance.toString();
+      // TODO: Implement balance fetching using Stellar SDK
+      // SmartAccountKit doesn't provide a getBalance method
+      // Need to query the Stellar network directly using the accountId
+      return '0';
     } catch (error) {
       console.error('Error fetching balance:', error);
       return '0';

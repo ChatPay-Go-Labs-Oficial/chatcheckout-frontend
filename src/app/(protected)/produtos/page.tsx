@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 export default function ProductsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { products, isLoading, deleteProduct } = useProducts(user?.id);
+  const { products, isLoading, deleteProduct } = useProducts(user?.id ?? '');
   const handleEdit = (id: string) => {
     router.push(`/produtos/${id}/editar`);
   };

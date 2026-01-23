@@ -60,7 +60,7 @@ export interface ProductFormData {
   price: string; // string no form, convertido para number no submit
   currency: Currency | '';
   salesPageUrl: string;
-  aiTrainingPrompt: string;
+  aiTrainingPrompt?: string;
   imageFile: File | null;
   productFile: File | null;
 }

@@ -4,7 +4,6 @@ import AbandonCard from '@/components/dashboard/AbandonCard';
 import FunnelChart from '@/components/dashboard/FunnelChart';
 import SalesBarChart from '@/components/dashboard/SalesBarChart';
 import DashboardCard from '@/components/dashboard/DashboardCard';
-import { useMemo } from 'react';
 
 // Mock de dados para os cards superiores
 const mockCards = [

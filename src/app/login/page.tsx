@@ -24,7 +24,7 @@ export default function LoginPage() {
 
     const { isValid, value } = validateIdentifier(identifier);
     if (!isValid) {
-      return setFormError('Digite um e-mail, CPF ou CNPJ válido');
+      return setFormError('Credenciais inválidas');
     }
 
     try {

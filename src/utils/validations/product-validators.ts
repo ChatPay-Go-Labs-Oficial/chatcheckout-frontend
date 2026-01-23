@@ -146,11 +146,13 @@ export function validateUrl(url: string, fieldName = 'URL'): ValidationError | n
 }
 
 /**
- * Valida o prompt de treinamento de IA
+ * Valida o prompt de treinamento de IA (opcional)
  */
-export function validateAiPrompt(prompt: string): ValidationError | null {
-  const requiredError = validateRequired(prompt, 'Prompt de treinamento de IA');
-  if (requiredError) return requiredError;
+export function validateAiPrompt(prompt: string | null | undefined): ValidationError | null {
+  // Prompt é opcional
+  if (!prompt || !prompt.trim()) {
+    return null;
+  }
 
   const trimmedPrompt = prompt.trim();
 

@@ -6,6 +6,7 @@ import { useUser } from '@/hooks/useUser';
 import { UserProfile, UserUpdatePayload } from '@/types/user';
 import { FormField } from '@/components/FormField';
 import { useGlobalToast } from '@/contexts/ToastContext';
+import { formatDocument } from '@/utils/validations';
 
 const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -131,6 +132,7 @@ export default function PersonalInfoTab() {
             name="email"
             type="email"
             placeholder="Digite seu email"
+            disabled
             value={form.email ?? ''}
             onChange={handleChange}
           />
@@ -142,7 +144,8 @@ export default function PersonalInfoTab() {
             name="cpf"
             type="text"
             placeholder="000.000.000-00"
-            value={form.cpf ?? ''}
+            disabled
+            value={formatDocument(form.cpf ?? '')}
             onChange={handleChange}
           />
         </div>
@@ -190,7 +193,7 @@ export default function PersonalInfoTab() {
                 name="cnpj"
                 type="text"
                 placeholder="00.000.000/0000-00"
-                value={form.cnpj ?? ''}
+                value={formatDocument(form.cnpj ?? '')}
                 onChange={handleChange}
               />
             </div>

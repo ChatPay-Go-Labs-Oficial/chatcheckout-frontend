@@ -13,6 +13,7 @@ interface FormFieldProps {
   required?: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -33,12 +34,13 @@ export function FormField({
   required = false,
   onChange,
   onBlur,
+  disabled = false,
   className = '',
 }: FormFieldProps) {
   const baseClasses = `
     border rounded-xl px-5 py-3 bg-white text-black placeholder-gray-400 
     focus:outline-none focus:ring-2 focus:ring-[#6f43d0] shadow-sm 
-    transition-all text-base
+    transition-all text-base ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'}
   `;
 
   const errorClasses = hasError ? 'border-red-500' : 'border-gray-300';
@@ -56,6 +58,7 @@ export function FormField({
         value={value}
         onChange={onChange}
         onBlur={onBlur}
+        disabled={disabled}
         className={fullClassName}
       />
 

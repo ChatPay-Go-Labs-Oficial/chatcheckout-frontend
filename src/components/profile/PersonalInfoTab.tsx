@@ -84,9 +84,38 @@ export default function PersonalInfoTab() {
     }
 
     try {
-      const updatedUser = await update(userProfile?.id || '', form);
+      // Create payload with only changed fields (PATCH behavior)
+      const changes: Partial<UserUpdatePayload> = {};
+
+      if (form.firstName !== userProfile?.firstName) {
+        changes.firstName = form.firstName;
+      }
+      if (form.lastName !== userProfile?.lastName) {
+        changes.lastName = form.lastName;
+      }
+      if (form.companyName !== userProfile?.companyName) {
+        changes.companyName = form.companyName;
+      }
+
+      // CPF, CNPJ and Email are immutable - only send if they don't exist yet
+      if (form.cpf && !userProfile?.cpf) {
+        changes.cpf = form.cpf.replace(/\D/g, '');
+      }
+      if (form.cnpj && !userProfile?.cnpj) {
+        changes.cnpj = form.cnpj.replace(/\D/g, '');
+      }
+
+      // Don't send request if nothing changed
+      if (Object.keys(changes).length === 0) {
+        toast.info('Nenhuma alteração detectada');
+        setSaving(false);
+        return;
+      }
+
+      const updatedUser = await update(userProfile?.id || '', changes);
       if (updatedUser) {
-        setUserGlobal(updatedUser);
+        // Merge com dados existentes para não perder campos não retornados pelo backend
+        setUserGlobal({ ...userProfile, ...updatedUser });
       }
       toast.success('Perfil atualizado com sucesso!');
     } catch {
@@ -193,6 +222,7 @@ export default function PersonalInfoTab() {
                 name="cnpj"
                 type="text"
                 placeholder="00.000.000/0000-00"
+                disabled={userProfile?.cnpj ? true : false}
                 value={formatDocument(form.cnpj ?? '')}
                 onChange={handleChange}
               />

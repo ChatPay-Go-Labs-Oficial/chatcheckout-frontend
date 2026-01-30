@@ -79,7 +79,7 @@ export async function sendChatMessage(
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
-            const content = line.substring(6).trim();
+            const content = line.substring(6).trimStart();
             if (content === STREAM_FILTER_PATTERNS.DONE_MARKER) break;
 
             // Filters out API metadata, error markers, and debug information from the Python streaming response
@@ -104,7 +104,13 @@ export async function sendChatMessage(
     }
   }
 
-  return { response: fullResponse.trim() };
+  // Limpa espaços excessivos no final de cada linha e múltiplas quebras de linha
+  const cleanedResponse = fullResponse
+    .replace(/[ \t]+$/gm, '') // Remove espaços/trailing no final de cada linha
+    .replace(/\n{3,}/g, '\n\n') // Max 2 quebras de linha consecutivas
+    .trim(); // Espaços no início/fim do texto completo
+
+  return { response: cleanedResponse };
 }
 
 /**

@@ -135,6 +135,7 @@ export function useCheckout(hash: string) {
     continueCheckout: businessActions.continueCheckout,
     submitCustomerData: businessActions.submitCustomerData,
     selectPaymentMethod: businessActions.selectPaymentMethod,
+    selectCryptoAsset: businessActions.selectCryptoAsset, // Nova ação
     confirmPayment: businessActions.confirmPayment,
     confirmPaymentSuccess: businessActions.confirmPaymentSuccess,
     editCustomerData: businessActions.editCustomerData,

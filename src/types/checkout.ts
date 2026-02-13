@@ -71,6 +71,7 @@ export type MessageComponentType =
   | 'buttons' // Botões de ação (Finalizar/Tirar dúvidas)
   | 'form' // Formulário de dados do cliente
   | 'payment-options' // Botões de seleção de pagamento
+  | 'crypto-asset-selection' // Seleção de moeda crypto (USDC/XLM)
   | 'payment-review' // Card de revisão da compra
   | 'qr-code' // Tela de pagamento Pix
   | 'card-payment' // Tela de pagamento com cartão
@@ -98,6 +99,7 @@ export interface MessageComponentData {
   // Para 'payment-review'
   customerData?: CustomerData;
   paymentMethod?: PaymentMethod;
+  cryptoAsset?: string; // USDC ou XLM, se crypto
   onConfirm?: () => void;
   onEditData?: () => void;
   onChangePayment?: () => void;
@@ -129,29 +131,35 @@ export interface Message {
 }
 
 /**
- * Estado global do checkout
+ * Tipo de ativo crypto suportado
+ */
+export type CryptoAsset = 'USDC' | 'XLM';
+
+/**
+ * Estado do checkout
  */
 export interface CheckoutState {
-  // Produto
+  currentStep: CheckoutStep;
   product: ProductInfo | null;
   loading: boolean;
   error: string | null;
+  cryptoAsset: CryptoAsset | null; // Ativo crypto selecionado
 
   // Fluxo
   mode: ChatMode;
   checkoutStep: CheckoutStep | null;
   savedStep: CheckoutStep | null; // Para voltar após Q&A
 
+  // Chat
+  messages: Message[];
+  customerData: CustomerData | null;
+  paymentMethod: PaymentMethod | null;
+  sellerInfo: InfoproducerInfo | null; // Assuming SellerInfo is InfoproducerInfo
+
   // Controle de UI
   showMessageInput: boolean;
   isAiTyping: boolean;
-
-  // Dados coletados
-  customerData: CustomerData | null;
-  paymentMethod: PaymentMethod | null;
-
-  // Chat
-  messages: Message[];
+  aiTypingMessage: string;
 }
 
 /**

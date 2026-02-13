@@ -25,6 +25,7 @@ export interface UseCheckoutReturn {
   continueCheckout: () => Promise<void>;
   submitCustomerData: (data: CustomerData) => Promise<void>;
   selectPaymentMethod: (method: PaymentMethod) => Promise<void>;
+  selectCryptoAsset: (asset: 'USDC' | 'XLM') => Promise<void>; // Nova: selecionar moeda crypto
   confirmPayment: () => Promise<void>;
   confirmPaymentSuccess: () => Promise<void>;
   editCustomerData: () => Promise<void>;

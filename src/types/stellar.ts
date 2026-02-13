@@ -65,3 +65,72 @@ export interface StellarEnvConfig {
   networkPassphrase: string;
   salt: string;
 }
+
+// ============ Payment Types ============
+
+/**
+ * Stellar Payment Intent Response from Backend
+ */
+export interface StellarPaymentIntent {
+  /** ID do pedido */
+  orderId: string;
+  /** Endereço do Smart Contract para receber pagamento */
+  contractAddress: string;
+  /** Valor em USDC */
+  amount: string;
+  /** Memo da transação (para identificar o pedido) */
+  memo: string;
+  /** Asset USDC (code + issuer) */
+  asset: {
+    code: string;
+    issuer: string;
+  };
+}
+
+/**
+ * Price Conversion Details
+ */
+export interface PriceConversion {
+  /** Valor original em BRL */
+  amountBRL: number;
+  /** Valor convertido em USDC */
+  amountUSDC: number;
+  /** Taxa de conversão (1 USDC = X BRL) */
+  exchangeRate: number;
+  /** Timestamp da cotação */
+  timestamp: number;
+}
+
+/**
+ * Stellar Payment Fees
+ */
+export interface StellarPaymentFees {
+  /** Taxa da rede Stellar em USDC */
+  networkFee: number;
+  /** Spread aplicado (percentual) */
+  spreadPercent: number;
+  /** Valor do spread em USDC */
+  spreadAmount: number;
+  /** Total de taxas */
+  totalFees: number;
+  /** Valor total a pagar (amount + fees) */
+  totalAmount: number;
+}
+
+/**
+ * Stellar Payment Summary
+ */
+export interface StellarPaymentSummary {
+  /** Informações do produto */
+  product: {
+    id: string;
+    name: string;
+    priceBRL: number;
+  };
+  /** Conversão de preço */
+  conversion: PriceConversion;
+  /** Taxas aplicadas */
+  fees: StellarPaymentFees;
+  /** Endereço da wallet conectada */
+  walletAddress: string;
+}

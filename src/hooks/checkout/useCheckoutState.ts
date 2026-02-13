@@ -26,6 +26,7 @@ export interface CheckoutStateActions {
   setSavedStep: (step: CheckoutStep | null) => void;
   setCustomerData: (data: CustomerData) => void;
   setPaymentMethod: (method: PaymentMethod | null) => void;
+  setCryptoAsset: (asset: 'USDC' | 'XLM' | null) => void; // Nova ação
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
   updateMessage: (id: string, updates: Partial<Message>) => void;
@@ -39,6 +40,7 @@ export function useCheckoutState() {
     product: null,
     loading: true,
     error: null,
+    cryptoAsset: null, // Novo campo
     mode: 'initial',
     checkoutStep: 'welcome',
     savedStep: null,
@@ -111,6 +113,10 @@ export function useCheckoutState() {
     setState((prev) => ({ ...prev, showMessageInput: show }));
   }, []);
 
+  const setCryptoAsset = useCallback((asset: 'USDC' | 'XLM' | null) => {
+    setState((prev) => ({ ...prev, cryptoAsset: asset }));
+  }, []);
+
   return {
     state,
     actions: {
@@ -122,6 +128,7 @@ export function useCheckoutState() {
       setSavedStep,
       setCustomerData,
       setPaymentMethod,
+      setCryptoAsset, // Nova ação
       setMessages,
       addMessage,
       updateMessage,

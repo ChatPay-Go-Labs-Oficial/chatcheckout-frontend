@@ -28,6 +28,7 @@ export interface CheckoutBusinessActions {
   continueCheckout: () => Promise<void>;
   submitCustomerData: (data: CustomerData) => Promise<void>;
   selectPaymentMethod: (method: PaymentMethod) => Promise<void>;
+  selectCryptoAsset: (asset: 'USDC' | 'XLM') => Promise<void>; // Nova ação
   confirmPayment: () => Promise<void>;
   confirmPaymentSuccess: () => Promise<void>;
   editCustomerData: () => Promise<void>;
@@ -278,23 +279,67 @@ export function useCheckoutActions(
 
   /**
    * Seleciona método de pagamento
+   * Se for crypto, mostra seleção de moeda (USDC/XLM)
    */
   const selectPaymentMethod = useCallback(
     async (method: PaymentMethod) => {
       // Remove o componente de seleção de pagamento
       messageActions.clearComponentsOfType('payment-options');
-      stateActions.setPaymentMethod(method);
+      
+      const methodLabel = method === 'pix' ? 'Pix' : method === 'card' ? 'Cartão' : 'Crypto';
+      messageActions.addUserMessage(methodLabel);
+
+      // Se for Crypto, mostra seleção de moeda
+      if (method === 'crypto') {
+        stateActions.setPaymentMethod(method);
+        stateActions.setCheckoutStep('payment-method'); // Permanece no step de seleção
+        stateActions.setShowMessageInput(false);
+
+        await addAiMessage(
+          'Ótimo! Escolha qual criptomoeda deseja usar para o pagamento:',
+          'crypto-asset-selection',
+        );
+      } else {
+        // Pix e Cartão seguem o fluxo normal
+        stateActions.setPaymentMethod(method);
+        stateActions.setCheckoutStep('payment-review');
+        stateActions.setShowMessageInput(false);
+
+        await addAiMessage(
+          'Tudo certo! Por favor, confirme os detalhes da sua compra antes de finalizar.',
+          'payment-review',
+          {
+            customerData: state.customerData || undefined,
+            paymentMethod: method,
+          },
+        );
+      }
+    },
+    // Removido: dependências causavam loop infinito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.customerData],
+  );
+
+  /**
+   * Seleciona o ativo crypto (USDC/XLM)
+   */
+  const selectCryptoAsset = useCallback(
+    async (asset: 'USDC' | 'XLM') => {
+      // Remove a seleção de moeda
+      messageActions.clearComponentsOfType('crypto-asset-selection');
+      stateActions.setCryptoAsset(asset);
       stateActions.setCheckoutStep('payment-review');
       stateActions.setShowMessageInput(false);
 
-      const methodLabel = method === 'pix' ? 'Pix' : method === 'card' ? 'Cartão' : 'Crypto';
-      messageActions.addUserMessage(methodLabel);
+      messageActions.addUserMessage(asset);
+
       await addAiMessage(
-        'Tudo certo! Por favor, confirme os detalhes da sua compra antes de finalizar.',
+        `Perfeito! ${asset} selecionado. Confira os detalhes da sua compra:`,
         'payment-review',
         {
           customerData: state.customerData || undefined,
-          paymentMethod: method,
+          paymentMethod: 'crypto',
+          cryptoAsset: asset,
         },
       );
     },
@@ -403,11 +448,16 @@ export function useCheckoutActions(
    */
   const changePaymentMethod = useCallback(
     async () => {
-      // Remove o componente payment-review
+      // Remove componentes de crypto e payment-review
+      messageActions.clearComponentsOfType('crypto-asset-selection');
       messageActions.clearComponentsOfType('payment-review');
       stateActions.setCheckoutStep('payment-method');
       stateActions.setPaymentMethod(null);
+      stateActions.setCryptoAsset(null); // Limpa seleção de crypto
       stateActions.setShowMessageInput(false);
+
+      // Adiciona mensagem do usuário
+      messageActions.addUserMessage('Alterar forma de pagamento');
 
       await addAiMessage('Sem problemas! Escolha outra forma de pagamento:', 'payment-options');
     },
@@ -441,6 +491,7 @@ export function useCheckoutActions(
     continueCheckout,
     submitCustomerData,
     selectPaymentMethod,
+    selectCryptoAsset, // Nova ação
     confirmPayment,
     confirmPaymentSuccess,
     editCustomerData,

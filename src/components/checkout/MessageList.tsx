@@ -16,10 +16,19 @@ interface MessageListProps {
 
 export function MessageList({ messages, checkout }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(messages.length);
 
-  // Auto-scroll para última mensagem
+  // Auto-scroll apenas quando NOVAS mensagens são adicionadas
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const currentCount = messages.length;
+    const prevCount = prevMessageCountRef.current;
+
+    // Só rola se o número de mensagens aumentou (nova mensagem)
+    if (currentCount > prevCount) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    prevMessageCountRef.current = currentCount;
   }, [messages]);
 
   return (

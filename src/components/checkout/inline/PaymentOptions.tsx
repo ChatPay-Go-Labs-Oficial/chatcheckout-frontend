@@ -6,6 +6,7 @@
 
 import { MessageComponentData, PaymentMethod } from '@/types/checkout';
 import { UseCheckoutReturn } from '@/types/checkout-hook';
+import { UsdcIcon } from '@/components/icons/UsdcIcon';
 
 interface PaymentOptionsProps {
   data: MessageComponentData;
@@ -33,6 +34,14 @@ export function PaymentOptions({ checkout }: PaymentOptionsProps) {
       >
         <span className="material-symbols-outlined">credit_card</span>
         <span>Cartão de Crédito</span>
+      </button>
+
+      <button
+        onClick={() => handleSelect('crypto')}
+        className="w-full flex items-center justify-center space-x-2 text-sm font-semibold text-white p-3 rounded-lg gradient-bg shadow-md hover:opacity-90 transition-opacity"
+      >
+        <span className="material-symbols-outlined">currency_exchange</span>
+        <span>Crypto</span>
       </button>
     </div>
   );

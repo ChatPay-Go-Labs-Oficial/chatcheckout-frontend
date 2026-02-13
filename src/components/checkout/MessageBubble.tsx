@@ -6,15 +6,14 @@
 
 import { Message } from '@/types/checkout';
 import { UseCheckoutReturn } from '@/types/checkout-hook';
-import {
-  ActionButtons,
-  CustomerDataForm,
-  PaymentOptions,
-  PaymentReview,
-  QrCodePayment,
-  CardPayment,
-  SuccessScreen,
-} from './inline';
+import { ActionButtons } from './inline/ActionButtons';
+import { CustomerDataForm } from './inline/CustomerDataForm';
+import { PaymentOptions } from './inline/PaymentOptions';
+import { CryptoAssetSelection } from './inline/CryptoAssetSelection';
+import { PaymentReview } from './inline/PaymentReview';
+import { QrCodePayment } from './inline/QrCodePayment';
+import { CardPayment } from './inline/CardPayment';
+import { SuccessScreen } from './inline/SuccessScreen';
 
 interface MessageBubbleProps {
   message: Message;
@@ -68,6 +67,13 @@ export function MessageBubble({ message, checkout }: MessageBubbleProps) {
 
             {message.componentType === 'payment-options' && (
               <PaymentOptions data={message.componentData || {}} checkout={checkout} />
+            )}
+
+            {message.componentType === 'crypto-asset-selection' && (
+              <CryptoAssetSelection
+                onSelect={(asset) => checkout.selectCryptoAsset?.(asset)}
+                onBack={() => checkout.changePaymentMethod?.()}
+              />
             )}
 
             {message.componentType === 'payment-review' && message.componentData && (

@@ -7,6 +7,8 @@
 import Image from 'next/image';
 import { MessageComponentData, ProductInfo } from '@/types/checkout';
 import { UseCheckoutReturn } from '@/types/checkout-hook';
+import { UsdcIcon } from '@/components/icons/UsdcIcon';
+import { XlmIcon } from '@/components/icons/XlmIcon';
 
 interface PaymentReviewProps {
   data: MessageComponentData;
@@ -25,6 +27,10 @@ export function PaymentReview({ data, checkout, product }: PaymentReviewProps) {
   const getPaymentMethodLabel = () => {
     if (data.paymentMethod === 'pix') return 'Pix';
     if (data.paymentMethod === 'card') return 'Cartão';
+    // Se for crypto e tiver moeda selecionada, mostra "Crypto | USDC"
+    if (data.paymentMethod === 'crypto' && data.cryptoAsset) {
+      return `Crypto | ${data.cryptoAsset}`;
+    }
     return 'Crypto';
   };
 
@@ -80,16 +86,38 @@ export function PaymentReview({ data, checkout, product }: PaymentReviewProps) {
           {/* Divider */}
           <div className="border-t border-gray-100"></div>
 
-          {/* Valor e Forma de Pagamento em uma linha */}
+          {/* Valor e Forma de Pagamento */}
           <div className="flex justify-between items-center">
             <div>
               <p className="text-[10px] text-gray-500 font-medium">Valor Total</p>
-              <p className="text-xl font-semibold text-gray-700">{formatPrice(product.price)}</p>
+              {product.currency === 'USDC' || data.paymentMethod === 'crypto' ? (
+                <p className="text-xl font-semibold text-gray-700">
+                  {Number(product.price).toFixed(2)} {product.currency || 'USDC'}
+                </p>
+              ) : (
+                <p className="text-xl font-semibold text-gray-700">{formatPrice(Number(product.price))}</p>
+              )}
             </div>
             <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1.5 rounded-lg">
-              <span className="material-symbols-outlined text-gray-500 text-[18px]">
-                {getPaymentMethodIcon()}
-              </span>
+              {/* Ícone dinâmico baseado no método e moeda */}
+              {data.paymentMethod === 'crypto' ? (
+                <>
+                  {data.cryptoAsset === 'USDC' ? (
+                    <UsdcIcon size={28} />
+                  ) : data.cryptoAsset === 'XLM' ? (
+                    <XlmIcon size={28} />
+                  ) : (
+                    // Fallback genérico crypto
+                    <span className="material-symbols-outlined text-gray-500 text-[18px]">
+                      currency_bitcoin
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span className="material-symbols-outlined text-gray-500 text-[18px]">
+                  {getPaymentMethodIcon()}
+                </span>
+              )}
               <span className="text-sm font-medium text-gray-700">{getPaymentMethodLabel()}</span>
             </div>
           </div>

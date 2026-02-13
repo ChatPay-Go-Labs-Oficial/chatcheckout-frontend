@@ -4,7 +4,7 @@ import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AuthGuard } from '@/components/AuthGuard';
 import QueryProvider from '@/components/providers/QueryProvider';
-import { StellarWalletProvider } from '@/contexts/StellarWalletContext';
+import { StellarWalletProvider } from '@/app/providers/StellarWalletProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

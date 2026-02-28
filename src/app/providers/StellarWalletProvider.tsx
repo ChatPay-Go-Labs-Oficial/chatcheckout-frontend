@@ -41,10 +41,10 @@ const chatCheckoutTheme: SwkAppTheme = {
 };
 
 /**
- * Stellar Wallet Provider
+ * Stellar Wallets Kit Provider
  * Inicializa o Stellar Wallets Kit no app
  */
-export function StellarWalletProvider({ children }: { children: React.ReactNode }) {
+export function StellarWalletsKitProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         // Apenas executar no cliente
         if (typeof window === 'undefined') {

@@ -5,30 +5,30 @@ import { NoSSR } from '@/components/providers/NoSSR';
 import { STELLAR_CONFIG } from '@/utils/stellar/constants';
 
 /**
- * ChatCheckout Dark Theme for Stellar Wallets Kit
- * Customizado com as cores da marca
+ * ChatCheckout Light Theme for Stellar Wallets Kit
+ * Customizado com as cores claras da marca para harmonizar com a UI
  */
 const chatCheckoutTheme = {
   // Colors
-  primary: '#1992e6', // Azul ChatCheckout
+  primary: '#7c3aed', // Roxo/Azul vibrante do botão
   'primary-foreground': '#ffffff',
-  background: '#181b4a', // Fundo escuro
-  'background-secondary': '#0f1419',
-  card: '#1a1f3a',
-  'card-foreground': '#ffffff',
-  popover: '#1a1f3a',
-  'popover-foreground': '#ffffff',
-  secondary: '#3b82f6',
-  'secondary-foreground': '#ffffff',
-  muted: '#374151',
-  'muted-foreground': '#9ca3af',
-  accent: '#3b82f6',
-  'accent-foreground': '#ffffff',
+  background: '#ffffff', // Fundo branco
+  'background-secondary': '#f9fafb',
+  card: '#ffffff',
+  'card-foreground': '#111827',
+  popover: '#ffffff',
+  'popover-foreground': '#111827',
+  secondary: '#f1f5f9',
+  'secondary-foreground': '#111827',
+  muted: '#f8fafc',
+  'muted-foreground': '#64748b',
+  accent: '#f1f5f9',
+  'accent-foreground': '#1e293b',
   destructive: '#ef4444',
   'destructive-foreground': '#ffffff',
-  border: '#374151',
-  input: '#374151',
-  ring: '#1992e6',
+  border: '#e2e8f0',
+  input: '#f8fafc',
+  ring: '#7c3aed',
 
   // Typography
   'font-family': 'var(--font-geist-sans), system-ui, -apple-system, sans-serif',

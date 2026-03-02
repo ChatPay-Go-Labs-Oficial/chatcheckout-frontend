@@ -88,9 +88,10 @@ export function CryptoAssetSelection({ onSelect, onBack }: CryptoAssetSelectionP
           <div>
             <p className="text-xs font-semibold text-blue-900 mb-1">Pagamento com Criptomoedas</p>
             <p className="text-xs text-blue-800">
-              {` `}
-              <strong>USDC:</strong> Stablecoin atrelada ao Dólar (valor estável).{' '}
-              <strong>XLM:</strong> Moeda nativa da Stellar Network. Ambas processadas via escrow
+              <strong>USDC:</strong> Stablecoin atrelada ao Dólar (valor estável).
+            </p>
+            <p className="text-xs text-blue-800">
+              <strong>XLM:</strong> Moeda nativa da Stellar Network.
             </p>
           </div>
         </div>

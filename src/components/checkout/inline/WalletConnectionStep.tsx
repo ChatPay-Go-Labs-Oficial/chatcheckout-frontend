@@ -70,14 +70,14 @@ export function WalletConnectionStep({ checkout }: WalletConnectionStepProps) {
         </div>
         <div>
           <h3 className="font-semibold text-gray-900">Conectar Carteira Stellar</h3>
-          <p className="text-sm text-gray-500">Pague com USDC na rede Stellar</p>
+          <p className="text-sm text-gray-500">Pague com Cripto (XLM ou USDC)</p>
         </div>
       </div>
 
       {/* Descrição */}
       <div className="mb-6">
         <p className="text-sm text-gray-700 mb-4">
-          Para pagar com <strong>USDC</strong>, você precisa conectar sua carteira Stellar.
+          Para pagar com <strong>Cripto</strong>, você precisa conectar sua carteira Stellar.
         </p>
 
         {/* Carteiras suportadas */}
@@ -140,13 +140,19 @@ export function WalletConnectionStep({ checkout }: WalletConnectionStepProps) {
 
       {/* Mensagem se já estiver conectado */}
       {isConnected && address && (
-        <div className="mt-3 text-center">
+        <div className="mt-3 flex flex-col items-center gap-1">
           <p className="text-xs text-gray-600">
             Wallet já conectada:{' '}
             <span className="font-mono font-medium">
               {address.slice(0, 6)}...{address.slice(-6)}
             </span>
           </p>
+          <button 
+            onClick={() => connect()}
+            className="text-[10px] text-blue-600 hover:text-blue-700 hover:underline transition-colors font-medium cursor-pointer bg-transparent border-none p-0"
+          >
+            Trocar conta ou carteira
+          </button>
         </div>
       )}
 

@@ -28,8 +28,9 @@ export interface CheckoutBusinessActions {
   continueCheckout: () => Promise<void>;
   submitCustomerData: (data: CustomerData) => Promise<void>;
   selectPaymentMethod: (method: PaymentMethod) => Promise<void>;
-  selectCryptoAsset: (asset: 'USDC' | 'XLM') => Promise<void>; // Nova ação
-  confirmPayment: () => Promise<void>;
+  selectCryptoAsset: (asset: 'USDC' | 'XLM') => Promise<void>;
+  handleWalletConnected: (address: string) => Promise<void>; // Nova ação
+  confirmPayment: (signTransactionFn?: (txXdr: string) => Promise<string>) => Promise<void>;
   confirmPaymentSuccess: () => Promise<void>;
   editCustomerData: () => Promise<void>;
   changePaymentMethod: () => Promise<void>;
@@ -279,25 +280,25 @@ export function useCheckoutActions(
 
   /**
    * Seleciona método de pagamento
-   * Se for crypto, mostra seleção de moeda (USDC/XLM)
+   * Se for crypto, mostra conexão de wallet primeiro
    */
   const selectPaymentMethod = useCallback(
     async (method: PaymentMethod) => {
       // Remove o componente de seleção de pagamento
       messageActions.clearComponentsOfType('payment-options');
-      
+
       const methodLabel = method === 'pix' ? 'Pix' : method === 'card' ? 'Cartão' : 'Crypto';
       messageActions.addUserMessage(methodLabel);
 
-      // Se for Crypto, mostra seleção de moeda
+      // Se for Crypto, mostra conexão de wallet primeiro
       if (method === 'crypto') {
         stateActions.setPaymentMethod(method);
-        stateActions.setCheckoutStep('payment-method'); // Permanece no step de seleção
+        stateActions.setCheckoutStep('wallet-connection');
         stateActions.setShowMessageInput(false);
 
         await addAiMessage(
-          'Ótimo! Escolha qual criptomoeda deseja usar para o pagamento:',
-          'crypto-asset-selection',
+          'Ótimo! Para pagar com criptomoedas, precisamos conectar sua carteira Stellar.',
+          'wallet-connection',
         );
       } else {
         // Pix e Cartão seguem o fluxo normal
@@ -335,7 +336,7 @@ export function useCheckoutActions(
 
       await addAiMessage(
         `Perfeito! ${asset} selecionado. Confira os detalhes da sua compra:`,
-        'payment-review',
+        'stellar-payment-review',
         {
           customerData: state.customerData || undefined,
           paymentMethod: 'crypto',
@@ -347,6 +348,29 @@ export function useCheckoutActions(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [state.customerData],
   );
+
+  /**
+   * Manipula o evento de wallet conectada
+   */
+  const handleWalletConnected = useCallback(async (address: string) => {
+    // Remove o componente de wallet-connection
+    messageActions.clearComponentsOfType('wallet-connection');
+
+    // Salva o endereço da wallet no estado
+    stateActions.setWalletAddress(address);
+
+    // Mostra seleção de criptomoeda
+    stateActions.setCheckoutStep('payment-method');
+    stateActions.setShowMessageInput(false);
+
+    const shortAddress = `${address.slice(0, 6)}...${address.slice(-6)}`;
+    messageActions.addUserMessage(`Wallet conectada: ${shortAddress}`);
+
+    await addAiMessage(
+      `Carteira conectada com sucesso! (${shortAddress}). Agora escolha qual criptomoeda deseja usar:`,
+      'crypto-asset-selection',
+    );
+  }, []);
 
   /**
    * Confirmação de pagamento bem-sucedido
@@ -373,56 +397,277 @@ export function useCheckoutActions(
    * Confirma o pagamento
    */
   const confirmPayment = useCallback(
-    async () => {
+    async (signTransactionFn?: (txXdr: string) => Promise<string>) => {
       if (!state.customerData || !state.paymentMethod) return;
 
-      // Remove o componente payment-review
+      // Remove os componentes de review (ambos os tipos)
       messageActions.clearComponentsOfType('payment-review');
+      messageActions.clearComponentsOfType('stellar-payment-review');
       stateActions.setCheckoutStep('payment');
       stateActions.setShowMessageInput(false);
 
       messageActions.addUserMessage('Efetuar pagamento');
 
-      // Processa pagamento via Stripe
+      // Processa pagamento baseado no método selecionado
       try {
-        const result = await processPayment(
-          state.product?.id || '',
-          state.customerData,
-          state.paymentMethod,
-        );
-
-        if (state.paymentMethod === 'pix' && result.qrCode) {
-          await addAiMessage('Pagamento via Pix iniciado. Escaneie o QR Code abaixo:', 'qr-code', {
-            qrCodeUrl: result.qrCode,
-            pixCode: result.pixCode,
-            expiresIn: '10 minutos',
-          });
-        } else if (state.paymentMethod === 'card' && result.clientSecret) {
-          await addAiMessage('Complete o pagamento com seu cartão:', 'card-payment', {
-            clientSecret: result.clientSecret,
-            onPaymentSuccess: async () => {
-              messageActions.clearComponentsOfType('card-payment');
-              stateActions.setCheckoutStep('confirmation');
-              await addAiMessage(
-                '✅ Pagamento processado com sucesso! Aguarde a confirmação final.',
-                null,
-              );
-
-              // Simular confirmação após alguns segundos (em produção, usar webhook)
-              setTimeout(async () => {
-                await addAiMessage('Pagamento confirmado! Obrigado pela compra.', 'success', {});
-              }, 2000);
-            },
-          });
+        if (state.paymentMethod === 'crypto') {
+          // Processar pagamento crypto via escrow
+          // Pass signTransactionFn for wallet signing
+          await processCryptoPayment(signTransactionFn);
+        } else {
+          // Processar pagamento tradicional via Stripe
+          await processTraditionalPayment();
         }
-      } catch {
+      } catch (error) {
+        console.error('[confirmPayment] Error:', error);
         await addAiMessage('Houve um erro ao processar o pagamento. Tente novamente.');
       }
     },
     // Removido: dependências causavam loop infinito
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.customerData, state.paymentMethod, state.product],
+    [
+      state.customerData,
+      state.paymentMethod,
+      state.product,
+      state.walletAddress,
+      state.cryptoAsset,
+    ],
   );
+
+  /**
+   * Processa pagamento crypto via contrato de escrow
+   */
+  const processCryptoPayment = useCallback(
+    async (signTransactionFn?: (txXdr: string) => Promise<string>) => {
+      if (!state.product || !state.walletAddress || !state.cryptoAsset) {
+        throw new Error('Missing required information for crypto payment');
+      }
+
+      if (!signTransactionFn) {
+        throw new Error('signTransactionFn is required for crypto payments');
+      }
+
+      // Mostrar mensagem de carregamento
+      const loadingMessage = messageActions.createAiMessage('loading');
+      await typingActions.typeMessage(loadingMessage, 'Preparando pagamento...');
+
+      const MAX_RETRIES = 3;
+      let retryCount = 0;
+      let transactionHash = '';
+
+      try {
+        // Importar preço oracle
+        const { priceOracle } = await import('@/services/priceOracle');
+
+        // Calcular valor no asset selecionado (XLM ou USDC)
+        let amountCrypto: number;
+
+        if (state.product.currency === state.cryptoAsset) {
+          // Produto já está no asset selecionado
+          amountCrypto = state.product.price;
+        } else {
+          // Converter BRL para o asset selecionado usando price oracle
+          amountCrypto = await priceOracle.convertAmount(
+            state.product.price,
+            'BRL',
+            state.cryptoAsset || 'XLM',
+          );
+        }
+
+        // Retry loop para lidar com sequence number errors
+        while (retryCount < MAX_RETRIES) {
+          console.log(`[processCryptoPayment] Attempt ${retryCount + 1}/${MAX_RETRIES}`);
+
+          // 1. Criar transação via API backend (sem CORS)
+          const createResponse = await fetch('/api/stellar/create-escrow', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              buyerAddress: state.walletAddress,
+              amountCrypto,
+              asset: state.cryptoAsset || 'XLM',
+              productId: state.product.id,
+            }),
+          });
+
+          if (!createResponse.ok) {
+            const errorData = await createResponse.json();
+            throw new Error(errorData.error || 'Failed to create escrow transaction');
+          }
+
+          const createData = await createResponse.json();
+          const transactionXDR = createData.transactionXDR;
+
+          console.log('[processCryptoPayment] Creating escrow via API:', {
+            buyer: state.walletAddress,
+            amount: amountCrypto,
+            asset: state.cryptoAsset,
+            productId: state.product.id,
+          });
+
+          console.log('[processCryptoPayment] Transaction created, signing with wallet...');
+
+          // 2. Assinar transação via Wallet Kit
+          await typingActions.typeMessage(
+            loadingMessage,
+            retryCount > 0
+              ? `Tentando novamente (${retryCount + 1}/${MAX_RETRIES})... Aguardando assinatura.`
+              : 'Aguardando assinatura da carteira...',
+          );
+
+          const signedTxXDR = await signTransactionFn(transactionXDR);
+
+          console.log('[processCryptoPayment] Transaction signed, submitting...');
+
+          // 3. Enviar transação assinada via API backend
+          await typingActions.typeMessage(
+            loadingMessage,
+            retryCount > 0
+              ? `Tentando novamente (${retryCount + 1}/${MAX_RETRIES})... Enviando transação.`
+              : 'Enviando transação para a rede...',
+          );
+
+          const submitResponse = await fetch('/api/stellar/submit-tx', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ signedTxXDR }),
+          });
+
+          if (submitResponse.ok) {
+            // Sucesso! Salvar hash e sair do loop
+            const submitData = await submitResponse.json();
+            transactionHash = submitData.transactionHash;
+            console.log(
+              '[processCryptoPayment] Transaction submitted successfully!',
+              transactionHash,
+            );
+            break;
+          }
+
+          // Erro na submissão - verificar se é retryable
+          const errorData = await submitResponse.json();
+          console.error('[processCryptoPayment] Submit error:', errorData);
+
+          const resultCode = errorData.details?.resultCode;
+          const isRetryable = errorData.details?.isRetryable !== false;
+
+          // Verificar se é erro de sequence number ou outros erros retryable
+          if (
+            isRetryable &&
+            (resultCode === 'txBadSeq' ||
+              resultCode === 'txValidationFailed' ||
+              resultCode === 'txInsufficientFee' ||
+              resultCode === 'txFailed' ||
+              errorData.error?.includes('sequence') ||
+              retryCount < MAX_RETRIES - 1)
+          ) {
+            retryCount++;
+
+            if (retryCount >= MAX_RETRIES) {
+              throw new Error(
+                'Número máximo de tentativas atingido. O sequence number da conta pode estar mudando rapidamente. Aguarde alguns segundos e tente novamente.',
+              );
+            }
+
+            console.log(
+              `[processCryptoPayment] Retryable error detected, retrying... (${retryCount}/${MAX_RETRIES})`,
+            );
+
+            // Aguardar antes de tentar novamente para dar tempo ao sequence number estabilizar
+            // Aumentar delay progressivamente
+            const delayMs = retryCount * 3000; // 3s, 6s, 9s
+            console.log(`[processCryptoPayment] Waiting ${delayMs}ms before retry...`);
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+
+            // Continuar o loop para criar uma nova transação
+            continue;
+          }
+
+          // Outro erro não retryable - lançar exceção
+          throw new Error(errorData.error || 'Failed to submit transaction');
+        }
+
+        // Limpar mensagem de loading
+        messageActions.clearComponentsOfType('loading');
+
+        // Mostrar status de transação pendente
+        await addAiMessage(
+          'Pagamento enviado com sucesso! Aguarde a confirmação da blockchain.',
+          'transaction-pending',
+          {
+            transactionHash,
+          },
+        );
+
+        // 4. Monitorar confirmação (simulado por enquanto)
+        // TODO: Implementar polling via API ou WebSocket
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        await addAiMessage(
+          'Pagamento confirmado! O valor está protegido pelo contrato de escrow por 7 dias.',
+          'success',
+          {
+            downloadUrl: '#', // TODO: Backend deve retornar URL após pagamento confirmado
+          },
+        );
+        stateActions.setCheckoutStep('confirmation');
+      } catch (error) {
+        console.error('[processCryptoPayment] Error:', error);
+        messageActions.clearComponentsOfType('loading');
+        throw error;
+      }
+    },
+    [
+      state.product,
+      state.walletAddress,
+      state.cryptoAsset,
+      messageActions,
+      typingActions,
+      stateActions,
+      addAiMessage,
+    ],
+  );
+
+  /**
+   * Processa pagamento tradicional (Pix/Card) via Stripe
+   */
+  const processTraditionalPayment = useCallback(async () => {
+    if (!state.product || !state.customerData || !state.paymentMethod) return;
+
+    const result = await processPayment(state.product.id, state.customerData, state.paymentMethod);
+
+    if (state.paymentMethod === 'pix' && result.qrCode) {
+      await addAiMessage('Pagamento via Pix iniciado. Escaneie o QR Code abaixo:', 'qr-code', {
+        qrCodeUrl: result.qrCode,
+        pixCode: result.pixCode,
+        expiresIn: '10 minutos',
+      });
+    } else if (state.paymentMethod === 'card' && result.clientSecret) {
+      await addAiMessage('Complete o pagamento com seu cartão:', 'card-payment', {
+        clientSecret: result.clientSecret,
+        onPaymentSuccess: async () => {
+          messageActions.clearComponentsOfType('card-payment');
+          stateActions.setCheckoutStep('confirmation');
+          await addAiMessage(
+            '✅ Pagamento processado com sucesso! Aguarde a confirmação final.',
+            null,
+          );
+
+          // Simular confirmação após alguns segundos (em produção, usar webhook)
+          setTimeout(async () => {
+            await addAiMessage('Pagamento confirmado! Obrigado pela compra.', 'success', {});
+          }, 2000);
+        },
+      });
+    }
+  }, [
+    state.product,
+    state.customerData,
+    state.paymentMethod,
+    messageActions,
+    typingActions,
+    stateActions,
+  ]);
 
   /**
    * Edita dados do cliente
@@ -491,7 +736,8 @@ export function useCheckoutActions(
     continueCheckout,
     submitCustomerData,
     selectPaymentMethod,
-    selectCryptoAsset, // Nova ação
+    selectCryptoAsset,
+    handleWalletConnected, // Nova ação
     confirmPayment,
     confirmPaymentSuccess,
     editCustomerData,

@@ -1,38 +1,33 @@
 import { PriceOracleService } from './PriceOracleService';
-import { ReflectorPriceOracle } from './ReflectorPriceOracle';
 import { CoinGeckoPriceOracle } from './CoinGeckoPriceOracle';
 
 /**
- * Price Oracle with Automatic Fallback
- * Tenta Reflector Network primeiro, se falhar usa CoinGecko como fallback
+ * Price Oracle Manager
+ *
+ * NOTA: Reflector Network API está inoperante (endpoint REST não existe)
+ * Usando apenas CoinGecko como oráculo de preços.
+ *
+ * TODO: Reavaliar Reflector quando:
+ * - Documentação pública estiver disponível
+ * - Endpoint REST for confirmado e estável
+ * - SDK TypeScript for disponibilizado
+ *
+ * Verificado em: 2026-03-01
+ * Status: Reflector retorna HTTP 000 (falha de conexão)
  */
-class PriceOracleWithFallback implements PriceOracleService {
-  private primary: ReflectorPriceOracle;
-  private fallback: CoinGeckoPriceOracle;
+class PriceOracleManager implements PriceOracleService {
+  private oracle: CoinGeckoPriceOracle;
 
   constructor() {
-    this.primary = new ReflectorPriceOracle();
-    this.fallback = new CoinGeckoPriceOracle();
+    this.oracle = new CoinGeckoPriceOracle();
   }
 
   async getExchangeRate(from: string, to: string): Promise<number> {
-    try {
-      // Tentar Reflector primeiro
-      return await this.primary.getExchangeRate(from, to);
-    } catch (error) {
-      console.warn('Reflector falhou, usando fallback CoinGecko:', error);
-      // Usar CoinGecko como fallback
-      return await this.fallback.getExchangeRate(from, to);
-    }
+    return await this.oracle.getExchangeRate(from, to);
   }
 
   async convertAmount(amount: number, from: string, to: string): Promise<number> {
-    try {
-      return await this.primary.convertAmount(amount, from, to);
-    } catch (error) {
-      console.warn('Reflector falhou, usando fallback CoinGecko:', error);
-      return await this.fallback.convertAmount(amount, from, to);
-    }
+    return await this.oracle.convertAmount(amount, from, to);
   }
 }
 
@@ -41,7 +36,7 @@ class PriceOracleWithFallback implements PriceOracleService {
  * Facilita substituição de implementação no futuro
  */
 export function createPriceOracle(): PriceOracleService {
-  return new PriceOracleWithFallback();
+  return new PriceOracleManager();
 }
 
 /**

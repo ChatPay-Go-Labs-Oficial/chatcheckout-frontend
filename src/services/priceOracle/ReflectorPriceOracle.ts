@@ -79,7 +79,8 @@ export class ReflectorPriceOracle implements PriceOracleService {
     // const client = new ReflectorClient(contractAddress);
     // const price = await client.lastprice(asset);
 
-    const response = await fetch(`${this.apiUrl}/price/${asset}`);
+    // Usar proxy interno para evitar CORS
+    const response = await fetch(`/api/price?oracle=reflector&asset=${asset}`);
 
     if (!response.ok) {
       throw new Error(`Erro ao buscar preço de ${asset} no Reflector`);

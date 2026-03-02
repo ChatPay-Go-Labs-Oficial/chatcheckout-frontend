@@ -95,7 +95,9 @@ export function PaymentReview({ data, checkout, product }: PaymentReviewProps) {
                   {Number(product.price).toFixed(2)} {product.currency || 'USDC'}
                 </p>
               ) : (
-                <p className="text-xl font-semibold text-gray-700">{formatPrice(Number(product.price))}</p>
+                <p className="text-xl font-semibold text-gray-700">
+                  {formatPrice(Number(product.price))}
+                </p>
               )}
             </div>
             <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1.5 rounded-lg">
@@ -194,7 +196,7 @@ export function PaymentReview({ data, checkout, product }: PaymentReviewProps) {
       {/* Botões de Ação - compactos */}
       <div className="space-y-2">
         <button
-          onClick={checkout.confirmPayment}
+          onClick={() => checkout.confirmPayment()}
           className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-white px-4 py-3 rounded-xl gradient-bg shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-200"
         >
           <span className="material-symbols-outlined text-[20px]">shopping_cart_checkout</span>

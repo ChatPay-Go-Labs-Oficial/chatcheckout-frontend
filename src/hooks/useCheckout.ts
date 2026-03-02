@@ -83,7 +83,8 @@ export function useCheckout(hash: string) {
         welcomeMessageSent.current = false;
       }
     }
-  }, [product, state.product, stateActions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product, state.product]);
 
   /**
    * Dispara mensagem de boas-vindas quando produto está carregado e sincronizado
@@ -94,7 +95,8 @@ export function useCheckout(hash: string) {
       welcomeMessageSent.current = true;
       void businessActions.addWelcomeMessage();
     }
-  }, [state.product, state.messages.length, businessActions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.product, state.messages.length]);
 
   // Sincroniza erros e loading
   useEffect(() => {
@@ -109,7 +111,8 @@ export function useCheckout(hash: string) {
         productError instanceof Error ? productError.message : 'Erro ao carregar produto',
       );
     }
-  }, [isLoadingProduct, productError, stateActions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingProduct, productError]);
 
   // ========================================
   // API Pública (Mantém compatibilidade)
@@ -124,6 +127,8 @@ export function useCheckout(hash: string) {
     checkoutStep: state.checkoutStep,
     customerData: state.customerData,
     paymentMethod: state.paymentMethod,
+    cryptoAsset: state.cryptoAsset,
+    walletAddress: state.walletAddress,
     messages: state.messages,
     aiTyping: state.isAiTyping,
     showMessageInput: state.showMessageInput,
@@ -135,7 +140,8 @@ export function useCheckout(hash: string) {
     continueCheckout: businessActions.continueCheckout,
     submitCustomerData: businessActions.submitCustomerData,
     selectPaymentMethod: businessActions.selectPaymentMethod,
-    selectCryptoAsset: businessActions.selectCryptoAsset, // Nova ação
+    selectCryptoAsset: businessActions.selectCryptoAsset,
+    handleWalletConnected: businessActions.handleWalletConnected, // Nova ação
     confirmPayment: businessActions.confirmPayment,
     confirmPaymentSuccess: businessActions.confirmPaymentSuccess,
     editCustomerData: businessActions.editCustomerData,

@@ -26,7 +26,8 @@ export interface CheckoutStateActions {
   setSavedStep: (step: CheckoutStep | null) => void;
   setCustomerData: (data: CustomerData) => void;
   setPaymentMethod: (method: PaymentMethod | null) => void;
-  setCryptoAsset: (asset: 'USDC' | 'XLM' | null) => void; // Nova ação
+  setCryptoAsset: (asset: 'USDC' | 'XLM' | null) => void;
+  setWalletAddress: (address: string | null) => void; // Nova ação
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
   updateMessage: (id: string, updates: Partial<Message>) => void;
@@ -40,7 +41,8 @@ export function useCheckoutState() {
     product: null,
     loading: true,
     error: null,
-    cryptoAsset: null, // Novo campo
+    cryptoAsset: null,
+    walletAddress: null, // Novo campo
     mode: 'initial',
     checkoutStep: 'welcome',
     savedStep: null,
@@ -49,6 +51,9 @@ export function useCheckoutState() {
     customerData: null,
     paymentMethod: null,
     messages: [],
+    currentStep: 'welcome', // Adicionado para satisfazer o tipo CheckoutState
+    sellerInfo: null, // Adicionado para satisfazer o tipo CheckoutState
+    aiTypingMessage: '', // Adicionado para satisfazer o tipo CheckoutState
   });
 
   const setLoading = useCallback((loading: boolean) => {
@@ -117,6 +122,10 @@ export function useCheckoutState() {
     setState((prev) => ({ ...prev, cryptoAsset: asset }));
   }, []);
 
+  const setWalletAddress = useCallback((address: string | null) => {
+    setState((prev) => ({ ...prev, walletAddress: address }));
+  }, []);
+
   return {
     state,
     actions: {
@@ -128,7 +137,8 @@ export function useCheckoutState() {
       setSavedStep,
       setCustomerData,
       setPaymentMethod,
-      setCryptoAsset, // Nova ação
+      setCryptoAsset,
+      setWalletAddress, // Nova ação
       setMessages,
       addMessage,
       updateMessage,

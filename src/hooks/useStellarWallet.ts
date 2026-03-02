@@ -163,7 +163,7 @@ export function useStellarWallet(): UseStellarWalletReturn {
         throw err;
       }
     },
-    [address]
+    [address],
   );
 
   return {

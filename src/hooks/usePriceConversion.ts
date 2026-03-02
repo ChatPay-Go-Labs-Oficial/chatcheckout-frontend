@@ -37,7 +37,7 @@ interface UsePriceConversionReturn {
 export function usePriceConversion(
   amount: number,
   from: string,
-  to: string
+  to: string,
 ): UsePriceConversionReturn {
   const [convertedAmount, setConvertedAmount] = useState(0);
   const [exchangeRate, setExchangeRate] = useState(0);
@@ -66,8 +66,7 @@ export function usePriceConversion(
         }
       } catch (err) {
         if (isActive) {
-          const errorMessage =
-            err instanceof Error ? err.message : 'Erro ao converter preço';
+          const errorMessage = err instanceof Error ? err.message : 'Erro ao converter preço';
           setError(errorMessage);
           console.error('[usePriceConversion] Error:', err);
         }

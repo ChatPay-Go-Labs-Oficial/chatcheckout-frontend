@@ -50,6 +50,7 @@ export type PaymentMethod = 'pix' | 'card' | 'crypto';
 export type CheckoutStep =
   | 'welcome' // Tela inicial com 2 botões
   | 'customer-data' // Formulário de dados
+  | 'wallet-connection' // Conexão de carteira Stellar
   | 'payment-method' // Seleção de pagamento
   | 'payment-review' // Revisão antes de pagar
   | 'payment' // Tela de pagamento (QR Code, etc)
@@ -71,11 +72,15 @@ export type MessageComponentType =
   | 'buttons' // Botões de ação (Finalizar/Tirar dúvidas)
   | 'form' // Formulário de dados do cliente
   | 'payment-options' // Botões de seleção de pagamento
+  | 'wallet-connection' // Conexão de carteira Stellar
   | 'crypto-asset-selection' // Seleção de moeda crypto (USDC/XLM)
   | 'payment-review' // Card de revisão da compra
+  | 'stellar-payment-review' // Card de revisão para pagamentos Stellar
+  | 'transaction-pending' // Status de transação pendente
   | 'qr-code' // Tela de pagamento Pix
   | 'card-payment' // Tela de pagamento com cartão
   | 'success' // Tela de confirmação
+  | 'loading' // Status de carregamento/processamento
   | null; // Mensagem simples de texto
 
 /**
@@ -115,6 +120,10 @@ export interface MessageComponentData {
 
   // Para 'success'
   downloadUrl?: string;
+
+  // Para 'transaction-pending'
+  transactionHash?: string;
+  escrowId?: string;
 }
 
 /**
@@ -144,6 +153,7 @@ export interface CheckoutState {
   loading: boolean;
   error: string | null;
   cryptoAsset: CryptoAsset | null; // Ativo crypto selecionado
+  walletAddress: string | null; // Endereço da wallet Stellar conectada
 
   // Fluxo
   mode: ChatMode;

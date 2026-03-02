@@ -1,6 +1,6 @@
 /**
  * Stellar Network Constants
- * Configurações para pagamento via Stellar USDC
+ * Configurações para pagamento via Stellar (XLM nativo e USDC)
  */
 
 export const STELLAR_CONFIG = {
@@ -33,7 +33,7 @@ export const STELLAR_CONFIG = {
 
 /**
  * USDC Asset Configuration
- * Configuração do asset USDC na Stellar Network
+ * Configuração do asset USDC na Stellar Network (opcional, secundário)
  */
 export const USDC_ASSET = {
   /**
@@ -59,15 +59,92 @@ export const USDC_ASSET = {
   get ISSUER() {
     return STELLAR_CONFIG.NETWORK === 'public' ? this.ISSUER_PUBLIC : this.ISSUER_TESTNET;
   },
+
+  /**
+   * USDC has 7 decimal places on Stellar
+   */
+  DECIMALS: 7,
+
+  /**
+   * USDC is secondary option
+   */
+  IS_PRIMARY: false,
+} as const;
+
+/**
+ * USDC Stellar Asset Contract (SAC) Configuration
+ * Contrato tokenizado USDC na Stellar (Soroban)
+ */
+export const USDC_CONTRACT = {
+  /**
+   * USDC Stellar Asset Contract address on testnet
+   * Fonte: https://developers.stellar.org/docs/tokens/polygon-bridge#testnet
+   */
+  ADDRESS_TESTNET:
+    process.env.NEXT_PUBLIC_USDC_CONTRACT_TESTNET ||
+    'CDLZVC3R73FLF76VH7U6MSSHMWDTKZQ5A4CTEL3QJBTT6SQUE66RBGGB',
+
+  /**
+   * USDC Stellar Asset Contract address on public network
+   * Fonte: https://www.circle.com/usdc#stellar
+   */
+  ADDRESS_PUBLIC:
+    process.env.NEXT_PUBLIC_USDC_CONTRACT_PUBLIC ||
+    'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAP5DIA3M363UZD',
+
+  /**
+   * Get address based on current network
+   */
+  get ADDRESS() {
+    return STELLAR_CONFIG.NETWORK === 'public' ? this.ADDRESS_PUBLIC : this.ADDRESS_TESTNET;
+  },
+
+  /**
+   * USDC has 7 decimal places on Stellar
+   */
+  DECIMALS: 7,
 } as const;
 
 /**
  * XLM Asset Configuration (nativo)
- * Para uso futuro quando suportar XLM
+ * Asset primário para pagamentos
  */
 export const XLM_ASSET = {
   CODE: 'XLM',
   NATIVE: true,
+  DECIMALS: 7,
+  IS_PRIMARY: true,
+} as const;
+
+/**
+ * XLM Stellar Asset Contract (SAC) Configuration
+ * Contrato SAC nativo para XLM na Soroban (CAP-67)
+ * Fonte: Asset.native().contractId(Networks.PUBLIC/TESTNET)
+ */
+export const XLM_CONTRACT = {
+  /**
+   * XLM Stellar Asset Contract address on testnet
+   * Reserved contract address for native XLM on Soroban testnet
+   */
+  ADDRESS_TESTNET: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+
+  /**
+   * XLM Stellar Asset Contract address on public network
+   * Reserved contract address for native XLM on Soroban mainnet
+   */
+  ADDRESS_PUBLIC: 'CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA',
+
+  /**
+   * Get address based on current network
+   */
+  get ADDRESS() {
+    return STELLAR_CONFIG.NETWORK === 'public' ? this.ADDRESS_PUBLIC : this.ADDRESS_TESTNET;
+  },
+
+  /**
+   * XLM has 7 decimal places on Stellar
+   */
+  DECIMALS: 7,
 } as const;
 
 /**

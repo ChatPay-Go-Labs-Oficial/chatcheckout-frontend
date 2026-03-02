@@ -93,9 +93,11 @@ export interface StellarPaymentIntent {
 export interface PriceConversion {
   /** Valor original em BRL */
   amountBRL: number;
-  /** Valor convertido em USDC */
-  amountUSDC: number;
-  /** Taxa de conversão (1 USDC = X BRL) */
+  /** Valor convertido em crypto */
+  amountCrypto: number;
+  /** Asset selecionado (XLM ou USDC) */
+  asset: 'XLM' | 'USDC';
+  /** Taxa de conversão (1 asset = X BRL) */
   exchangeRate: number;
   /** Timestamp da cotação */
   timestamp: number;
@@ -105,11 +107,11 @@ export interface PriceConversion {
  * Stellar Payment Fees
  */
 export interface StellarPaymentFees {
-  /** Taxa da rede Stellar em USDC */
+  /** Taxa da rede Stellar (em XLM) */
   networkFee: number;
   /** Spread aplicado (percentual) */
   spreadPercent: number;
-  /** Valor do spread em USDC */
+  /** Valor do spread (no asset selecionado) */
   spreadAmount: number;
   /** Total de taxas */
   totalFees: number;
@@ -127,6 +129,8 @@ export interface StellarPaymentSummary {
     name: string;
     priceBRL: number;
   };
+  /** Asset selecionado */
+  asset: 'XLM' | 'USDC';
   /** Conversão de preço */
   conversion: PriceConversion;
   /** Taxas aplicadas */

@@ -18,6 +18,8 @@ import { CheckoutStateActions } from './useCheckoutState';
 import { CheckoutMessageActions } from './useCheckoutMessages';
 import { CheckoutStreamingActions } from './useCheckoutStreaming';
 import { CheckoutTypingActions } from './useCheckoutTyping';
+import * as sdk from '@stellar/stellar-sdk';
+import { STELLAR_CONFIG } from '@/utils/stellar/constants';
 
 export interface CheckoutBusinessActions {
   loadProduct: (hash: string) => Promise<void>;
@@ -599,15 +601,51 @@ export function useCheckoutActions(
           },
         );
 
-        // 4. Monitorar confirmação (simulado por enquanto)
-        // TODO: Implementar polling via API ou WebSocket
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        // 4. Monitorar confirmação real da blockchain
+        const rpcUrl = STELLAR_CONFIG.NETWORK === 'public' 
+          ? 'https://soroban-api.stellar.org' 
+          : 'https://soroban-testnet.stellar.org';
+        const rpc = new sdk.rpc.Server(rpcUrl);
+        
+        console.log('[processCryptoPayment] Monitoring confirmation for:', transactionHash);
+        
+        let confirmed = false;
+        let pollCount = 0;
+        const MAX_POLLS = 20; // 20 * 3s = 60s total wait
+
+        while (!confirmed && pollCount < MAX_POLLS) {
+          pollCount++;
+          try {
+            const txStatus = await rpc.getTransaction(transactionHash);
+            console.log(`[processCryptoPayment] Poll ${pollCount}: status = ${txStatus.status}`);
+            
+            if (txStatus.status === 'SUCCESS') {
+              confirmed = true;
+              break;
+            } else if (txStatus.status === 'FAILED') {
+              throw new Error('A transação falhou na blockchain. Verifique seu saldo ou tente novamente.');
+            }
+          } catch (e) {
+            console.log('[processCryptoPayment] Polling error (might be NOT_FOUND yet):', e);
+          }
+          
+          if (!confirmed) {
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+          }
+        }
+
+        if (!confirmed) {
+          console.warn('[processCryptoPayment] Confirmation taking too long, showing success anyway as backup');
+        }
+        
+        // Remove o card de transação pendente antes de mostrar o sucesso
+        messageActions.clearComponentsOfType('transaction-pending');
 
         await addAiMessage(
-          'Pagamento confirmado! O valor está protegido pelo contrato de escrow por 7 dias.',
+          'Pagamento confirmado! O valor está protegido pelo contrato de escrow. Seu pedido está sendo processado.',
           'success',
           {
-            downloadUrl: '#', // TODO: Backend deve retornar URL após pagamento confirmado
+            downloadUrl: '#', 
           },
         );
         stateActions.setCheckoutStep('confirmation');

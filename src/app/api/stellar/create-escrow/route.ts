@@ -179,7 +179,11 @@ export async function POST(request: Request) {
       asset,
     });
   } catch (error) {
-    console.error('[API /stellar/create-escrow] Error:', error);
+    console.error('[API /stellar/create-escrow] Detailed Error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      error
+    });
 
     return NextResponse.json(
       {

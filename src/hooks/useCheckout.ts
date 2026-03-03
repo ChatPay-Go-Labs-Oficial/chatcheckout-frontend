@@ -24,13 +24,12 @@ import { decodeProduct } from '@/services/checkoutService';
 import { checkoutTrackingService } from '@/services/checkoutTrackingService';
 import type { CustomerData, PaymentMethod } from '@/types/checkout';
 
-// Query interna para buscar produto
 function useCheckoutQuery(hash: string) {
   return useQuery({
     queryKey: ['checkout-product', hash],
     queryFn: () => decodeProduct(hash),
     enabled: !!hash,
-    staleTime: 1000 * 60 * 30, // 30 minutos (produto não muda muito rápido)
+    staleTime: 1000 * 60 * 30,
     retry: 1,
   });
 }
@@ -42,10 +41,6 @@ function mapPaymentMethod(method: PaymentMethod): 'PIX' | 'CARD' | 'CRYPTO' {
 }
 
 export function useCheckout(hash: string) {
-  // ========================================
-  // Composição de Hooks Especializados
-  // ========================================
-
   const { state, actions: stateActions } = useCheckoutState();
   const messageActions = useCheckoutMessages(stateActions);
   const typingActions = useCheckoutTyping(stateActions);
@@ -58,55 +53,39 @@ export function useCheckout(hash: string) {
     typingActions,
   );
 
-  // ========================================
-  // Efeitos de Inicialização
-  // ========================================
-
-  // ========================================
-  // Data Fetching com TanStack Query
-  // ========================================
-
   const {
     data: product,
     isLoading: isLoadingProduct,
     error: productError,
   } = useCheckoutQuery(hash);
 
-  // ========================================
-  // Sincronização e Inicialização
-  // ========================================
-
-  // Track if welcome message has been sent to avoid duplicates
   const welcomeMessageSent = useRef(false);
+  const abandonmentSentRef = useRef(false);
+  const currentStateRef = useRef({
+    mode: state.mode,
+    checkoutStep: state.checkoutStep,
+    paymentMethod: state.paymentMethod,
+    productHash: state.product?.productHash ?? null,
+  });
 
-  /**
-   * Sincroniza dados da query com o estado local
-   */
   useEffect(() => {
     if (product) {
-      // Se o produto mudou ou ainda não temos no estado
       if (!state.product || state.product.id !== product.id) {
         stateActions.setProduct(product);
-        // Reset welcome message flag when product changes
         welcomeMessageSent.current = false;
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product, state.product]);
 
-  /**
-   * Dispara mensagem de boas-vindas quando produto está carregado e sincronizado
-   */
   useEffect(() => {
     if (state.product && state.messages.length === 0 && !welcomeMessageSent.current) {
-      // Set flag immediately to prevent race conditions from multiple renders
       welcomeMessageSent.current = true;
       void businessActions.addWelcomeMessage();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.product, state.messages.length]);
 
-  // Sincroniza erros e loading
   useEffect(() => {
     if (isLoadingProduct) {
       stateActions.setLoading(true);
@@ -122,13 +101,20 @@ export function useCheckout(hash: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoadingProduct, productError]);
 
-  // Inicia sessão de tracking do checkout
+  useEffect(() => {
+    currentStateRef.current = {
+      mode: state.mode,
+      checkoutStep: state.checkoutStep,
+      paymentMethod: state.paymentMethod,
+      productHash: state.product?.productHash ?? null,
+    };
+  }, [state.mode, state.checkoutStep, state.paymentMethod, state.product?.productHash]);
+
   useEffect(() => {
     if (!hash) return;
     void checkoutTrackingService.ensureSession(hash);
   }, [hash]);
 
-  // Heartbeat periódico
   useEffect(() => {
     if (!hash) return;
 
@@ -139,28 +125,36 @@ export function useCheckout(hash: string) {
     return () => clearInterval(interval);
   }, [hash]);
 
-  // Evento de abandono quando sair da página no meio do checkout
   useEffect(() => {
     if (!hash) return;
 
-    return () => {
+    const handlePageExit = () => {
+      if (abandonmentSentRef.current) return;
+
       const shouldTrackAbandonment =
-        state.mode === 'checkout' &&
-        state.checkoutStep !== 'confirmation' &&
-        state.checkoutStep !== null;
+        currentStateRef.current.mode === 'checkout' &&
+        currentStateRef.current.checkoutStep !== 'confirmation' &&
+        currentStateRef.current.checkoutStep !== null;
 
       if (shouldTrackAbandonment) {
-        void checkoutTrackingService.abandonCheckout(hash, {
-          checkoutStep: state.checkoutStep,
-          paymentMethod: state.paymentMethod,
+        abandonmentSentRef.current = true;
+        const productHash = currentStateRef.current.productHash ?? hash;
+
+        void checkoutTrackingService.abandonCheckout(productHash, {
+          checkoutStep: currentStateRef.current.checkoutStep,
+          paymentMethod: currentStateRef.current.paymentMethod,
         });
       }
     };
-  }, [hash, state.mode, state.checkoutStep, state.paymentMethod]);
 
-  // ========================================
-  // API Pública (Mantém compatibilidade)
-  // ========================================
+    window.addEventListener('beforeunload', handlePageExit);
+    window.addEventListener('pagehide', handlePageExit);
+
+    return () => {
+      window.removeEventListener('beforeunload', handlePageExit);
+      window.removeEventListener('pagehide', handlePageExit);
+    };
+  }, [hash]);
 
   const startQA = async () => {
     await businessActions.startQA();
@@ -261,7 +255,6 @@ export function useCheckout(hash: string) {
   };
 
   return {
-    // Estado
     loading: state.loading,
     error: state.error,
     product: state.product,
@@ -275,7 +268,6 @@ export function useCheckout(hash: string) {
     aiTyping: state.isAiTyping,
     showMessageInput: state.showMessageInput,
 
-    // Ações
     startQA,
     startCheckout,
     sendMessage: businessActions.sendMessage,

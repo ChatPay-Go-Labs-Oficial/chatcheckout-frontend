@@ -582,7 +582,10 @@ export function useCheckoutActions(
                 eventType: 'CRYPTO_TX_SUBMITTED',
                 step: 'PAYMENT',
                 paymentMethod: 'CRYPTO',
-                metadata: { transactionHash },
+                metadata: {
+                  transactionHash,
+                  totalAmountCents: Math.round(Number(state.product.price || 0) * 100),
+                },
               });
             }
 
@@ -699,7 +702,10 @@ export function useCheckoutActions(
             eventType: 'CRYPTO_TX_CONFIRMED',
             step: 'CONFIRMATION',
             paymentMethod: 'CRYPTO',
-            metadata: { transactionHash },
+            metadata: {
+              transactionHash,
+              totalAmountCents: Math.round(Number(state.product.price || 0) * 100),
+            },
           });
 
           await checkoutTrackingService.trackCheckoutEvent({

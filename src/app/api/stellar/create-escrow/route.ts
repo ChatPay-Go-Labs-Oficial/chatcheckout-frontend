@@ -182,7 +182,7 @@ export async function POST(request: Request) {
     console.error('[API /stellar/create-escrow] Detailed Error:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-      error
+      error,
     });
 
     return NextResponse.json(

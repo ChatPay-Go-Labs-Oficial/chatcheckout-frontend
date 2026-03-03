@@ -21,6 +21,8 @@ import { useCheckoutStreaming } from './checkout/useCheckoutStreaming';
 import { useCheckoutActions } from './checkout/useCheckoutActions';
 import { useQuery } from '@tanstack/react-query';
 import { decodeProduct } from '@/services/checkoutService';
+import { checkoutTrackingService } from '@/services/checkoutTrackingService';
+import type { CustomerData, PaymentMethod } from '@/types/checkout';
 
 // Query interna para buscar produto
 function useCheckoutQuery(hash: string) {
@@ -31,6 +33,12 @@ function useCheckoutQuery(hash: string) {
     staleTime: 1000 * 60 * 30, // 30 minutos (produto não muda muito rápido)
     retry: 1,
   });
+}
+
+function mapPaymentMethod(method: PaymentMethod): 'PIX' | 'CARD' | 'CRYPTO' {
+  if (method === 'pix') return 'PIX';
+  if (method === 'card') return 'CARD';
+  return 'CRYPTO';
 }
 
 export function useCheckout(hash: string) {
@@ -114,9 +122,143 @@ export function useCheckout(hash: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoadingProduct, productError]);
 
+  // Inicia sessão de tracking do checkout
+  useEffect(() => {
+    if (!hash) return;
+    void checkoutTrackingService.ensureSession(hash);
+  }, [hash]);
+
+  // Heartbeat periódico
+  useEffect(() => {
+    if (!hash) return;
+
+    const interval = setInterval(() => {
+      void checkoutTrackingService.sendCheckoutHeartbeat(hash);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [hash]);
+
+  // Evento de abandono quando sair da página no meio do checkout
+  useEffect(() => {
+    if (!hash) return;
+
+    return () => {
+      const shouldTrackAbandonment =
+        state.mode === 'checkout' &&
+        state.checkoutStep !== 'confirmation' &&
+        state.checkoutStep !== null;
+
+      if (shouldTrackAbandonment) {
+        void checkoutTrackingService.abandonCheckout(hash, {
+          checkoutStep: state.checkoutStep,
+          paymentMethod: state.paymentMethod,
+        });
+      }
+    };
+  }, [hash, state.mode, state.checkoutStep, state.paymentMethod]);
+
   // ========================================
   // API Pública (Mantém compatibilidade)
   // ========================================
+
+  const startQA = async () => {
+    await businessActions.startQA();
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'CHECKOUT_QA_STARTED',
+        step: 'QA',
+      });
+    }
+  };
+
+  const startCheckout = async () => {
+    await businessActions.startCheckout();
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'CHECKOUT_STARTED',
+        step: 'CHECKOUT_STARTED',
+      });
+    }
+  };
+
+  const submitCustomerData = async (data: CustomerData) => {
+    await businessActions.submitCustomerData(data);
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'CUSTOMER_DATA_SUBMITTED',
+        step: 'CUSTOMER_DATA',
+        metadata: { hasPhone: !!data.phone, hasWhatsapp: !!data.whatsapp },
+      });
+    }
+  };
+
+  const selectPaymentMethod = async (method: PaymentMethod) => {
+    await businessActions.selectPaymentMethod(method);
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'PAYMENT_METHOD_SELECTED',
+        step: 'PAYMENT_METHOD',
+        paymentMethod: mapPaymentMethod(method),
+      });
+    }
+  };
+
+  const selectCryptoAsset = async (asset: 'USDC' | 'XLM') => {
+    await businessActions.selectCryptoAsset(asset);
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'CRYPTO_ASSET_SELECTED',
+        step: 'PAYMENT_REVIEW',
+        paymentMethod: 'CRYPTO',
+        metadata: { asset },
+      });
+    }
+  };
+
+  const handleWalletConnected = async (address: string) => {
+    await businessActions.handleWalletConnected(address);
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'WALLET_CONNECTED',
+        step: 'WALLET_CONNECTION',
+        paymentMethod: 'CRYPTO',
+        metadata: { walletAddress: address },
+      });
+    }
+  };
+
+  const confirmPayment = async (signTransactionFn?: (txXdr: string) => Promise<string>) => {
+    if (state.product?.productHash && state.paymentMethod) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'PAYMENT_CONFIRM_CLICKED',
+        step: 'PAYMENT',
+        paymentMethod: mapPaymentMethod(state.paymentMethod),
+      });
+    }
+
+    await businessActions.confirmPayment(signTransactionFn);
+  };
+
+  const confirmPaymentSuccess = async () => {
+    await businessActions.confirmPaymentSuccess();
+
+    if (state.product?.productHash && state.paymentMethod) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'PAYMENT_SUCCEEDED',
+        step: 'CONFIRMATION',
+        paymentMethod: mapPaymentMethod(state.paymentMethod),
+      });
+    }
+  };
 
   return {
     // Estado
@@ -134,16 +276,16 @@ export function useCheckout(hash: string) {
     showMessageInput: state.showMessageInput,
 
     // Ações
-    startQA: businessActions.startQA,
-    startCheckout: businessActions.startCheckout,
+    startQA,
+    startCheckout,
     sendMessage: businessActions.sendMessage,
     continueCheckout: businessActions.continueCheckout,
-    submitCustomerData: businessActions.submitCustomerData,
-    selectPaymentMethod: businessActions.selectPaymentMethod,
-    selectCryptoAsset: businessActions.selectCryptoAsset,
-    handleWalletConnected: businessActions.handleWalletConnected, // Nova ação
-    confirmPayment: businessActions.confirmPayment,
-    confirmPaymentSuccess: businessActions.confirmPaymentSuccess,
+    submitCustomerData,
+    selectPaymentMethod,
+    selectCryptoAsset,
+    handleWalletConnected,
+    confirmPayment,
+    confirmPaymentSuccess,
     editCustomerData: businessActions.editCustomerData,
     changePaymentMethod: businessActions.changePaymentMethod,
     askQuestion: businessActions.askQuestion,

@@ -20,6 +20,7 @@ import { CheckoutStreamingActions } from './useCheckoutStreaming';
 import { CheckoutTypingActions } from './useCheckoutTyping';
 import * as sdk from '@stellar/stellar-sdk';
 import { STELLAR_CONFIG } from '@/utils/stellar/constants';
+import { checkoutTrackingService } from '@/services/checkoutTrackingService';
 
 export interface CheckoutBusinessActions {
   loadProduct: (hash: string) => Promise<void>;
@@ -422,6 +423,22 @@ export function useCheckoutActions(
         }
       } catch (error) {
         console.error('[confirmPayment] Error:', error);
+
+        if (state.product?.productHash && state.paymentMethod) {
+          await checkoutTrackingService.trackCheckoutEvent({
+            productHash: state.product.productHash,
+            eventType: 'PAYMENT_FAILED',
+            step: 'PAYMENT',
+            paymentMethod:
+              state.paymentMethod === 'pix'
+                ? 'PIX'
+                : state.paymentMethod === 'card'
+                  ? 'CARD'
+                  : 'CRYPTO',
+            status: error instanceof Error ? error.message : 'unknown_error',
+          });
+        }
+
         await addAiMessage('Houve um erro ao processar o pagamento. Tente novamente.');
       }
     },
@@ -500,6 +517,16 @@ export function useCheckoutActions(
           const createData = await createResponse.json();
           const transactionXDR = createData.transactionXDR;
 
+          if (state.product?.productHash) {
+            await checkoutTrackingService.trackCheckoutEvent({
+              productHash: state.product.productHash,
+              eventType: 'CRYPTO_ESCROW_CREATED',
+              step: 'PAYMENT',
+              paymentMethod: 'CRYPTO',
+              metadata: { asset: state.cryptoAsset, amountCrypto },
+            });
+          }
+
           console.log('[processCryptoPayment] Creating escrow via API:', {
             buyer: state.walletAddress,
             amount: amountCrypto,
@@ -518,6 +545,15 @@ export function useCheckoutActions(
           );
 
           const signedTxXDR = await signTransactionFn(transactionXDR);
+
+          if (state.product?.productHash) {
+            await checkoutTrackingService.trackCheckoutEvent({
+              productHash: state.product.productHash,
+              eventType: 'CRYPTO_TX_SIGNED',
+              step: 'PAYMENT',
+              paymentMethod: 'CRYPTO',
+            });
+          }
 
           console.log('[processCryptoPayment] Transaction signed, submitting...');
 
@@ -539,6 +575,17 @@ export function useCheckoutActions(
             // Sucesso! Salvar hash e sair do loop
             const submitData = await submitResponse.json();
             transactionHash = submitData.transactionHash;
+
+            if (state.product?.productHash) {
+              await checkoutTrackingService.trackCheckoutEvent({
+                productHash: state.product.productHash,
+                eventType: 'CRYPTO_TX_SUBMITTED',
+                step: 'PAYMENT',
+                paymentMethod: 'CRYPTO',
+                metadata: { transactionHash },
+              });
+            }
+
             console.log(
               '[processCryptoPayment] Transaction submitted successfully!',
               transactionHash,
@@ -602,13 +649,14 @@ export function useCheckoutActions(
         );
 
         // 4. Monitorar confirmação real da blockchain
-        const rpcUrl = STELLAR_CONFIG.NETWORK === 'public' 
-          ? 'https://soroban-api.stellar.org' 
-          : 'https://soroban-testnet.stellar.org';
+        const rpcUrl =
+          STELLAR_CONFIG.NETWORK === 'public'
+            ? 'https://soroban-api.stellar.org'
+            : 'https://soroban-testnet.stellar.org';
         const rpc = new sdk.rpc.Server(rpcUrl);
-        
+
         console.log('[processCryptoPayment] Monitoring confirmation for:', transactionHash);
-        
+
         let confirmed = false;
         let pollCount = 0;
         const MAX_POLLS = 20; // 20 * 3s = 60s total wait
@@ -618,40 +666,73 @@ export function useCheckoutActions(
           try {
             const txStatus = await rpc.getTransaction(transactionHash);
             console.log(`[processCryptoPayment] Poll ${pollCount}: status = ${txStatus.status}`);
-            
+
             if (txStatus.status === 'SUCCESS') {
               confirmed = true;
               break;
             } else if (txStatus.status === 'FAILED') {
-              throw new Error('A transação falhou na blockchain. Verifique seu saldo ou tente novamente.');
+              throw new Error(
+                'A transação falhou na blockchain. Verifique seu saldo ou tente novamente.',
+              );
             }
           } catch (e) {
             console.log('[processCryptoPayment] Polling error (might be NOT_FOUND yet):', e);
           }
-          
+
           if (!confirmed) {
             await new Promise((resolve) => setTimeout(resolve, 3000));
           }
         }
 
         if (!confirmed) {
-          console.warn('[processCryptoPayment] Confirmation taking too long, showing success anyway as backup');
+          console.warn(
+            '[processCryptoPayment] Confirmation taking too long, showing success anyway as backup',
+          );
         }
-        
+
         // Remove o card de transação pendente antes de mostrar o sucesso
         messageActions.clearComponentsOfType('transaction-pending');
+
+        if (state.product?.productHash) {
+          await checkoutTrackingService.trackCheckoutEvent({
+            productHash: state.product.productHash,
+            eventType: 'CRYPTO_TX_CONFIRMED',
+            step: 'CONFIRMATION',
+            paymentMethod: 'CRYPTO',
+            metadata: { transactionHash },
+          });
+
+          await checkoutTrackingService.trackCheckoutEvent({
+            productHash: state.product.productHash,
+            eventType: 'PAYMENT_SUCCEEDED',
+            step: 'CONFIRMATION',
+            paymentMethod: 'CRYPTO',
+            metadata: { transactionHash },
+          });
+        }
 
         await addAiMessage(
           'Pagamento confirmado! O valor está protegido pelo contrato de escrow. Seu pedido está sendo processado.',
           'success',
           {
-            downloadUrl: '#', 
+            downloadUrl: '#',
           },
         );
         stateActions.setCheckoutStep('confirmation');
       } catch (error) {
         console.error('[processCryptoPayment] Error:', error);
         messageActions.clearComponentsOfType('loading');
+
+        if (state.product?.productHash) {
+          await checkoutTrackingService.trackCheckoutEvent({
+            productHash: state.product.productHash,
+            eventType: 'PAYMENT_FAILED',
+            step: 'PAYMENT',
+            paymentMethod: 'CRYPTO',
+            status: error instanceof Error ? error.message : 'crypto_payment_error',
+          });
+        }
+
         throw error;
       }
     },
@@ -674,13 +755,43 @@ export function useCheckoutActions(
 
     const result = await processPayment(state.product.id, state.customerData, state.paymentMethod);
 
+    if (state.product.productHash) {
+      await checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'PAYMENT_INTENT_CREATED',
+        step: 'PAYMENT',
+        paymentMethod: state.paymentMethod === 'pix' ? 'PIX' : 'CARD',
+        orderId: result.orderId,
+      });
+    }
+
     if (state.paymentMethod === 'pix' && result.qrCode) {
       await addAiMessage('Pagamento via Pix iniciado. Escaneie o QR Code abaixo:', 'qr-code', {
         qrCodeUrl: result.qrCode,
         pixCode: result.pixCode,
         expiresIn: '10 minutos',
       });
+
+      if (state.product.productHash) {
+        await checkoutTrackingService.trackCheckoutEvent({
+          productHash: state.product.productHash,
+          eventType: 'PIX_PRESENTED',
+          step: 'PAYMENT',
+          paymentMethod: 'PIX',
+          orderId: result.orderId,
+        });
+      }
     } else if (state.paymentMethod === 'card' && result.clientSecret) {
+      if (state.product.productHash) {
+        await checkoutTrackingService.trackCheckoutEvent({
+          productHash: state.product.productHash,
+          eventType: 'CARD_FORM_PRESENTED',
+          step: 'PAYMENT',
+          paymentMethod: 'CARD',
+          orderId: result.orderId,
+        });
+      }
+
       await addAiMessage('Complete o pagamento com seu cartão:', 'card-payment', {
         clientSecret: result.clientSecret,
         onPaymentSuccess: async () => {
@@ -690,6 +801,24 @@ export function useCheckoutActions(
             '✅ Pagamento processado com sucesso! Aguarde a confirmação final.',
             null,
           );
+
+          if (state.product?.productHash) {
+            await checkoutTrackingService.trackCheckoutEvent({
+              productHash: state.product.productHash,
+              eventType: 'CARD_PAYMENT_CONFIRMED',
+              step: 'PAYMENT',
+              paymentMethod: 'CARD',
+              orderId: result.orderId,
+            });
+
+            await checkoutTrackingService.trackCheckoutEvent({
+              productHash: state.product.productHash,
+              eventType: 'PAYMENT_SUCCEEDED',
+              step: 'CONFIRMATION',
+              paymentMethod: 'CARD',
+              orderId: result.orderId,
+            });
+          }
 
           // Simular confirmação após alguns segundos (em produção, usar webhook)
           setTimeout(async () => {

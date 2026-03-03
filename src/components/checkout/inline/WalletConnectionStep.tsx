@@ -147,7 +147,7 @@ export function WalletConnectionStep({ checkout }: WalletConnectionStepProps) {
               {address.slice(0, 6)}...{address.slice(-6)}
             </span>
           </p>
-          <button 
+          <button
             onClick={() => connect()}
             className="text-[10px] text-blue-600 hover:text-blue-700 hover:underline transition-colors font-medium cursor-pointer bg-transparent border-none p-0"
           >

@@ -66,8 +66,11 @@ export async function POST(request: Request) {
 
     // Extract sequence number from submitted transaction for debugging
     try {
-      const parsedTx = sdk.TransactionBuilder.fromXDR(signedTxXDR, STELLAR_CONFIG.NETWORK_PASSPHRASE);
-      
+      const parsedTx = sdk.TransactionBuilder.fromXDR(
+        signedTxXDR,
+        STELLAR_CONFIG.NETWORK_PASSPHRASE,
+      );
+
       let txSeqNum: string = 'unknown';
       let sourceAddress: string = 'unknown';
 
@@ -89,7 +92,10 @@ export async function POST(request: Request) {
         const accountSeqNum = account.sequenceNumber().toString();
         console.log('[API /stellar/submit-tx] Account current sequence number:', accountSeqNum);
       } catch (err) {
-        console.log('[API /stellar/submit-tx] Could not fetch account for sequence comparison:', err);
+        console.log(
+          '[API /stellar/submit-tx] Could not fetch account for sequence comparison:',
+          err,
+        );
       }
     } catch (e) {
       console.log('[API /stellar/submit-tx] Could not extract sequence numbers for comparison:', e);

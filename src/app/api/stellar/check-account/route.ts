@@ -32,7 +32,8 @@ export async function GET(request: Request) {
     console.log('[API /stellar/check-account] Checking account:', address);
 
     // Get account info via RPC
-    const account = await sdk.rpc.Account.retrieve(rpcUrl, address);
+    const rpc = new sdk.rpc.Server(rpcUrl);
+    const account = await rpc.getAccount(address);
     const sequenceNumber = account.sequenceNumber().toString();
 
     console.log('[API /stellar/check-account] Account info:', {

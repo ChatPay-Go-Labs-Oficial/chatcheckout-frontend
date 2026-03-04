@@ -182,35 +182,33 @@ class StellarPaymentService {
 
   /**
    * Get seller's wallet address from backend
-   * TODO: Implement backend endpoint
    */
   async getSellerAddress(productId: string): Promise<string> {
-    // Temporary: Use test address
-    // In production, call backend API: GET /api/seller/wallet-address?productId={id}
-    const TEST_SELLER_ADDRESS = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
-
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) {
-        console.warn('[StellarPaymentService] No API URL configured, using test address');
-        return TEST_SELLER_ADDRESS;
-      }
-
-      const response = await fetch(`${apiUrl}/seller/wallet-address?productId=${productId}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.walletAddress) {
-          console.log('[StellarPaymentService] Seller address fetched:', data.walletAddress);
-          return data.walletAddress;
-        }
-      }
-    } catch (error) {
-      console.error('[StellarPaymentService] Error fetching seller address:', error);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      throw new Error('NEXT_PUBLIC_API_URL is not configured');
     }
 
-    console.warn('[StellarPaymentService] Using test seller address');
-    return TEST_SELLER_ADDRESS;
+    const response = await fetch(`${apiUrl}/seller/wallet-address?productId=${productId}`);
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const message =
+        typeof data === 'object' && data !== null && 'message' in data
+          ? String((data as { message: string }).message)
+          : 'Failed to fetch seller wallet address';
+      throw new Error(message);
+    }
+
+    if (typeof data === 'object' && data !== null && 'walletAddress' in data) {
+      const walletAddress = (data as { walletAddress: string }).walletAddress;
+      if (walletAddress) {
+        console.log('[StellarPaymentService] Seller address fetched:', walletAddress);
+        return walletAddress;
+      }
+    }
+
+    throw new Error('Seller wallet address not configured');
   }
 
   /**

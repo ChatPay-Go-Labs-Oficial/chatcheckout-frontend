@@ -25,35 +25,49 @@ function getSorobanRpcUrl(): string {
 
 /**
  * Get seller's wallet address
- * TODO: Implement backend endpoint to fetch seller address by product ID
  */
-async function getSellerAddress(productId: string): Promise<string> {
-  // Temporary: Use test address
-  // In production, call backend API or database
-  const TEST_SELLER_ADDRESS = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
+class SellerAddressError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = 'SellerAddressError';
+  }
+}
 
+async function getSellerAddress(productId: string): Promise<string> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) {
-    console.warn('[API /stellar/create-escrow] No API URL configured, using test address');
-    return TEST_SELLER_ADDRESS;
+    throw new SellerAddressError('NEXT_PUBLIC_API_URL is not configured', 500);
   }
 
-  try {
-    const response = await fetch(`${apiUrl}/seller/wallet-address?productId=${productId}`);
+  const response = await fetch(`${apiUrl}/seller/wallet-address?productId=${productId}`, {
+    method: 'GET',
+    cache: 'no-store',
+  });
 
-    if (response.ok) {
-      const data = await response.json();
-      if (data.walletAddress) {
-        console.log('[API /stellar/create-escrow] Seller address fetched:', data.walletAddress);
-        return data.walletAddress;
-      }
-    }
-  } catch (error) {
-    console.error('[API /stellar/create-escrow] Error fetching seller address:', error);
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message =
+      typeof data === 'object' && data !== null && 'message' in data
+        ? String((data as { message: string }).message)
+        : 'Failed to fetch seller wallet address';
+    throw new SellerAddressError(message, response.status);
   }
 
-  console.warn('[API /stellar/create-escrow] Using test seller address');
-  return TEST_SELLER_ADDRESS;
+  const walletAddress =
+    typeof data === 'object' && data !== null && 'walletAddress' in data
+      ? (data as { walletAddress: string }).walletAddress
+      : null;
+
+  if (!walletAddress) {
+    throw new SellerAddressError('Seller wallet address not configured', 422);
+  }
+
+  console.log('[API /stellar/create-escrow] Seller address fetched:', walletAddress);
+  return walletAddress;
 }
 
 /**
@@ -179,6 +193,16 @@ export async function POST(request: Request) {
       asset,
     });
   } catch (error) {
+    if (error instanceof SellerAddressError) {
+      return NextResponse.json(
+        {
+          error: 'Seller wallet address unavailable',
+          details: error.message,
+        },
+        { status: error.status },
+      );
+    }
+
     console.error('[API /stellar/create-escrow] Detailed Error:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,

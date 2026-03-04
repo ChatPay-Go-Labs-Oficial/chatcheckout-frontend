@@ -287,6 +287,15 @@ export function useCheckoutActions(
    */
   const selectPaymentMethod = useCallback(
     async (method: PaymentMethod) => {
+      if (method === 'crypto' && !state.product?.cryptoPaymentsEnabled) {
+        messageActions.clearComponentsOfType('payment-options');
+        await addAiMessage(
+          'Pagamento em crypto não está disponível para este vendedor no momento. Escolha Pix ou Cartão.',
+          'payment-options',
+        );
+        return;
+      }
+
       // Remove o componente de seleção de pagamento
       messageActions.clearComponentsOfType('payment-options');
 
@@ -321,7 +330,7 @@ export function useCheckoutActions(
     },
     // Removido: dependências causavam loop infinito
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.customerData],
+    [state.customerData, state.product?.cryptoPaymentsEnabled],
   );
 
   /**

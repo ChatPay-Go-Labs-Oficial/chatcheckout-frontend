@@ -26,6 +26,7 @@ export interface ProductInfo {
   promptAi?: string;
   productHash: string | null;
   infoproducer: InfoproducerInfo;
+  cryptoPaymentsEnabled: boolean;
 }
 
 /**

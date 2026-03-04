@@ -24,6 +24,7 @@ export type UserProfile = {
   role: UserRole;
   companyName?: string;
   cnpj?: string;
+  cryptoWalletAddress?: string | null;
 };
 
 export type UserUpdatePayload = {
@@ -35,4 +36,5 @@ export type UserUpdatePayload = {
   role?: UserRole;
   companyName?: string;
   cnpj?: string;
+  cryptoWalletAddress?: string | null;
 };

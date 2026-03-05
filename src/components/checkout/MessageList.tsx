@@ -16,11 +16,31 @@ interface MessageListProps {
 
 export function MessageList({ messages, checkout }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(messages.length);
 
-  // Auto-scroll para última mensagem
+  // Auto-scroll quando a contagem de mensagens aumenta
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const currentCount = messages.length;
+    const prevCount = prevMessageCountRef.current;
+
+    if (currentCount > prevCount) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    prevMessageCountRef.current = currentCount;
   }, [messages]);
+
+  // Auto-scroll quando um componente inline termina de aparecer (isTypingComplete muda)
+  useEffect(() => {
+    const hasNewVisibleComponent = messages.some(
+      (m) => m.componentType && m.isTypingComplete,
+    );
+    if (hasNewVisibleComponent) {
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 150);
+    }
+  }, [messages.map((m) => `${m.id}-${m.isTypingComplete}`).join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-col space-y-4 p-4">

@@ -14,6 +14,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useGlobalToast } from '@/contexts/ToastContext';
+import { userService } from '@/services/userService';
 import {
   StellarWalletState,
   StellarNetwork,
@@ -89,12 +90,36 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     initialize();
   }, []);
 
+  const syncWalletAddress = useCallback(
+    async (walletAddress: string) => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      const accessToken = localStorage.getItem('chatcheckout_access_token');
+      if (!accessToken) {
+        return;
+      }
+
+      try {
+        await userService.upsertWalletAddress(walletAddress);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Erro ao salvar carteira no backend';
+        toast.warning(
+          `Carteira conectada, mas não foi possível sincronizar no backend: ${message}`,
+        );
+      }
+    },
+    [toast],
+  );
+
   // Connect wallet mutation
   const connectMutation = useMutation({
     mutationFn: async () => {
       return stellarService.connectWallet(true);
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setState({
         ...state,
         isConnected: true,
@@ -103,6 +128,7 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
         network: stellarService.getNetwork(),
         error: null,
       });
+      await syncWalletAddress(data.accountId);
       toast.success('Carteira Stellar conectada com sucesso!');
     },
     onError: (error: Error) => {
@@ -120,7 +146,7 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     mutationFn: async (username?: string) => {
       return stellarService.createWallet(username);
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setState({
         ...state,
         isConnected: true,
@@ -129,6 +155,7 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
         network: stellarService.getNetwork(),
         error: null,
       });
+      await syncWalletAddress(data.accountId);
       toast.success('Carteira Stellar criada com sucesso!');
     },
     onError: (error: Error) => {

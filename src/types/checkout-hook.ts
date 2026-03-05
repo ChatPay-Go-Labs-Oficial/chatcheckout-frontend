@@ -14,6 +14,8 @@ export interface UseCheckoutReturn {
   checkoutStep: string | null;
   customerData: CustomerData | null;
   paymentMethod: PaymentMethod | null;
+  cryptoAsset: 'USDC' | 'XLM' | null;
+  walletAddress: string | null;
   messages: Message[];
   aiTyping: boolean;
   showMessageInput: boolean;
@@ -25,7 +27,9 @@ export interface UseCheckoutReturn {
   continueCheckout: () => Promise<void>;
   submitCustomerData: (data: CustomerData) => Promise<void>;
   selectPaymentMethod: (method: PaymentMethod) => Promise<void>;
-  confirmPayment: () => Promise<void>;
+  selectCryptoAsset: (asset: 'USDC' | 'XLM') => Promise<void>;
+  handleWalletConnected: (address: string) => Promise<void>;
+  confirmPayment: (signTransactionFn?: (txXdr: string) => Promise<string>) => Promise<void>;
   confirmPaymentSuccess: () => Promise<void>;
   editCustomerData: () => Promise<void>;
   changePaymentMethod: () => Promise<void>;

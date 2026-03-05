@@ -26,10 +26,13 @@ export interface CheckoutStateActions {
   setSavedStep: (step: CheckoutStep | null) => void;
   setCustomerData: (data: CustomerData) => void;
   setPaymentMethod: (method: PaymentMethod | null) => void;
+  setCryptoAsset: (asset: 'USDC' | 'XLM' | null) => void;
+  setWalletAddress: (address: string | null) => void; // Nova ação
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
   updateMessage: (id: string, updates: Partial<Message>) => void;
   removeComponentFromMessage: (type: MessageComponentType) => void;
+  updateComponentDataOfType: (type: MessageComponentType, partialData: Record<string, unknown>) => void;
   setAiTyping: (isTyping: boolean) => void;
   setShowMessageInput: (show: boolean) => void;
 }
@@ -39,6 +42,8 @@ export function useCheckoutState() {
     product: null,
     loading: true,
     error: null,
+    cryptoAsset: null,
+    walletAddress: null, // Novo campo
     mode: 'initial',
     checkoutStep: 'welcome',
     savedStep: null,
@@ -47,6 +52,9 @@ export function useCheckoutState() {
     customerData: null,
     paymentMethod: null,
     messages: [],
+    currentStep: 'welcome', // Adicionado para satisfazer o tipo CheckoutState
+    sellerInfo: null, // Adicionado para satisfazer o tipo CheckoutState
+    aiTypingMessage: '', // Adicionado para satisfazer o tipo CheckoutState
   });
 
   const setLoading = useCallback((loading: boolean) => {
@@ -103,12 +111,34 @@ export function useCheckoutState() {
     }));
   }, []);
 
+  const updateComponentDataOfType = useCallback(
+    (type: MessageComponentType, partialData: Record<string, unknown>) => {
+      setState((prev) => ({
+        ...prev,
+        messages: prev.messages.map((msg) =>
+          msg.componentType === type
+            ? { ...msg, componentData: { ...msg.componentData, ...partialData } }
+            : msg,
+        ),
+      }));
+    },
+    [],
+  );
+
   const setAiTyping = useCallback((isTyping: boolean) => {
     setState((prev) => ({ ...prev, isAiTyping: isTyping }));
   }, []);
 
   const setShowMessageInput = useCallback((show: boolean) => {
     setState((prev) => ({ ...prev, showMessageInput: show }));
+  }, []);
+
+  const setCryptoAsset = useCallback((asset: 'USDC' | 'XLM' | null) => {
+    setState((prev) => ({ ...prev, cryptoAsset: asset }));
+  }, []);
+
+  const setWalletAddress = useCallback((address: string | null) => {
+    setState((prev) => ({ ...prev, walletAddress: address }));
   }, []);
 
   return {
@@ -122,10 +152,13 @@ export function useCheckoutState() {
       setSavedStep,
       setCustomerData,
       setPaymentMethod,
+      setCryptoAsset,
+      setWalletAddress, // Nova ação
       setMessages,
       addMessage,
       updateMessage,
       removeComponentFromMessage,
+      updateComponentDataOfType,
       setAiTyping,
       setShowMessageInput,
     },

@@ -16,6 +16,11 @@ export interface CheckoutMessageActions {
     componentData?: MessageComponentData,
   ) => string;
   clearComponentsOfType: (type: MessageComponentType) => void;
+  updateComponentDataOfType: (
+    type: MessageComponentType,
+    partialData: Partial<MessageComponentData>,
+    messages: Message[],
+  ) => void;
 }
 
 export function useCheckoutMessages(stateActions: CheckoutStateActions): CheckoutMessageActions {
@@ -67,9 +72,24 @@ export function useCheckoutMessages(stateActions: CheckoutStateActions): Checkou
     [stateActions],
   );
 
+  /**
+   * Atualiza componentData de uma mensagem pelo tipo (ex: marcar completed=true)
+   */
+  const updateComponentDataOfType = useCallback(
+    (type: MessageComponentType, partialData: Partial<MessageComponentData>, messages: Message[]) => {
+      const msg = messages.find((m) => m.componentType === type);
+      if (!msg) return;
+      stateActions.updateMessage(msg.id, {
+        componentData: { ...msg.componentData, ...partialData },
+      });
+    },
+    [stateActions],
+  );
+
   return {
     addUserMessage,
     createAiMessage,
     clearComponentsOfType,
+    updateComponentDataOfType,
   };
 }

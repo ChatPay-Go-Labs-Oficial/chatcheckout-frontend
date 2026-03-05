@@ -6,15 +6,17 @@
 
 import { Message } from '@/types/checkout';
 import { UseCheckoutReturn } from '@/types/checkout-hook';
-import {
-  ActionButtons,
-  CustomerDataForm,
-  PaymentOptions,
-  PaymentReview,
-  QrCodePayment,
-  CardPayment,
-  SuccessScreen,
-} from './inline';
+import { ActionButtons } from './inline/ActionButtons';
+import { CustomerDataForm } from './inline/CustomerDataForm';
+import { PaymentOptions } from './inline/PaymentOptions';
+import { WalletConnectionStep } from './inline/WalletConnectionStep';
+import { CryptoAssetSelection } from './inline/CryptoAssetSelection';
+import { PaymentReview } from './inline/PaymentReview';
+import { StellarPaymentReview } from './inline/StellarPaymentReview';
+import { QrCodePayment } from './inline/QrCodePayment';
+import { CardPayment } from './inline/CardPayment';
+import { TransactionPending } from './inline/TransactionPending';
+import { SuccessScreen } from './inline/SuccessScreen';
 
 interface MessageBubbleProps {
   message: Message;
@@ -70,8 +72,27 @@ export function MessageBubble({ message, checkout }: MessageBubbleProps) {
               <PaymentOptions data={message.componentData || {}} checkout={checkout} />
             )}
 
+            {message.componentType === 'wallet-connection' && (
+              <WalletConnectionStep data={message.componentData || {}} checkout={checkout} />
+            )}
+
+            {message.componentType === 'crypto-asset-selection' && (
+              <CryptoAssetSelection
+                onSelect={(asset) => checkout.selectCryptoAsset?.(asset)}
+                onBack={() => checkout.changePaymentMethod?.()}
+              />
+            )}
+
             {message.componentType === 'payment-review' && message.componentData && (
               <PaymentReview
+                data={message.componentData}
+                checkout={checkout}
+                product={checkout.product!}
+              />
+            )}
+
+            {message.componentType === 'stellar-payment-review' && message.componentData && (
+              <StellarPaymentReview
                 data={message.componentData}
                 checkout={checkout}
                 product={checkout.product!}
@@ -93,6 +114,10 @@ export function MessageBubble({ message, checkout }: MessageBubbleProps) {
                 clientSecret={message.componentData.clientSecret || ''}
                 onSuccess={message.componentData.onPaymentSuccess}
               />
+            )}
+
+            {message.componentType === 'transaction-pending' && message.componentData && (
+              <TransactionPending data={message.componentData} checkout={checkout} />
             )}
 
             {message.componentType === 'success' && message.componentData && (

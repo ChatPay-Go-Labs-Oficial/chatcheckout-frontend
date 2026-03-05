@@ -5,6 +5,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import { AuthGuard } from '@/components/AuthGuard';
 import QueryProvider from '@/components/providers/QueryProvider';
 import { StellarWalletProvider } from '@/contexts/StellarWalletContext';
+import { StellarWalletsKitProvider } from '@/app/providers/StellarWalletProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -42,10 +43,12 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryProvider>
           <ToastProvider>
-            <StellarWalletProvider>
-              <AuthGuard />
-              {children}
-            </StellarWalletProvider>
+            <StellarWalletsKitProvider>
+              <StellarWalletProvider>
+                <AuthGuard />
+                {children}
+              </StellarWalletProvider>
+            </StellarWalletsKitProvider>
           </ToastProvider>
         </QueryProvider>
       </body>

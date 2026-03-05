@@ -111,21 +111,8 @@ function CheckoutContainer({ hash }: { hash: string }) {
         />
       )}
 
-      {checkout.checkoutStep === 'confirmation' && (
-        <footer className="p-4 bg-white border-t border-border-light">
-          <div className="relative">
-            <input
-              className="w-full pr-10 pl-4 py-3 border border-border-light rounded-full bg-gray-100 text-sm"
-              disabled
-              placeholder="Compra finalizada"
-              type="text"
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-gradient-to-r from-gradient-from to-gradient-to text-white">
-              <span className="material-symbols-outlined text-base">check_circle</span>
-            </div>
-          </div>
-        </footer>
-      )}
+
+
     </div>
   );
 }

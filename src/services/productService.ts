@@ -128,14 +128,31 @@ class ProductService {
    * @returns Produto atualizado
    * @throws Error se a atualização falhar
    */
-  async updateProduct(id: string, data: UpdateProductDTO): Promise<Product> {
+  async updateProduct(id: string, data: UpdateProductDTO, imageFile?: File): Promise<Product> {
     try {
+      let body: FormData | string;
+      const headers: Record<string, string> = {};
+
+      if (imageFile) {
+        // Usa FormData para enviar arquivo junto com os dados
+        const formData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+          }
+        });
+        formData.append('productImage', imageFile);
+        body = formData;
+        // Não setar Content-Type: o browser define o boundary correto automaticamente
+      } else {
+        body = JSON.stringify(data);
+        headers['Content-Type'] = 'application/json';
+      }
+
       const response = await AuthInterceptor.fetch(`${this.baseUrl}/product/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        method: 'PATCH',
+        headers,
+        body,
       });
 
       if (!response.ok) {
@@ -163,7 +180,10 @@ class ProductService {
       });
 
       if (!response.ok) {
-        throw new Error('Erro ao deletar produto');
+        // Lê a mensagem real do backend (ex: 409 ConflictException com regra de negócio)
+        const errorData = await response.json().catch(() => ({}));
+        const message = errorData.message || 'Erro ao deletar produto';
+        throw new Error(message);
       }
     } catch (error) {
       if (error instanceof Error) {

@@ -21,23 +21,26 @@ import { useCheckoutStreaming } from './checkout/useCheckoutStreaming';
 import { useCheckoutActions } from './checkout/useCheckoutActions';
 import { useQuery } from '@tanstack/react-query';
 import { decodeProduct } from '@/services/checkoutService';
+import { checkoutTrackingService } from '@/services/checkoutTrackingService';
+import type { CustomerData, PaymentMethod } from '@/types/checkout';
 
-// Query interna para buscar produto
 function useCheckoutQuery(hash: string) {
   return useQuery({
     queryKey: ['checkout-product', hash],
     queryFn: () => decodeProduct(hash),
     enabled: !!hash,
-    staleTime: 1000 * 60 * 30, // 30 minutos (produto não muda muito rápido)
+    staleTime: 1000 * 60 * 30,
     retry: 1,
   });
 }
 
-export function useCheckout(hash: string) {
-  // ========================================
-  // Composição de Hooks Especializados
-  // ========================================
+function mapPaymentMethod(method: PaymentMethod): 'PIX' | 'CARD' | 'CRYPTO' {
+  if (method === 'pix') return 'PIX';
+  if (method === 'card') return 'CARD';
+  return 'CRYPTO';
+}
 
+export function useCheckout(hash: string) {
   const { state, actions: stateActions } = useCheckoutState();
   const messageActions = useCheckoutMessages(stateActions);
   const typingActions = useCheckoutTyping(stateActions);
@@ -50,53 +53,39 @@ export function useCheckout(hash: string) {
     typingActions,
   );
 
-  // ========================================
-  // Efeitos de Inicialização
-  // ========================================
-
-  // ========================================
-  // Data Fetching com TanStack Query
-  // ========================================
-
   const {
     data: product,
     isLoading: isLoadingProduct,
     error: productError,
   } = useCheckoutQuery(hash);
 
-  // ========================================
-  // Sincronização e Inicialização
-  // ========================================
-
-  // Track if welcome message has been sent to avoid duplicates
   const welcomeMessageSent = useRef(false);
+  const abandonmentSentRef = useRef(false);
+  const currentStateRef = useRef({
+    mode: state.mode,
+    checkoutStep: state.checkoutStep,
+    paymentMethod: state.paymentMethod,
+    productHash: state.product?.productHash ?? null,
+  });
 
-  /**
-   * Sincroniza dados da query com o estado local
-   */
   useEffect(() => {
     if (product) {
-      // Se o produto mudou ou ainda não temos no estado
       if (!state.product || state.product.id !== product.id) {
         stateActions.setProduct(product);
-        // Reset welcome message flag when product changes
         welcomeMessageSent.current = false;
       }
     }
-  }, [product, state.product, stateActions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product, state.product]);
 
-  /**
-   * Dispara mensagem de boas-vindas quando produto está carregado e sincronizado
-   */
   useEffect(() => {
     if (state.product && state.messages.length === 0 && !welcomeMessageSent.current) {
-      // Set flag immediately to prevent race conditions from multiple renders
       welcomeMessageSent.current = true;
       void businessActions.addWelcomeMessage();
     }
-  }, [state.product, state.messages.length, businessActions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.product, state.messages.length]);
 
-  // Sincroniza erros e loading
   useEffect(() => {
     if (isLoadingProduct) {
       stateActions.setLoading(true);
@@ -109,14 +98,163 @@ export function useCheckout(hash: string) {
         productError instanceof Error ? productError.message : 'Erro ao carregar produto',
       );
     }
-  }, [isLoadingProduct, productError, stateActions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingProduct, productError]);
 
-  // ========================================
-  // API Pública (Mantém compatibilidade)
-  // ========================================
+  useEffect(() => {
+    currentStateRef.current = {
+      mode: state.mode,
+      checkoutStep: state.checkoutStep,
+      paymentMethod: state.paymentMethod,
+      productHash: state.product?.productHash ?? null,
+    };
+  }, [state.mode, state.checkoutStep, state.paymentMethod, state.product?.productHash]);
+
+  useEffect(() => {
+    if (!hash) return;
+    void checkoutTrackingService.ensureSession(hash);
+  }, [hash]);
+
+  useEffect(() => {
+    if (!hash) return;
+
+    const interval = setInterval(() => {
+      void checkoutTrackingService.sendCheckoutHeartbeat(hash);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [hash]);
+
+  useEffect(() => {
+    if (!hash) return;
+
+    const handlePageExit = () => {
+      if (abandonmentSentRef.current) return;
+
+      const shouldTrackAbandonment =
+        currentStateRef.current.mode === 'checkout' &&
+        currentStateRef.current.checkoutStep !== 'confirmation' &&
+        currentStateRef.current.checkoutStep !== null;
+
+      if (shouldTrackAbandonment) {
+        abandonmentSentRef.current = true;
+        const productHash = currentStateRef.current.productHash ?? hash;
+
+        void checkoutTrackingService.abandonCheckout(productHash, {
+          checkoutStep: currentStateRef.current.checkoutStep,
+          paymentMethod: currentStateRef.current.paymentMethod,
+        });
+      }
+    };
+
+    window.addEventListener('beforeunload', handlePageExit);
+    window.addEventListener('pagehide', handlePageExit);
+
+    return () => {
+      window.removeEventListener('beforeunload', handlePageExit);
+      window.removeEventListener('pagehide', handlePageExit);
+    };
+  }, [hash]);
+
+  const startQA = async () => {
+    await businessActions.startQA();
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'CHECKOUT_QA_STARTED',
+        step: 'QA',
+      });
+    }
+  };
+
+  const startCheckout = async () => {
+    await businessActions.startCheckout();
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'CHECKOUT_STARTED',
+        step: 'CHECKOUT_STARTED',
+      });
+    }
+  };
+
+  const submitCustomerData = async (data: CustomerData) => {
+    await businessActions.submitCustomerData(data);
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'CUSTOMER_DATA_SUBMITTED',
+        step: 'CUSTOMER_DATA',
+        metadata: { hasPhone: !!data.phone, hasWhatsapp: !!data.whatsapp },
+      });
+    }
+  };
+
+  const selectPaymentMethod = async (method: PaymentMethod) => {
+    await businessActions.selectPaymentMethod(method);
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'PAYMENT_METHOD_SELECTED',
+        step: 'PAYMENT_METHOD',
+        paymentMethod: mapPaymentMethod(method),
+      });
+    }
+  };
+
+  const selectCryptoAsset = async (asset: 'USDC' | 'XLM') => {
+    await businessActions.selectCryptoAsset(asset);
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'CRYPTO_ASSET_SELECTED',
+        step: 'PAYMENT_REVIEW',
+        paymentMethod: 'CRYPTO',
+        metadata: { asset },
+      });
+    }
+  };
+
+  const handleWalletConnected = async (address: string) => {
+    await businessActions.handleWalletConnected(address);
+    if (state.product?.productHash) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'WALLET_CONNECTED',
+        step: 'WALLET_CONNECTION',
+        paymentMethod: 'CRYPTO',
+        metadata: { walletAddress: address },
+      });
+    }
+  };
+
+  const confirmPayment = async (signTransactionFn?: (txXdr: string) => Promise<string>) => {
+    if (state.product?.productHash && state.paymentMethod) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'PAYMENT_CONFIRM_CLICKED',
+        step: 'PAYMENT',
+        paymentMethod: mapPaymentMethod(state.paymentMethod),
+      });
+    }
+
+    await businessActions.confirmPayment(signTransactionFn);
+  };
+
+  const confirmPaymentSuccess = async () => {
+    await businessActions.confirmPaymentSuccess();
+
+    if (state.product?.productHash && state.paymentMethod) {
+      void checkoutTrackingService.trackCheckoutEvent({
+        productHash: state.product.productHash,
+        eventType: 'PAYMENT_SUCCEEDED',
+        step: 'CONFIRMATION',
+        paymentMethod: mapPaymentMethod(state.paymentMethod),
+      });
+    }
+  };
 
   return {
-    // Estado
     loading: state.loading,
     error: state.error,
     product: state.product,
@@ -124,19 +262,22 @@ export function useCheckout(hash: string) {
     checkoutStep: state.checkoutStep,
     customerData: state.customerData,
     paymentMethod: state.paymentMethod,
+    cryptoAsset: state.cryptoAsset,
+    walletAddress: state.walletAddress,
     messages: state.messages,
     aiTyping: state.isAiTyping,
     showMessageInput: state.showMessageInput,
 
-    // Ações
-    startQA: businessActions.startQA,
-    startCheckout: businessActions.startCheckout,
+    startQA,
+    startCheckout,
     sendMessage: businessActions.sendMessage,
     continueCheckout: businessActions.continueCheckout,
-    submitCustomerData: businessActions.submitCustomerData,
-    selectPaymentMethod: businessActions.selectPaymentMethod,
-    confirmPayment: businessActions.confirmPayment,
-    confirmPaymentSuccess: businessActions.confirmPaymentSuccess,
+    submitCustomerData,
+    selectPaymentMethod,
+    selectCryptoAsset,
+    handleWalletConnected,
+    confirmPayment,
+    confirmPaymentSuccess,
     editCustomerData: businessActions.editCustomerData,
     changePaymentMethod: businessActions.changePaymentMethod,
     askQuestion: businessActions.askQuestion,

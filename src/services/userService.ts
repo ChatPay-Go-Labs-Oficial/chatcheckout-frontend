@@ -1,6 +1,12 @@
 import { UserUpdatePayload, UserProfile } from '@/types/user';
 import { apiClient } from '@/utils/api-client';
 
+type UpsertWalletPayload = {
+  walletAddress: string;
+};
+
+type UpsertWalletResponse = UserProfile;
+
 export const userService = {
   async register(data: {
     firstName: string;
@@ -32,5 +38,14 @@ export const userService = {
   async remove(id: string, token: string) {
     await apiClient.delete(`/user/${id}`, token);
     return { success: true };
+  },
+
+  async upsertWalletAddress(walletAddress: string): Promise<UpsertWalletResponse> {
+    const payload: UpsertWalletPayload = { walletAddress };
+    return apiClient.put<UpsertWalletResponse>('/user/wallet', payload);
+  },
+
+  async removeWalletAddress(): Promise<void> {
+    await apiClient.delete('/user/wallet');
   },
 };

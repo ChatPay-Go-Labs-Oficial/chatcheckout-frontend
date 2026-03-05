@@ -131,7 +131,7 @@ class ProductService {
   async updateProduct(id: string, data: UpdateProductDTO): Promise<Product> {
     try {
       const response = await AuthInterceptor.fetch(`${this.baseUrl}/product/${id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },

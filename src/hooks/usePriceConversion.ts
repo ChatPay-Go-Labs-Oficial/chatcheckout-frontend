@@ -53,11 +53,10 @@ export function usePriceConversion(
         setIsLoading(true);
         setError(null);
 
-        // Buscar taxa de conversão e converter valor
-        const [rate, converted] = await Promise.all([
-          priceOracle.getExchangeRate(from, to),
-          priceOracle.convertAmount(amount, from, to),
-        ]);
+        // Buscar taxa uma única vez e calcular conversão localmente
+        // (evita chamada dupla: convertAmount internamente chama getExchangeRate de novo)
+        const rate = await priceOracle.getExchangeRate(from, to);
+        const converted = amount * rate;
 
         if (isActive) {
           setExchangeRate(rate);

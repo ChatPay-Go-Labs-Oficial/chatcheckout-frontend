@@ -261,12 +261,15 @@ export function useCheckoutActions(
 
       // Se está editando, volta pro resumo. Se não, pergunta forma de pagamento
       if (isEditing && state.paymentMethod) {
+        // Para crypto, usa o componente Stellar com o ativo selecionado
+        const isCrypto = state.paymentMethod === 'crypto';
         await addAiMessage(
           `Perfeito, ${data.name.split(' ')[0]}! Dados atualizados. Confira o resumo da sua compra:`,
-          'payment-review',
+          isCrypto ? 'stellar-payment-review' : 'payment-review',
           {
             customerData: data,
             paymentMethod: state.paymentMethod,
+            ...(isCrypto && { cryptoAsset: state.cryptoAsset }),
           },
         );
       } else {
@@ -278,7 +281,7 @@ export function useCheckoutActions(
     },
     // Removido: dependências causavam loop infinito
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.paymentMethod],
+    [state.paymentMethod, state.cryptoAsset],
   );
 
   /**
@@ -719,6 +722,13 @@ export function useCheckoutActions(
           );
         }
 
+        // Marca o card como "confirmado" para disparar a animação do check verde
+        // Usa stateActions (functional setState) para evitar stale closure
+        stateActions.updateComponentDataOfType('transaction-pending', { completed: true });
+
+        // Aguarda a animação de check terminar (~2s) antes de remover o componente
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
         // Remove o card de transação pendente antes de mostrar o sucesso
         messageActions.clearComponentsOfType('transaction-pending');
 
@@ -900,8 +910,9 @@ export function useCheckoutActions(
    */
   const editCustomerData = useCallback(
     async () => {
-      // Remove o componente payment-review
+      // Remove os componentes de review (ambos os tipos)
       messageActions.clearComponentsOfType('payment-review');
+      messageActions.clearComponentsOfType('stellar-payment-review');
       stateActions.setCheckoutStep('customer-data');
       stateActions.setShowMessageInput(false);
 
@@ -919,9 +930,10 @@ export function useCheckoutActions(
    */
   const changePaymentMethod = useCallback(
     async () => {
-      // Remove componentes de crypto e payment-review
+      // Remove componentes de crypto e payment-review (ambos os tipos)
       messageActions.clearComponentsOfType('crypto-asset-selection');
       messageActions.clearComponentsOfType('payment-review');
+      messageActions.clearComponentsOfType('stellar-payment-review');
       stateActions.setCheckoutStep('payment-method');
       stateActions.setPaymentMethod(null);
       stateActions.setCryptoAsset(null); // Limpa seleção de crypto

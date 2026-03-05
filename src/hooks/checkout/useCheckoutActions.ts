@@ -482,6 +482,9 @@ export function useCheckoutActions(
       const MAX_RETRIES = 3;
       let retryCount = 0;
       let transactionHash = '';
+      let orderId: string | null = null;
+      let orderRef: string | null = null;
+      const backendApiUrl = process.env.NEXT_PUBLIC_API_URL;
 
       try {
         // Importar preço oracle
@@ -513,6 +516,7 @@ export function useCheckoutActions(
             body: JSON.stringify({
               buyerAddress: state.walletAddress,
               amountCrypto,
+              amountFiat: state.product.price,
               asset: state.cryptoAsset || 'XLM',
               productId: state.product.id,
             }),
@@ -525,6 +529,8 @@ export function useCheckoutActions(
 
           const createData = await createResponse.json();
           const transactionXDR = createData.transactionXDR;
+          orderId = createData.orderId ?? orderId;
+          orderRef = createData.orderRef ?? orderRef;
 
           if (state.product?.productHash) {
             await checkoutTrackingService.trackCheckoutEvent({
@@ -532,7 +538,8 @@ export function useCheckoutActions(
               eventType: 'CRYPTO_ESCROW_CREATED',
               step: 'PAYMENT',
               paymentMethod: 'CRYPTO',
-              metadata: { asset: state.cryptoAsset, amountCrypto },
+              orderId: orderId ?? undefined,
+              metadata: { asset: state.cryptoAsset, amountCrypto, orderRef },
             });
           }
 
@@ -585,13 +592,23 @@ export function useCheckoutActions(
             const submitData = await submitResponse.json();
             transactionHash = submitData.transactionHash;
 
+            if (backendApiUrl && orderRef) {
+              await fetch(`${backendApiUrl}/payment/crypto/submitted`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderRef, blockchainHash: transactionHash }),
+              });
+            }
+
             if (state.product?.productHash) {
               await checkoutTrackingService.trackCheckoutEvent({
                 productHash: state.product.productHash,
                 eventType: 'CRYPTO_TX_SUBMITTED',
                 step: 'PAYMENT',
                 paymentMethod: 'CRYPTO',
+                orderId: orderId ?? undefined,
                 metadata: {
+                  orderRef,
                   transactionHash,
                   totalAmountCents: Math.round(Number(state.product.price || 0) * 100),
                 },
@@ -706,12 +723,25 @@ export function useCheckoutActions(
         messageActions.clearComponentsOfType('transaction-pending');
 
         if (state.product?.productHash) {
+          if (backendApiUrl && orderRef && transactionHash) {
+            await fetch(`${backendApiUrl}/payment/crypto/complete`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderRef,
+                blockchainHash: transactionHash,
+              }),
+            });
+          }
+
           await checkoutTrackingService.trackCheckoutEvent({
             productHash: state.product.productHash,
             eventType: 'CRYPTO_TX_CONFIRMED',
             step: 'CONFIRMATION',
             paymentMethod: 'CRYPTO',
+            orderId: orderId ?? undefined,
             metadata: {
+              orderRef,
               transactionHash,
               totalAmountCents: Math.round(Number(state.product.price || 0) * 100),
             },
@@ -722,7 +752,8 @@ export function useCheckoutActions(
             eventType: 'PAYMENT_SUCCEEDED',
             step: 'CONFIRMATION',
             paymentMethod: 'CRYPTO',
-            metadata: { transactionHash },
+            orderId: orderId ?? undefined,
+            metadata: { orderRef, transactionHash },
           });
         }
 
@@ -739,11 +770,24 @@ export function useCheckoutActions(
         messageActions.clearComponentsOfType('loading');
 
         if (state.product?.productHash) {
+          if (backendApiUrl && orderRef) {
+            await fetch(`${backendApiUrl}/payment/crypto/fail`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderRef,
+                blockchainHash: transactionHash || undefined,
+                reason: error instanceof Error ? error.message : 'crypto_payment_error',
+              }),
+            });
+          }
+
           await checkoutTrackingService.trackCheckoutEvent({
             productHash: state.product.productHash,
             eventType: 'PAYMENT_FAILED',
             step: 'PAYMENT',
             paymentMethod: 'CRYPTO',
+            orderId: orderId ?? undefined,
             status: error instanceof Error ? error.message : 'crypto_payment_error',
           });
         }

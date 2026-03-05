@@ -70,6 +70,39 @@ async function getSellerAddress(productId: string): Promise<string> {
   return walletAddress;
 }
 
+async function initCryptoTransaction(params: {
+  productId: string;
+  buyerWallet: string;
+  tokenSymbol: 'USDC' | 'XLM';
+  amountToken: string;
+  amountFiat: string;
+}): Promise<{ orderId: string; orderRef: string; sellerWallet: string; status: string }> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    throw new SellerAddressError('NEXT_PUBLIC_API_URL is not configured', 500);
+  }
+
+  const response = await fetch(`${apiUrl}/payment/crypto/init`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...params,
+      network: STELLAR_CONFIG.NETWORK,
+    }),
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message =
+      typeof data === 'object' && data !== null && 'message' in data
+        ? String((data as { message: string }).message)
+        : 'Failed to initialize crypto transaction';
+    throw new SellerAddressError(message, response.status);
+  }
+
+  return data as { orderId: string; orderRef: string; sellerWallet: string; status: string };
+}
+
 /**
  * POST /api/stellar/create-escrow
  *
@@ -88,7 +121,7 @@ async function getSellerAddress(productId: string): Promise<string> {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { buyerAddress, amountCrypto, asset, productId } = body;
+    const { buyerAddress, amountCrypto, amountFiat, asset, productId } = body;
 
     // Validate inputs
     if (!buyerAddress) {
@@ -107,11 +140,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
 
+    if (!amountFiat || amountFiat <= 0) {
+      return NextResponse.json({ error: 'Amount fiat must be greater than 0' }, { status: 400 });
+    }
+
     // Get seller address
     const sellerAddress = await getSellerAddress(productId);
 
     // Convert amount to smallest unit (7 decimals for both XLM and USDC)
     const amountInSmallestUnit = BigInt(Math.floor(amountCrypto * 10 ** 7));
+
+    const initResult = await initCryptoTransaction({
+      productId,
+      buyerWallet: buyerAddress,
+      tokenSymbol: asset,
+      amountToken: amountCrypto.toFixed(8),
+      amountFiat: Number(amountFiat).toFixed(2),
+    });
 
     console.log('[API /stellar/create-escrow] Creating escrow transaction:', {
       buyer: buyerAddress,
@@ -191,6 +236,8 @@ export async function POST(request: Request) {
       transactionXDR,
       escrowContract: ESCROW_CONFIG.CONTRACT_ID,
       asset,
+      orderId: initResult.orderId,
+      orderRef: initResult.orderRef,
     });
   } catch (error) {
     if (error instanceof SellerAddressError) {

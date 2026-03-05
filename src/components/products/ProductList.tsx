@@ -34,6 +34,12 @@ export function ProductList({ products, isLoading, onEdit, onDelete }: ProductLi
       await onDelete(productToDelete.id);
       setDeleteModalOpen(false);
       setProductToDelete(null);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Erro ao deletar produto. Tente novamente.';
+      toast.error(message);
+      setDeleteModalOpen(false);
+      setProductToDelete(null);
     } finally {
       setIsDeleting(false);
     }

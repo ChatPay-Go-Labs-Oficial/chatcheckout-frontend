@@ -85,8 +85,8 @@ export function useProductForm(
 
   // Mutation para atualizar produto
   const updateMutation = useMutation({
-    mutationFn: async (data: { id: string; productData: Partial<CreateProductDTO> }) =>
-      productService.updateProduct(data.id, data.productData),
+    mutationFn: async (data: { id: string; productData: Partial<CreateProductDTO>; imageFile?: File }) =>
+      productService.updateProduct(data.id, data.productData, data.imageFile),
     onSuccess: (savedProduct) => {
       // Invalidar lista de produtos usando prefix pattern para garantir que todas as queries ['products', userId] sejam invalidadas
       queryClient.invalidateQueries({ queryKey: ['products'], exact: false });
@@ -240,6 +240,7 @@ export function useProductForm(
             salesPageUrl: productData.salesPageUrl,
             promptAi: productData.promptAi,
           },
+          imageFile: imageUpload.file || undefined,
         });
       }
 

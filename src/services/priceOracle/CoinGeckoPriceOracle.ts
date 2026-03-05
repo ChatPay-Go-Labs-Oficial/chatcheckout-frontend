@@ -12,7 +12,6 @@ interface CoinGeckoResponse {
  * Suporta: BRL ↔ USDC e BRL ↔ XLM
  */
 export class CoinGeckoPriceOracle implements PriceOracleService {
-  private readonly baseUrl = 'https://api.coingecko.com/api/v3';
   private cache = new Map<string, { rate: number; timestamp: number }>();
   private readonly cacheDuration = 5 * 60 * 1000; // 5 minutos
 

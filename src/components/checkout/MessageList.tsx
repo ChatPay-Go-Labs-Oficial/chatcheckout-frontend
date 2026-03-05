@@ -18,18 +18,29 @@ export function MessageList({ messages, checkout }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(messages.length);
 
-  // Auto-scroll apenas quando NOVAS mensagens são adicionadas
+  // Auto-scroll quando a contagem de mensagens aumenta
   useEffect(() => {
     const currentCount = messages.length;
     const prevCount = prevMessageCountRef.current;
 
-    // Só rola se o número de mensagens aumentou (nova mensagem)
     if (currentCount > prevCount) {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
 
     prevMessageCountRef.current = currentCount;
   }, [messages]);
+
+  // Auto-scroll quando um componente inline termina de aparecer (isTypingComplete muda)
+  useEffect(() => {
+    const hasNewVisibleComponent = messages.some(
+      (m) => m.componentType && m.isTypingComplete,
+    );
+    if (hasNewVisibleComponent) {
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 150);
+    }
+  }, [messages.map((m) => `${m.id}-${m.isTypingComplete}`).join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-col space-y-4 p-4">

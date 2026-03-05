@@ -17,6 +17,18 @@ const nextConfig: NextConfig = {
         hostname: 'via.placeholder.com', // Placeholder images for development
         pathname: '/**',
       },
+      // Cloudflare R2 — subdomínio de conta (URL da API de storage)
+      {
+        protocol: 'https',
+        hostname: '*.r2.cloudflarestorage.com',
+        pathname: '/**',
+      },
+      // Cloudflare R2 — subdomínio público (r2.dev)
+      {
+        protocol: 'https',
+        hostname: '*.r2.dev',
+        pathname: '/**',
+      },
       // TODO: Add production CDN/storage domains here
       // Example:
       // {

@@ -85,7 +85,10 @@ export default function WalletSettingsPage() {
     try {
       setLoadingEscrows(true);
       setEscrowsError(null);
-      const escrows = await stellarPayoutService.getReleasableEscrows(sellerAddress, sourceAddress);
+      const escrows = await stellarPayoutService.getReleasableEscrows(
+        sellerAddress,
+        sourceAddress ?? undefined,
+      );
       setReleasableEscrows(escrows);
     } catch (error) {
       setEscrowsError(
@@ -117,7 +120,7 @@ export default function WalletSettingsPage() {
 
       let sourceAddress = signerWallet.address;
       if (!sourceAddress) {
-        sourceAddress = passkeyFeePayerAddress;
+        sourceAddress = passkeyFeePayerAddress ?? undefined;
       }
 
       if (!sourceAddress) {

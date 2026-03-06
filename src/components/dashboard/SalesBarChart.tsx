@@ -10,7 +10,6 @@ import {
   ResponsiveContainer,
   Cell,
   ReferenceLine,
-  type TooltipProps,
 } from 'recharts';
 import {
   formatCurrency,
@@ -135,8 +134,7 @@ export default function SalesBarChart({ data, previousWeekTotal }: SalesBarChart
 
             {/* Tooltip customizado com formatação de moeda */}
             <Tooltip
-              content={(props: TooltipProps<number, string>) => {
-                const { active, payload } = props;
+              content={({ active, payload }) => {
                 if (active && payload && payload.length > 0) {
                   return (
                     <div className="bg-gray-900 text-white px-3 py-2 rounded-lg shadow-lg">

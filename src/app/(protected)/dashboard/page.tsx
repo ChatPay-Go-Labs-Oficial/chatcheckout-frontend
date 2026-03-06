@@ -131,7 +131,11 @@ export default function DashboardPage() {
       },
       {
         title: 'Taxa de Conversão',
-        value: `${summary.conversionRate}%`,
+        value: `${
+          summary.sessions > 0
+            ? (Math.min(summary.successfulCheckouts, summary.sessions) / summary.sessions * 100).toFixed(1)
+            : '0.0'
+        }%`,
         subtitle: `${summary.successfulCheckouts}/${summary.sessions} sessões → compras`,
       },
       {

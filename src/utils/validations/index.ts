@@ -4,7 +4,16 @@
  */
 
 // Formatadores
-export { sanitizeDocument, formatCPF, formatCNPJ, formatDocument } from './formatters';
+export {
+  sanitizeDocument,
+  formatCPF,
+  formatCNPJ,
+  formatDocument,
+  formatCurrency,
+  formatCurrencyCompact,
+  formatTrend,
+  type TrendFormatResult,
+} from './formatters';
 
 // Regras de validação
 export { VALIDATION_RULES } from './validation-rules';

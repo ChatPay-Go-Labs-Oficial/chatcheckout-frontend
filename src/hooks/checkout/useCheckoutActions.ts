@@ -269,7 +269,7 @@ export function useCheckoutActions(
           {
             customerData: data,
             paymentMethod: state.paymentMethod,
-            ...(isCrypto && { cryptoAsset: state.cryptoAsset }),
+            ...(isCrypto && state.cryptoAsset && { cryptoAsset: state.cryptoAsset }),
           },
         );
       } else {

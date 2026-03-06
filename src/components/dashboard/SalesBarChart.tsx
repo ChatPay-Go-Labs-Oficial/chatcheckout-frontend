@@ -10,8 +10,14 @@ import {
   ResponsiveContainer,
   Cell,
   ReferenceLine,
+  type TooltipProps,
 } from 'recharts';
-import { formatCurrency, formatTrend, formatCurrencyCompact, type TrendFormatResult } from '@/utils/validations/formatters';
+import {
+  formatCurrency,
+  formatTrend,
+  formatCurrencyCompact,
+  type TrendFormatResult,
+} from '@/utils/validations/formatters';
 
 interface SalesData {
   day: string;
@@ -129,13 +135,15 @@ export default function SalesBarChart({ data, previousWeekTotal }: SalesBarChart
 
             {/* Tooltip customizado com formatação de moeda */}
             <Tooltip
-              content={(props: any) => {
+              content={(props: TooltipProps<number, string>) => {
                 const { active, payload } = props;
                 if (active && payload && payload.length > 0) {
                   return (
                     <div className="bg-gray-900 text-white px-3 py-2 rounded-lg shadow-lg">
                       <p className="text-sm font-medium">{payload[0].payload.day}</p>
-                      <p className="text-lg font-bold">{formatCurrency(payload[0].value as number)}</p>
+                      <p className="text-lg font-bold">
+                        {formatCurrency(payload[0].value as number)}
+                      </p>
                     </div>
                   );
                 }

@@ -72,21 +72,29 @@ export function formatCurrencyCompact(value: number): string {
   const absValue = Math.abs(value);
 
   if (absValue >= 1_000_000) {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1,
-    }).format(value / 1_000_000).replace('R$', 'R$ ') + 'M';
+    return (
+      new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      })
+        .format(value / 1_000_000)
+        .replace('R$', 'R$ ') + 'M'
+    );
   }
 
   if (absValue >= 1_000) {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1,
-    }).format(value / 1_000).replace('R$', 'R$ ') + 'K';
+    return (
+      new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      })
+        .format(value / 1_000)
+        .replace('R$', 'R$ ') + 'K'
+    );
   }
 
   return formatCurrency(value);

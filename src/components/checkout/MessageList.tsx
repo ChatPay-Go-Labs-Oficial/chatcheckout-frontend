@@ -32,9 +32,7 @@ export function MessageList({ messages, checkout }: MessageListProps) {
 
   // Auto-scroll quando um componente inline termina de aparecer (isTypingComplete muda)
   useEffect(() => {
-    const hasNewVisibleComponent = messages.some(
-      (m) => m.componentType && m.isTypingComplete,
-    );
+    const hasNewVisibleComponent = messages.some((m) => m.componentType && m.isTypingComplete);
     if (hasNewVisibleComponent) {
       setTimeout(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

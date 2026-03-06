@@ -149,7 +149,9 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
               <label className="block text-sm font-medium text-gray-700 mb-2">Moeda</label>
               <div className="flex items-center px-3 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 cursor-not-allowed select-none">
                 <span>BRL — Real Brasileiro</span>
-                <span className="ml-auto material-symbols-outlined text-base text-gray-400">lock</span>
+                <span className="ml-auto material-symbols-outlined text-base text-gray-400">
+                  lock
+                </span>
               </div>
             </div>
           </div>

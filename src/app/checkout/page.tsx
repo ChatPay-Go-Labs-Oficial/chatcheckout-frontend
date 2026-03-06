@@ -110,9 +110,6 @@ function CheckoutContainer({ hash }: { hash: string }) {
           disabled={checkout.checkoutStep === 'confirmation'}
         />
       )}
-
-
-
     </div>
   );
 }

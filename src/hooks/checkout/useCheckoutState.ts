@@ -32,7 +32,10 @@ export interface CheckoutStateActions {
   addMessage: (message: Message) => void;
   updateMessage: (id: string, updates: Partial<Message>) => void;
   removeComponentFromMessage: (type: MessageComponentType) => void;
-  updateComponentDataOfType: (type: MessageComponentType, partialData: Record<string, unknown>) => void;
+  updateComponentDataOfType: (
+    type: MessageComponentType,
+    partialData: Record<string, unknown>,
+  ) => void;
   setAiTyping: (isTyping: boolean) => void;
   setShowMessageInput: (show: boolean) => void;
 }

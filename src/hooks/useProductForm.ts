@@ -85,8 +85,11 @@ export function useProductForm(
 
   // Mutation para atualizar produto
   const updateMutation = useMutation({
-    mutationFn: async (data: { id: string; productData: Partial<CreateProductDTO>; imageFile?: File }) =>
-      productService.updateProduct(data.id, data.productData, data.imageFile),
+    mutationFn: async (data: {
+      id: string;
+      productData: Partial<CreateProductDTO>;
+      imageFile?: File;
+    }) => productService.updateProduct(data.id, data.productData, data.imageFile),
     onSuccess: (savedProduct) => {
       // Invalidar lista de produtos usando prefix pattern para garantir que todas as queries ['products', userId] sejam invalidadas
       queryClient.invalidateQueries({ queryKey: ['products'], exact: false });

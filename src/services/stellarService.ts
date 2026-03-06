@@ -10,6 +10,8 @@
 
 import { SmartAccountKit, IndexedDBStorage } from 'smart-account-kit';
 import { getStellarConfig } from '@/config/stellar.config';
+import { Client as EscrowClient } from '@/services/escrow';
+import { STELLAR_CONFIG as PAYMENT_STELLAR_CONFIG } from '@/utils/stellar/constants';
 import type {
   StellarTransaction,
   StellarTransactionResult,
@@ -17,6 +19,14 @@ import type {
   ConnectWalletResult,
   StellarNetwork,
 } from '@/types/stellar';
+
+const ESCROW_CONTRACT_ID = 'CA7KSUEHPBPOY2Z253B5IFY6E6H6JYQ5VL5GEUXLIYRDTX4PTSFMSVKV';
+
+function getSorobanRpcUrl(network: string): string {
+  return network === 'public'
+    ? 'https://soroban-api.stellar.org'
+    : 'https://soroban-testnet.stellar.org';
+}
 
 class StellarService {
   private kit: SmartAccountKit | null = null;
@@ -246,6 +256,61 @@ class StellarService {
    */
   getNetwork(): StellarNetwork {
     return this.currentNetwork;
+  }
+
+  /**
+   * Returns the fee payer (deployer) G-address used by smart-account-kit.
+   * This account can be used as transaction source for escrow reads/releases.
+   */
+  getFeePayerAddress(): string | null {
+    if (!this.kit) return null;
+    return this.kit.deployerPublicKey || null;
+  }
+
+  /**
+   * Releases an escrow payment using the connected smart account context.
+   * Uses smart-account-kit's signAndSubmit flow.
+   */
+  async releaseEscrowPayment(escrowId: number): Promise<StellarTransactionResult> {
+    if (!this.kit) {
+      await this.initializeWallet();
+    }
+
+    if (!this.kit || !this.kit.isConnected) {
+      return {
+        hash: '',
+        success: false,
+        error: 'Wallet not connected',
+      };
+    }
+
+    try {
+      const sourcePublicKey = this.kit.deployerPublicKey;
+      const rpcUrl = getSorobanRpcUrl(PAYMENT_STELLAR_CONFIG.NETWORK);
+
+      const client = new EscrowClient({
+        contractId: ESCROW_CONTRACT_ID,
+        rpcUrl,
+        networkPassphrase: PAYMENT_STELLAR_CONFIG.NETWORK_PASSPHRASE,
+        publicKey: sourcePublicKey,
+      });
+
+      const tx = await client.release_payment({ escrow_id: BigInt(escrowId) }, { simulate: true });
+
+      const result = await this.kit.signAndSubmit(tx);
+
+      return {
+        hash: result.hash || '',
+        success: !!result.success,
+        error: result.error,
+      };
+    } catch (error) {
+      return {
+        hash: '',
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to release escrow',
+      };
+    }
   }
 
   /**

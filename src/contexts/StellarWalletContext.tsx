@@ -29,6 +29,8 @@ interface StellarWalletContextValue extends StellarWalletState {
   disconnectWallet: () => void;
   switchNetwork: (network: StellarNetwork) => Promise<void>;
   sendTransaction: (transaction: StellarTransaction) => Promise<StellarTransactionResult>;
+  releaseEscrowPayment: (escrowId: number) => Promise<StellarTransactionResult>;
+  getFeePayerAddress: () => string | null;
   getBalance: () => Promise<void>;
   refreshConnection: () => Promise<void>;
 }
@@ -265,6 +267,14 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     [sendTransactionMutation],
   );
 
+  const releaseEscrowPayment = useCallback(async (escrowId: number) => {
+    return stellarService.releaseEscrowPayment(escrowId);
+  }, []);
+
+  const getFeePayerAddress = useCallback(() => {
+    return stellarService.getFeePayerAddress();
+  }, []);
+
   const getBalance = useCallback(async () => {
     if (state.isConnected) {
       await balanceQuery.refetch();
@@ -309,6 +319,8 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     disconnectWallet,
     switchNetwork,
     sendTransaction,
+    releaseEscrowPayment,
+    getFeePayerAddress,
     getBalance,
     refreshConnection,
   };

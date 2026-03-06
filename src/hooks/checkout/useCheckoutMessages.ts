@@ -76,7 +76,11 @@ export function useCheckoutMessages(stateActions: CheckoutStateActions): Checkou
    * Atualiza componentData de uma mensagem pelo tipo (ex: marcar completed=true)
    */
   const updateComponentDataOfType = useCallback(
-    (type: MessageComponentType, partialData: Partial<MessageComponentData>, messages: Message[]) => {
+    (
+      type: MessageComponentType,
+      partialData: Partial<MessageComponentData>,
+      messages: Message[],
+    ) => {
       const msg = messages.find((m) => m.componentType === type);
       if (!msg) return;
       stateActions.updateMessage(msg.id, {

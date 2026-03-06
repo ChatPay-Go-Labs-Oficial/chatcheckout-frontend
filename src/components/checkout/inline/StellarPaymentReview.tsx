@@ -46,8 +46,7 @@ export function StellarPaymentReview({ checkout, product }: StellarPaymentReview
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
 
-  const formatAddress = (addr: string) =>
-    addr ? `${addr.slice(0, 6)}...${addr.slice(-6)}` : '';
+  const formatAddress = (addr: string) => (addr ? `${addr.slice(0, 6)}...${addr.slice(-6)}` : '');
 
   const handleConfirm = () => checkout.confirmPayment(signTransaction);
   const customerData = checkout.customerData;
@@ -56,11 +55,12 @@ export function StellarPaymentReview({ checkout, product }: StellarPaymentReview
     <div className="space-y-2">
       {/* ── CARD PRINCIPAL ─────────────────────────────────── */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 px-4 py-3 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-700 flex items-center gap-2">
-            <span className="material-symbols-outlined text-gray-600 text-[20px]">receipt_long</span>
+            <span className="material-symbols-outlined text-gray-600 text-[20px]">
+              receipt_long
+            </span>
             Resumo da Compra
           </h2>
         </div>
@@ -69,16 +69,28 @@ export function StellarPaymentReview({ checkout, product }: StellarPaymentReview
         <div className="px-4 pt-4 pb-3 flex items-center gap-3">
           {product.imageUrl ? (
             <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-sm">
-              <Image src={product.imageUrl} alt={product.name} fill className="object-cover" sizes="48px" />
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                fill
+                className="object-cover"
+                sizes="48px"
+              />
             </div>
           ) : (
             <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center flex-shrink-0 shadow-sm">
-              <span className="text-white font-bold text-lg">{product.name.charAt(0).toUpperCase()}</span>
+              <span className="text-white font-bold text-lg">
+                {product.name.charAt(0).toUpperCase()}
+              </span>
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">Produto</p>
-            <p className="text-sm font-semibold text-gray-800 truncate leading-tight">{product.name}</p>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">
+              Produto
+            </p>
+            <p className="text-sm font-semibold text-gray-800 truncate leading-tight">
+              {product.name}
+            </p>
           </div>
         </div>
 
@@ -86,11 +98,15 @@ export function StellarPaymentReview({ checkout, product }: StellarPaymentReview
 
         {/* ── Valor Total — destaque principal ── */}
         <div className="px-4 py-4">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Valor a pagar</p>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            Valor a pagar
+          </p>
 
           {isLoading ? (
             <div className="flex items-center gap-2 py-1">
-              <span className="material-symbols-outlined animate-spin text-violet-400 text-[20px]">sync</span>
+              <span className="material-symbols-outlined animate-spin text-violet-400 text-[20px]">
+                sync
+              </span>
               <span className="text-sm text-gray-400">Calculando...</span>
             </div>
           ) : (
@@ -141,7 +157,9 @@ export function StellarPaymentReview({ checkout, product }: StellarPaymentReview
               {!isProductInSelectedAsset && (
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400">Subtotal</span>
-                  <span className="text-gray-600 font-medium">~{amountCrypto.toFixed(5)} {selectedAsset}</span>
+                  <span className="text-gray-600 font-medium">
+                    ~{amountCrypto.toFixed(5)} {selectedAsset}
+                  </span>
                 </div>
               )}
               <div className="flex justify-between text-xs">
@@ -149,12 +167,18 @@ export function StellarPaymentReview({ checkout, product }: StellarPaymentReview
                 <span className="text-gray-600">~{fees.networkFee.toFixed(5)} XLM</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">Spread ({(fees.spreadPercent * 100).toFixed(0)}%)</span>
-                <span className="text-gray-600">~{fees.spreadAmount.toFixed(5)} {selectedAsset}</span>
+                <span className="text-gray-400">
+                  Spread ({(fees.spreadPercent * 100).toFixed(0)}%)
+                </span>
+                <span className="text-gray-600">
+                  ~{fees.spreadAmount.toFixed(5)} {selectedAsset}
+                </span>
               </div>
               <div className="border-t border-gray-200 pt-1.5 flex justify-between text-xs font-semibold">
                 <span className="text-gray-600">Total estimado</span>
-                <span className="text-violet-600">~{fees.total.toFixed(5)} {selectedAsset}</span>
+                <span className="text-violet-600">
+                  ~{fees.total.toFixed(5)} {selectedAsset}
+                </span>
               </div>
             </div>
           )}
@@ -169,10 +193,13 @@ export function StellarPaymentReview({ checkout, product }: StellarPaymentReview
                 <span className="material-symbols-outlined text-gray-500 text-[16px]">wallet</span>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Wallet conectada</p>
-                <p className="text-xs font-mono font-semibold text-gray-700 truncate">{formatAddress(address)}</p>
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                  Wallet conectada
+                </p>
+                <p className="text-xs font-mono font-semibold text-gray-700 truncate">
+                  {formatAddress(address)}
+                </p>
               </div>
-
             </div>
           </>
         )}
@@ -204,10 +231,14 @@ export function StellarPaymentReview({ checkout, product }: StellarPaymentReview
                 ].map(({ icon, label, value }) => (
                   <div key={label} className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
-                      <span className="material-symbols-outlined text-gray-400 text-[14px]">{icon}</span>
+                      <span className="material-symbols-outlined text-gray-400 text-[14px]">
+                        {icon}
+                      </span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest">{label}</p>
+                      <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest">
+                        {label}
+                      </p>
                       <p className="text-xs font-medium text-gray-700 truncate">{value}</p>
                     </div>
                   </div>
@@ -220,7 +251,9 @@ export function StellarPaymentReview({ checkout, product }: StellarPaymentReview
 
       {/* ── Aviso de taxas ── */}
       <div className="bg-yellow-50 rounded-lg px-3 py-2.5 border border-yellow-200 flex items-start gap-2">
-        <span className="material-symbols-outlined text-yellow-600 text-[16px] mt-0.5 flex-shrink-0">warning</span>
+        <span className="material-symbols-outlined text-yellow-600 text-[16px] mt-0.5 flex-shrink-0">
+          warning
+        </span>
         <p className="text-xs text-yellow-800">
           <span className="font-semibold">Taxas estimadas.</span> Os valores podem variar
           ligeiramente no momento da confirmação na blockchain.

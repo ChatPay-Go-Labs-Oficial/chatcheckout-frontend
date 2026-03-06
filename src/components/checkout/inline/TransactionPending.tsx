@@ -83,7 +83,9 @@ export function TransactionPending({ data }: TransactionPendingProps) {
           ) : (
             <>
               <h3 className="text-base font-semibold text-green-700">Transação Confirmada!</h3>
-              <p className="text-sm text-gray-400 mt-1">Seu pagamento foi processado com sucesso.</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Seu pagamento foi processado com sucesso.
+              </p>
             </>
           )}
         </div>
@@ -93,7 +95,9 @@ export function TransactionPending({ data }: TransactionPendingProps) {
       <div className="px-4 pb-4 space-y-2">
         <div className="bg-gray-50 rounded-lg px-3 py-2.5 space-y-2">
           <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">Hash da Transação</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">
+              Hash da Transação
+            </p>
             <p className="text-xs font-mono text-gray-700 break-all">
               {formatAddress(data.transactionHash || '')}
             </p>
@@ -101,13 +105,17 @@ export function TransactionPending({ data }: TransactionPendingProps) {
 
           {data.escrowId && (
             <div>
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">ID do Escrow</p>
+              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">
+                ID do Escrow
+              </p>
               <p className="text-xs font-mono text-gray-700">#{data.escrowId}</p>
             </div>
           )}
 
           <div className="flex items-center justify-between pt-1 border-t border-gray-100">
-            <span className="text-[10px] text-gray-400 uppercase tracking-widest">Tempo decorrido</span>
+            <span className="text-[10px] text-gray-400 uppercase tracking-widest">
+              Tempo decorrido
+            </span>
             <span className="text-xs font-semibold text-gray-600">{elapsed}s</span>
           </div>
         </div>
@@ -115,9 +123,13 @@ export function TransactionPending({ data }: TransactionPendingProps) {
         {/* Info box */}
         {phase === 'loading' && (
           <div className="bg-blue-50 rounded-lg px-3 py-2.5 border border-blue-100 flex items-start gap-2">
-            <span className="material-symbols-outlined text-blue-500 text-[16px] mt-0.5 flex-shrink-0">info</span>
+            <span className="material-symbols-outlined text-blue-500 text-[16px] mt-0.5 flex-shrink-0">
+              info
+            </span>
             <p className="text-xs text-blue-800">
-              Sua transação está sendo processada pela <span className="font-semibold">Rede Stellar</span>. Isso geralmente leva de 5 a 15 segundos.
+              Sua transação está sendo processada pela{' '}
+              <span className="font-semibold">Rede Stellar</span>. Isso geralmente leva de 5 a 15
+              segundos.
             </p>
           </div>
         )}

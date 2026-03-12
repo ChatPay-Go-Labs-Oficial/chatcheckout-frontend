@@ -1,25 +1,30 @@
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Search } from 'lucide-react';
+
 interface AbandonCardProps {
   reasons: { reason: string; count: number }[];
 }
 
 export default function AbandonCard({ reasons }: AbandonCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-2 min-w-[220px]">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg">🔍</span>
-        <span className="font-bold text-base text-[#181b4a]">Análise de Abandono</span>
-      </div>
-      <ul className="mt-2">
-        {reasons.map((item) => (
-          <li
-            key={item.reason}
-            className="flex justify-between items-center py-1 text-sm text-gray-600"
-          >
-            <span>{item.reason}</span>
-            <span className="font-semibold text-red-500">{item.count}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Card className="flex flex-col min-w-[220px]">
+      <CardHeader className="flex flex-row items-center gap-2 pb-2">
+        <Search className="w-5 h-5 text-muted-foreground" />
+        <CardTitle className="text-base">Análise de Abandono</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="flex flex-col gap-2 mt-2">
+          {reasons.map((item) => (
+            <li
+              key={item.reason}
+              className="flex justify-between items-center text-sm"
+            >
+              <span className="text-muted-foreground">{item.reason}</span>
+              <span className="font-semibold text-destructive">{item.count}</span>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }

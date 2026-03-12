@@ -1,25 +1,30 @@
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { MessageSquareText } from 'lucide-react';
+
 interface FaqCardProps {
   faqs: { question: string; count: number }[];
 }
 
 export default function FaqCard({ faqs }: FaqCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-2 min-w-[220px]">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg">💬</span>
-        <span className="font-bold text-base text-[#181b4a]">Perguntas Frequentes</span>
-      </div>
-      <ul className="mt-2">
-        {faqs.map((faq) => (
-          <li
-            key={faq.question}
-            className="flex justify-between items-center py-1 text-sm text-gray-600"
-          >
-            <span>{faq.question}</span>
-            <span className="font-semibold text-[#6f43d0]">{faq.count}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Card className="flex flex-col min-w-[220px]">
+      <CardHeader className="flex flex-row items-center gap-2 pb-2">
+        <MessageSquareText className="w-5 h-5 text-primary" />
+        <CardTitle className="text-base">Perguntas Frequentes</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="flex flex-col gap-2 mt-2">
+          {faqs.map((faq) => (
+            <li
+              key={faq.question}
+              className="flex justify-between items-center text-sm"
+            >
+              <span className="text-muted-foreground">{faq.question}</span>
+              <span className="font-semibold text-primary">{faq.count}</span>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }

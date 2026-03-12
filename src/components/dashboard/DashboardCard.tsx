@@ -1,3 +1,5 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 interface DashboardCardProps {
   title: string;
   value: string;
@@ -16,12 +18,16 @@ export default function DashboardCard({
   score,
 }: DashboardCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-1 min-w-[180px]">
-      <span className="text-sm font-semibold text-gray-500 mb-1">{title}</span>
-      <span className="text-2xl font-bold text-[#181b4a]">{value}</span>
-      {percent && <span className={`text-xs font-semibold ${percentColor}`}>{percent}</span>}
-      {subtitle && <span className="text-xs text-gray-400 mt-1">{subtitle}</span>}
-      {score && <span className="text-xs text-blue-400 mt-1">{score}</span>}
-    </div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        {percent && <p className={`text-xs font-semibold ${percentColor} mt-1`}>{percent}</p>}
+        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+        {score && <p className="text-xs text-primary mt-1">{score}</p>}
+      </CardContent>
+    </Card>
   );
 }

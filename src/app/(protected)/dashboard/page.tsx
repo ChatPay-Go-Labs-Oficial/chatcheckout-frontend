@@ -184,43 +184,47 @@ export default function DashboardPage() {
   }, [state.dailySales]);
 
   return (
-    <main className="flex flex-col min-h-screen w-full bg-[#f7f8fa]">
-      <div className="w-full h-full pt-0 pb-12 px-10">
-        <h1 className="text-3xl font-bold mb-8 text-primary pt-8">Dashboard</h1>
+    <main className="flex-1 space-y-4 p-8 pt-6 bg-background">
+      <div className="flex items-center justify-between space-y-2 mb-6">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h2>
+      </div>
 
-        {state.error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {state.error}
-          </div>
-        )}
+      {state.error && (
+        <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {state.error}
+        </div>
+      )}
 
-        {state.loading && (
-          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-            Carregando dados reais do checkout...
-          </div>
-        )}
+      {state.loading && (
+        <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+          Carregando dados reais do checkout...
+        </div>
+      )}
 
-        <section className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-12">
-          {cards.map((card, idx) => (
-            <DashboardCard key={idx} {...card} />
-          ))}
-        </section>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        {cards.map((card, idx) => (
+          <DashboardCard key={idx} {...card} />
+        ))}
+      </div>
 
-        <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7 mb-6">
+        <div className="col-span-4">
           <SalesBarChart data={salesData} />
+        </div>
+        <div className="col-span-3">
           <FunnelChart data={state.funnel} />
-        </section>
+        </div>
+      </div>
 
-        <section className="w-full grid grid-cols-1 md:grid-cols-3 gap-10">
-          <StellarCard {...stellarStats} />
-          <FaqCard
-            faqs={state.paymentsBreakdown.map((row) => ({
-              question: `Sucesso ${row.paymentMethod}`,
-              count: row.success,
-            }))}
-          />
-          <AbandonCard reasons={state.abandonment} />
-        </section>
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <StellarCard {...stellarStats} />
+        <FaqCard
+          faqs={state.paymentsBreakdown.map((row) => ({
+            question: `Sucesso ${row.paymentMethod}`,
+            count: row.success,
+          }))}
+        />
+        <AbandonCard reasons={state.abandonment} />
       </div>
     </main>
   );

@@ -2,19 +2,20 @@
 
 import { StripeConnectWrapper } from '@/components/stripe/StripeConnectWrapper';
 import { StripeOnboarding } from '@/components/stripe/StripeOnboarding';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 export default function PaymentInfoTab() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold text-gray-900">Informações de Pagamento</h3>
-        <p className="mt-1 text-sm text-gray-600">Conta Stripe Connect</p>
-      </div>
-      <div className="mt-4">
+    <Card>
+      <CardHeader>
+        <CardTitle>Informações de Pagamento</CardTitle>
+        <CardDescription>Conta Stripe Connect</CardDescription>
+      </CardHeader>
+      <CardContent>
         <StripeConnectWrapper>
           <StripeOnboarding />
         </StripeConnectWrapper>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

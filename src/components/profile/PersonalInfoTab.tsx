@@ -4,7 +4,10 @@ import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
 import { UserProfile, UserUpdatePayload } from '@/types/user';
-import { FormField } from '@/components/FormField';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { useGlobalToast } from '@/contexts/ToastContext';
 import { formatDocument } from '@/utils/validations';
 
@@ -129,13 +132,14 @@ export default function PersonalInfoTab() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="bg-white rounded-2xl shadow-sm p-5">
+      <Card className="p-5">
         <h3 className="text-xl font-semibold text-gray-900 pb-4">Informações Pessoais</h3>
 
         <div className="grid grid-cols-2 gap-3 mb-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
-            <FormField
+          <div className="space-y-2">
+            <Label htmlFor="firstName">Nome</Label>
+            <Input
+              id="firstName"
               name="firstName"
               type="text"
               placeholder="Digite seu nome"
@@ -143,9 +147,10 @@ export default function PersonalInfoTab() {
               onChange={handleChange}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sobrenome</label>
-            <FormField
+          <div className="space-y-2">
+            <Label htmlFor="lastName">Sobrenome</Label>
+            <Input
+              id="lastName"
               name="lastName"
               type="text"
               placeholder="Digite seu sobrenome"
@@ -155,9 +160,10 @@ export default function PersonalInfoTab() {
           </div>
         </div>
 
-        <div className="mb-3">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-          <FormField
+        <div className="mb-3 space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
             name="email"
             type="email"
             placeholder="Digite seu email"
@@ -167,9 +173,10 @@ export default function PersonalInfoTab() {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">CPF</label>
-          <FormField
+        <div className="space-y-2 mb-3">
+          <Label htmlFor="cpf">CPF</Label>
+          <Input
+            id="cpf"
             name="cpf"
             type="text"
             placeholder="000.000.000-00"
@@ -178,9 +185,9 @@ export default function PersonalInfoTab() {
             onChange={handleChange}
           />
         </div>
-      </div>
+      </Card>
 
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <Card className="p-6">
         <button
           type="button"
           onClick={() => setIsCompanyOpen(!isCompanyOpen)}
@@ -204,11 +211,10 @@ export default function PersonalInfoTab() {
 
         {isCompanyOpen && (
           <div className="grid grid-cols-2 gap-3 pt-4 mt-4 border-t border-gray-100">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nome da Empresa
-              </label>
-              <FormField
+            <div className="space-y-2">
+              <Label htmlFor="companyName">Nome da Empresa</Label>
+              <Input
+                id="companyName"
                 name="companyName"
                 type="text"
                 placeholder="Nome da empresa"
@@ -216,9 +222,10 @@ export default function PersonalInfoTab() {
                 onChange={handleChange}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">CNPJ</label>
-              <FormField
+            <div className="space-y-2">
+              <Label htmlFor="cnpj">CNPJ</Label>
+              <Input
+                id="cnpj"
                 name="cnpj"
                 type="text"
                 placeholder="00.000.000/0000-00"
@@ -229,17 +236,17 @@ export default function PersonalInfoTab() {
             </div>
           </div>
         )}
-      </div>
+      </Card>
 
-      <div className="flex items-center justify-end gap-3">
-        {formError && <span className="text-red-500 text-sm font-medium">{formError}</span>}
-        <button
+      <div className="flex items-center justify-end gap-3 mt-6">
+        {formError && <span className="text-destructive text-sm font-medium">{formError}</span>}
+        <Button
           type="submit"
           disabled={saving}
-          className="bg-gradient-to-r from-[#6fdcff] to-[#6f43d0] text-white font-semibold px-8 py-3 rounded-xl shadow hover:scale-[1.02] hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-[#6f43d0] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-gradient-to-r from-accent to-secondary text-white font-semibold px-8 py-6 rounded-xl shadow hover:scale-[1.02] hover:shadow-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? 'Salvando...' : 'Salvar Alterações'}
-        </button>
+        </Button>
       </div>
     </form>
   );

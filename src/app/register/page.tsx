@@ -6,7 +6,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRegisterForm } from '@/hooks/useRegisterForm';
 import { useDocumentFormatter } from '@/hooks/useDocumentFormatter';
 import { sanitizeDocument } from '@/utils/validations';
-import { FormField } from '@/components/FormField';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import RightShowcase from '@/components/RightShowcase';
 import RegisterSuccess from '@/components/RegisterSuccess';
@@ -122,132 +124,211 @@ export default function RegisterPage() {
               {/* formulário */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex gap-3">
-                  <div className="w-1/2">
-                    <FormField
+                  <div className="w-1/2 space-y-2">
+                    <Label htmlFor="firstName">Nome *</Label>
+                    <Input
+                      id="firstName"
                       name="firstName"
                       placeholder="Nome"
                       value={form.firstName}
-                      testId="firstName-input"
+                      data-testid="firstName-input"
                       autoComplete="given-name"
-                      hasError={hasFieldError('firstName')}
-                      errorMessage={getFieldError('firstName')}
+                      aria-invalid={hasFieldError('firstName')}
                       required
-                      onChange={(e) => handleFieldChange('firstName', e.target.value)}
-                      onBlur={(e) => handleFieldBlur('firstName', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleFieldChange('firstName', e.target.value)
+                      }
+                      onBlur={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleFieldBlur('firstName', e.target.value)
+                      }
                     />
+                    {hasFieldError('firstName') && (
+                      <p className="text-destructive text-xs mt-1">{getFieldError('firstName')}</p>
+                    )}
                   </div>
-                  <div className="w-1/2">
-                    <FormField
+                  <div className="w-1/2 space-y-2">
+                    <Label htmlFor="lastName">Sobrenome *</Label>
+                    <Input
+                      id="lastName"
                       name="lastName"
                       placeholder="Sobrenome"
                       value={form.lastName}
-                      testId="lastName-input"
+                      data-testid="lastName-input"
                       autoComplete="family-name"
-                      hasError={hasFieldError('lastName')}
-                      errorMessage={getFieldError('lastName')}
+                      aria-invalid={hasFieldError('lastName')}
                       required
-                      onChange={(e) => handleFieldChange('lastName', e.target.value)}
-                      onBlur={(e) => handleFieldBlur('lastName', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleFieldChange('lastName', e.target.value)
+                      }
+                      onBlur={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleFieldBlur('lastName', e.target.value)
+                      }
                     />
+                    {hasFieldError('lastName') && (
+                      <p className="text-destructive text-xs mt-1">{getFieldError('lastName')}</p>
+                    )}
                   </div>
                 </div>
-                <FormField
-                  name="email"
-                  type="email"
-                  placeholder="E-mail"
-                  value={form.email}
-                  testId="email-input"
-                  autoComplete="email"
-                  hasError={hasFieldError('email')}
-                  errorMessage={getFieldError('email')}
-                  required
-                  onChange={(e) => handleFieldChange('email', e.target.value)}
-                  onBlur={(e) => handleFieldBlur('email', e.target.value)}
-                />
-                <FormField
-                  name="cpf"
-                  placeholder="CPF"
-                  value={form.cpf}
-                  testId="cpf-input"
-                  autoComplete="off"
-                  hasError={hasFieldError('cpf')}
-                  errorMessage={getFieldError('cpf')}
-                  required
-                  onChange={handleCPF}
-                  onBlur={(e) => handleFieldBlur('cpf', e.target.value)}
-                />
-                <FormField
-                  name="password"
-                  type="password"
-                  placeholder="Senha"
-                  value={form.password}
-                  testId="password-input"
-                  autoComplete="new-password"
-                  hasError={hasFieldError('password')}
-                  errorMessage={getFieldError('password')}
-                  required
-                  onChange={(e) => handleFieldChange('password', e.target.value)}
-                  onBlur={(e) => handleFieldBlur('password', e.target.value)}
-                />
-                <FormField
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="Confirmar senha"
-                  value={form.confirmPassword}
-                  testId="confirmPassword-input"
-                  autoComplete="new-password"
-                  hasError={hasFieldError('confirmPassword')}
-                  errorMessage={getFieldError('confirmPassword')}
-                  required
-                  onChange={(e) => handleFieldChange('confirmPassword', e.target.value)}
-                  onBlur={(e) => handleFieldBlur('confirmPassword', e.target.value)}
-                />
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-mail *</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="E-mail"
+                    value={form.email}
+                    data-testid="email-input"
+                    autoComplete="email"
+                    aria-invalid={hasFieldError('email')}
+                    required
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleFieldChange('email', e.target.value)
+                    }
+                    onBlur={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleFieldBlur('email', e.target.value)
+                    }
+                  />
+                  {hasFieldError('email') && (
+                    <p className="text-destructive text-xs mt-1">{getFieldError('email')}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cpf">CPF *</Label>
+                  <Input
+                    id="cpf"
+                    name="cpf"
+                    placeholder="CPF"
+                    value={form.cpf}
+                    data-testid="cpf-input"
+                    autoComplete="off"
+                    aria-invalid={hasFieldError('cpf')}
+                    required
+                    onChange={handleCPF}
+                    onBlur={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleFieldBlur('cpf', e.target.value)
+                    }
+                  />
+                  {hasFieldError('cpf') && (
+                    <p className="text-destructive text-xs mt-1">{getFieldError('cpf')}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Senha *</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Senha"
+                    value={form.password}
+                    data-testid="password-input"
+                    autoComplete="new-password"
+                    aria-invalid={hasFieldError('password')}
+                    required
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleFieldChange('password', e.target.value)
+                    }
+                    onBlur={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleFieldBlur('password', e.target.value)
+                    }
+                  />
+                  {hasFieldError('password') && (
+                    <p className="text-destructive text-xs mt-1">{getFieldError('password')}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmar senha *</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirmar senha"
+                    value={form.confirmPassword}
+                    data-testid="confirmPassword-input"
+                    autoComplete="new-password"
+                    aria-invalid={hasFieldError('confirmPassword')}
+                    required
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleFieldChange('confirmPassword', e.target.value)
+                    }
+                    onBlur={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleFieldBlur('confirmPassword', e.target.value)
+                    }
+                  />
+                  {hasFieldError('confirmPassword') && (
+                    <p className="text-destructive text-xs mt-1">
+                      {getFieldError('confirmPassword')}
+                    </p>
+                  )}
+                </div>
+
                 <div className="flex gap-3">
-                  <div className="w-1/2">
-                    <FormField
+                  <div className="w-1/2 space-y-2">
+                    <Label htmlFor="companyName">Nome da empresa</Label>
+                    <Input
+                      id="companyName"
                       name="companyName"
                       placeholder="Nome da empresa"
                       value={form.companyName}
                       autoComplete="organization"
-                      hasError={hasFieldError('companyName')}
-                      errorMessage={getFieldError('companyName')}
-                      helperText="Opcional"
-                      onChange={(e) => handleFieldChange('companyName', e.target.value)}
-                      onBlur={(e) => handleFieldBlur('companyName', e.target.value)}
+                      aria-invalid={hasFieldError('companyName')}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleFieldChange('companyName', e.target.value)
+                      }
+                      onBlur={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleFieldBlur('companyName', e.target.value)
+                      }
                     />
+                    {hasFieldError('companyName') ? (
+                      <p className="text-destructive text-xs mt-1">
+                        {getFieldError('companyName')}
+                      </p>
+                    ) : (
+                      <p className="text-muted-foreground text-xs mt-1">Opcional</p>
+                    )}
                   </div>
-                  <div className="w-1/2">
-                    <FormField
+                  <div className="w-1/2 space-y-2">
+                    <Label htmlFor="cnpj">CNPJ</Label>
+                    <Input
+                      id="cnpj"
                       name="cnpj"
                       placeholder="CNPJ"
                       value={form.cnpj}
-                      testId="cnpj-input"
+                      data-testid="cnpj-input"
                       autoComplete="off"
-                      hasError={hasFieldError('cnpj')}
-                      errorMessage={getFieldError('cnpj')}
-                      helperText="Opcional"
+                      aria-invalid={hasFieldError('cnpj')}
                       onChange={handleCNPJ}
-                      onBlur={(e) => handleFieldBlur('cnpj', e.target.value)}
+                      onBlur={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleFieldBlur('cnpj', e.target.value)
+                      }
                     />
+                    {hasFieldError('cnpj') ? (
+                      <p className="text-destructive text-xs mt-1">{getFieldError('cnpj')}</p>
+                    ) : (
+                      <p className="text-muted-foreground text-xs mt-1">Opcional</p>
+                    )}
                   </div>
                 </div>
 
                 {(formError || error) && (
-                  <div className="text-red-600 text-sm sm:text-base text-center font-semibold">
+                  <div className="text-destructive text-sm sm:text-base text-center font-semibold mt-4">
                     {formError || error}
                   </div>
                 )}
-                <button
+                <Button
                   data-testid="submit-button"
                   type="submit"
                   disabled={loading || success}
-                  className="w-full bg-gradient-to-r from-[#181b4a] via-[#6f43d0] to-[#6fdcff] text-white font-semibold py-4 rounded-xl shadow-md hover:scale-[1.01] hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-[#6f43d0] disabled:opacity-60"
+                  className="w-full bg-gradient-to-r from-space_cadet via-secondary to-accent text-white font-semibold py-6 mt-4 rounded-xl shadow-md hover:scale-[1.01] hover:shadow-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary disabled:opacity-60"
                 >
                   {loading ? 'Cadastrando…' : 'Cadastrar'}
-                </button>
-                <p className="text-center text-gray-500 text-sm">
+                </Button>
+                <p className="text-center text-muted-foreground text-sm mt-4">
                   Já possui conta?
-                  <Link href="/login" className="ml-2 text-[#6f43d0] font-semibold hover:underline">
+                  <Link href="/login" className="ml-2 text-primary font-semibold hover:underline">
                     Entrar
                   </Link>
                 </p>

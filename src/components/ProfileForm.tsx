@@ -4,6 +4,7 @@ import { useState } from 'react';
 import PersonalInfoTab from '@/components/profile/PersonalInfoTab';
 import PaymentInfoTab from '@/components/profile/PaymentInfoTab';
 import PasswordTab from '@/components/profile/PasswordTab';
+import { User, CreditCard, Lock } from 'lucide-react';
 
 type TabType = 'personal' | 'payment' | 'password';
 
@@ -11,17 +12,17 @@ const tabs = [
   {
     id: 'personal' as TabType,
     name: 'Informações Pessoais',
-    icon: <span className="material-symbols-outlined text-[18px]">person</span>,
+    icon: <User className="w-4 h-4" />,
   },
   {
     id: 'payment' as TabType,
     name: 'Pagamentos',
-    icon: <span className="material-symbols-outlined text-[18px]">credit_card</span>,
+    icon: <CreditCard className="w-4 h-4" />,
   },
   {
     id: 'password' as TabType,
     name: 'Senha',
-    icon: <span className="material-symbols-outlined text-[18px]">lock</span>,
+    icon: <Lock className="w-4 h-4" />,
   },
 ];
 
@@ -38,13 +39,13 @@ export default function ProfileForm() {
             type="button"
             onClick={() => setActiveTab(tab.id)}
             className={`pb-3 px-2 text-sm font-medium transition-colors relative flex items-center gap-2 ${
-              activeTab === tab.id ? 'text-[#6f43d0]' : 'text-gray-500 hover:text-gray-700'
+              activeTab === tab.id ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.icon}
             {tab.name}
             {activeTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6fdcff] to-[#6f43d0]" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-secondary/80 to-primary/80" />
             )}
           </button>
         ))}

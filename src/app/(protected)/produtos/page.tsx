@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { ProductList } from '@/components/products';
 import { useProducts } from '@/hooks/useProducts';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 import { useAuth } from '@/hooks/useAuth';
 
@@ -37,25 +39,17 @@ export default function ProductsPage() {
       ) : (
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-[#181b4a]">Produtos</h1>
-            <p className="text-sm text-gray-500 mt-1">Gerencie seus produtos digitais</p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Produtos</h1>
+            <p className="text-sm text-muted-foreground mt-1">Gerencie seus produtos digitais</p>
           </div>
 
-          <button
+          <Button
             onClick={handleNewProduct}
-            className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-[#6f43d0] to-[#6fdcff] rounded-xl hover:scale-[1.02] hover:shadow-lg transition flex items-center gap-2"
+            className="flex items-center gap-2"
           >
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-              <path
-                d="M12 4v16m8-8H4"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Plus className="w-4 h-4" />
             Novo Produto
-          </button>
+          </Button>
         </div>
       )}
 

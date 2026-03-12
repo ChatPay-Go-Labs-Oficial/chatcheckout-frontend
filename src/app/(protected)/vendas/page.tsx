@@ -4,6 +4,25 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { salesService } from '@/services/salesService';
 import { SalesPaymentType, SalesSortBy, SalesSortOrder } from '@/types/sales';
+import { ChevronUp, ChevronDown } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 const PAGE_SIZE = 10;
 
@@ -71,7 +90,7 @@ function getStatusLabel(status: 'CREATED' | 'COMPLETED' | 'FAILED'): string {
 export default function SalesPage() {
   const defaultRange = useMemo(() => getDefaultDateRange(), []);
 
-  const [draftPaymentType, setDraftPaymentType] = useState<SalesPaymentType | ''>('');
+  const [draftPaymentType, setDraftPaymentType] = useState<SalesPaymentType | 'ALL'>('ALL');
   const [draftStartDate, setDraftStartDate] = useState(defaultRange.startDate);
   const [draftEndDate, setDraftEndDate] = useState(defaultRange.endDate);
 
@@ -107,7 +126,7 @@ export default function SalesPage() {
   });
 
   function handleApplyFilters() {
-    setPaymentType(draftPaymentType || undefined);
+    setPaymentType(draftPaymentType === 'ALL' ? undefined : (draftPaymentType as SalesPaymentType));
     setStartDate(draftStartDate);
     setEndDate(draftEndDate);
     setPage(1);
@@ -115,7 +134,7 @@ export default function SalesPage() {
 
   function handleClearFilters() {
     const nextDefault = getDefaultDateRange();
-    setDraftPaymentType('');
+    setDraftPaymentType('ALL');
     setDraftStartDate(nextDefault.startDate);
     setDraftEndDate(nextDefault.endDate);
 
@@ -144,199 +163,171 @@ export default function SalesPage() {
   return (
     <div className="w-full space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#181b4a]">Vendas</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Vendas</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           Filtre e acompanhe suas vendas por período e forma de pagamento
         </p>
       </div>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-          <div className="w-full lg:w-56">
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
-              Tipo de pagamento
-            </label>
-            <select
-              value={draftPaymentType}
-              onChange={(event) => setDraftPaymentType(event.target.value as SalesPaymentType | '')}
-              className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#6f43d0] focus:ring-2 focus:ring-[#6f43d0]/20"
-            >
-              <option value="">Todos</option>
-              <option value="PIX">Pix</option>
-              <option value="CARD">Cartão</option>
-              <option value="CRYPTO">Cripto</option>
-            </select>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+            <div className="w-full lg:w-56 space-y-2">
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Tipo de pagamento
+              </label>
+              <Select
+                value={draftPaymentType}
+                onValueChange={(val) => setDraftPaymentType(val as SalesPaymentType | 'ALL')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Todos</SelectItem>
+                  <SelectItem value="PIX">Pix</SelectItem>
+                  <SelectItem value="CARD">Cartão</SelectItem>
+                  <SelectItem value="CRYPTO">Cripto</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-full lg:w-56 space-y-2">
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Data inicial
+              </label>
+              <Input
+                type="date"
+                value={draftStartDate}
+                onChange={(e) => setDraftStartDate(e.target.value)}
+              />
+            </div>
+
+            <div className="w-full lg:w-56 space-y-2">
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Data final
+              </label>
+              <Input
+                type="date"
+                value={draftEndDate}
+                onChange={(e) => setDraftEndDate(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-2 w-full lg:w-auto mt-4 lg:mt-0">
+              <Button onClick={handleApplyFilters} className="w-full lg:w-auto">
+                Aplicar
+              </Button>
+              <Button variant="outline" onClick={handleClearFilters} className="w-full lg:w-auto">
+                Limpar
+              </Button>
+            </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="w-full lg:w-56">
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Data inicial</label>
-            <input
-              type="date"
-              value={draftStartDate}
-              onChange={(event) => setDraftStartDate(event.target.value)}
-              className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#6f43d0] focus:ring-2 focus:ring-[#6f43d0]/20"
-            />
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="text-lg">Lista de vendas</CardTitle>
+            <CardDescription>
+              {isFetching ? 'Atualizando...' : `${total} resultado(s)`}
+            </CardDescription>
           </div>
+        </CardHeader>
 
-          <div className="w-full lg:w-56">
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Data final</label>
-            <input
-              type="date"
-              value={draftEndDate}
-              onChange={(event) => setDraftEndDate(event.target.value)}
-              className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#6f43d0] focus:ring-2 focus:ring-[#6f43d0]/20"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleApplyFilters}
-              className="rounded-xl bg-gradient-to-r from-[#6f43d0] to-[#6fdcff] px-4 py-2.5 text-sm font-semibold text-white shadow hover:opacity-95"
-            >
-              Aplicar
-            </button>
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Limpar
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <h2 className="text-lg font-semibold text-[#181b4a]">Lista de vendas</h2>
-          <span className="text-sm text-gray-500">
-            {isFetching ? 'Atualizando...' : `${total} resultado(s)`}
-          </span>
-        </div>
-
-        {error && (
-          <div className="px-5 py-6 text-sm text-red-600">
+        {error ? (
+          <div className="p-6 text-sm text-destructive">
             {(error as Error).message || 'Não foi possível carregar as vendas.'}
           </div>
-        )}
-
-        {!error && (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+        ) : (
+          <div className="border-b">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
                     <button
-                      type="button"
-                      className="inline-flex items-center gap-1"
+                      className="flex items-center gap-1 hover:text-foreground"
                       onClick={() => toggleSort('createdAt')}
                     >
                       Data
-                      <span className="text-[10px]">
-                        {sortBy === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-                      </span>
+                      {sortBy === 'createdAt' && (sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
                     </button>
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Produto
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Método
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  </TableHead>
+                  <TableHead>Produto</TableHead>
+                  <TableHead>Método</TableHead>
+                  <TableHead>
                     <button
-                      type="button"
-                      className="inline-flex items-center gap-1"
+                      className="flex items-center gap-1 hover:text-foreground"
                       onClick={() => toggleSort('totalAmount')}
                     >
                       Valor bruto
-                      <span className="text-[10px]">
-                        {sortBy === 'totalAmount' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-                      </span>
+                      {sortBy === 'totalAmount' && (sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
                     </button>
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Taxa
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Líquido
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {isLoading && (
-                  <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-gray-500">
+                  </TableHead>
+                  <TableHead>Taxa</TableHead>
+                  <TableHead>Líquido</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
                       Carregando vendas...
-                    </td>
-                  </tr>
-                )}
-
-                {!isLoading && sales.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-gray-500">
+                    </TableCell>
+                  </TableRow>
+                ) : sales.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
                       Nenhuma venda encontrada para os filtros selecionados.
-                    </td>
-                  </tr>
-                )}
-
-                {!isLoading &&
+                    </TableCell>
+                  </TableRow>
+                ) : (
                   sales.map((sale) => (
-                    <tr key={sale.orderId} className="hover:bg-gray-50/70">
-                      <td className="whitespace-nowrap px-5 py-3 text-sm text-gray-700">
-                        {formatDate(sale.createdAt)}
-                      </td>
-                      <td className="px-5 py-3 text-sm text-gray-700">{sale.productName}</td>
-                      <td className="px-5 py-3 text-sm text-gray-700">
-                        {getPaymentLabel(sale.paymentType)}
-                      </td>
-                      <td className="px-5 py-3 text-sm font-medium text-gray-800">
-                        {formatCurrency(sale.totalAmount)}
-                      </td>
-                      <td className="px-5 py-3 text-sm text-gray-700">
-                        {formatCurrency(sale.feeAmount)}
-                      </td>
-                      <td className="px-5 py-3 text-sm font-medium text-emerald-700">
+                    <TableRow key={sale.orderId}>
+                      <TableCell className="font-medium">{formatDate(sale.createdAt)}</TableCell>
+                      <TableCell>{sale.productName}</TableCell>
+                      <TableCell className="text-muted-foreground">{getPaymentLabel(sale.paymentType)}</TableCell>
+                      <TableCell className="font-medium">{formatCurrency(sale.totalAmount)}</TableCell>
+                      <TableCell className="text-muted-foreground">{formatCurrency(sale.feeAmount)}</TableCell>
+                      <TableCell className="font-semibold text-emerald-600 dark:text-emerald-400">
                         {formatCurrency(sale.netAmount)}
-                      </td>
-                      <td className="px-5 py-3 text-sm text-gray-700">
-                        {getStatusLabel(sale.status)}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{getStatusLabel(sale.status)}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         )}
 
-        <div className="flex items-center justify-between border-t border-gray-100 px-5 py-4">
-          <span className="text-sm text-gray-500">
+        {/* Paginação */}
+        <div className="flex items-center justify-between p-4">
+          <span className="text-sm text-muted-foreground">
             Página {page} de {Math.max(totalPages, 1)}
           </span>
           <div className="flex gap-2">
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
               disabled={!canPrev}
               onClick={() => setPage((current) => current - 1)}
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Anterior
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={!canNext}
               onClick={() => setPage((current) => current + 1)}
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Próxima
-            </button>
+            </Button>
           </div>
         </div>
-      </section>
+      </Card>
     </div>
   );
 }

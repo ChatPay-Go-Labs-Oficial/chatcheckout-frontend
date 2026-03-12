@@ -109,6 +109,9 @@ const config = {
   content: ['./src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', 'sans-serif'],
+      },
       colors: {
         ...colors,
         // Checkout-specific colors (based on the prototype)

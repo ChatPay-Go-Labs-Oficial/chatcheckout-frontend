@@ -6,6 +6,8 @@ import Link from 'next/link';
 import RightShowcase from '@/components/RightShowcase';
 import IdentifierInput from '@/components/IdentifierInput';
 import { validateIdentifier } from '@/utils/validations/field-validators';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
   const { login, loading, error } = useAuth();
@@ -58,47 +60,46 @@ export default function LoginPage() {
 
           {/* formulário */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <label htmlFor="identifier" className="sr-only">
                 E-mail, CPF ou CNPJ
               </label>
               <IdentifierInput value={identifier} onChange={setIdentifier} required />
             </div>
 
-            <div>
+            <div className="space-y-2">
               <label htmlFor="password" className="sr-only">
                 Senha
               </label>
-              <input
+              <Input
                 id="password"
                 type="password"
                 placeholder="Senha"
                 autoComplete="current-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-5 py-4 bg-white text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#6f43d0] shadow-sm transition-all text-base"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
               />
             </div>
 
             <div className="flex justify-end">
-              <a href="#" className="text-[#181b4a] text-sm hover:underline transition">
+              <a href="#" className="text-primary text-sm hover:underline transition">
                 Esqueci minha senha
               </a>
             </div>
 
             {(formError || error) && (
-              <div className="text-red-600 text-sm sm:text-base text-center font-semibold">
+              <div className="text-destructive text-sm sm:text-base text-center font-semibold">
                 {formError || error}
               </div>
             )}
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#181b4a] via-[#6f43d0] to-[#6fdcff] text-white font-semibold py-4 rounded-xl shadow-md hover:scale-[1.01] hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-[#6f43d0] disabled:opacity-60"
+              className="w-full bg-gradient-to-r from-space_cadet via-secondary to-accent text-white font-semibold py-6 rounded-xl shadow-md hover:scale-[1.01] hover:shadow-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary disabled:opacity-60"
             >
               {loading ? 'Entrando…' : 'Entrar'}
-            </button>
+            </Button>
 
             <p className="text-center text-gray-500 text-sm">
               Não possui conta?

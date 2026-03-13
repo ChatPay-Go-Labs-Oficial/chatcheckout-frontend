@@ -7,21 +7,22 @@ import { useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { TextAreaField } from '@/components/TextAreaField';
+import { Textarea } from '@/components/ui/textarea';
 import { FileUploadField } from './FileUploadField';
 import { CheckoutLinkModal } from './CheckoutLinkModal';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { FILE_VALIDATIONS, Product, Currency } from '@/types/product';
 import { useGlobalToast } from '@/contexts/ToastContext';
-import { Lock, FileArchive, Info } from 'lucide-react';
+import { Lock, FileArchive, Info, Package, Sparkles, Layout, RefreshCcw, ArrowLeft } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { productService } from '@/services/productService';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const productFormSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100),
   description: z.string().min(10, 'Descrição deve ter no mínimo 10 caracteres'),
   price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, 'Valor inválido'),
-  currency: z.string().default('BRL'),
+  currency: z.string(),
   salesPageUrl: z.string().url('URL inválida').optional().or(z.literal('')),
   aiTrainingPrompt: z.string().optional(),
 });
@@ -29,7 +30,7 @@ const productFormSchema = z.object({
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
 interface ProductFormProps {
-  mode: 'create' | 'edit';
+  mode: 'create' | 'update';
   initialProduct?: Product;
   onSuccess: () => void;
   onCancel: () => void;
@@ -48,9 +49,9 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
   const isCreate = mode === 'create';
   const title = isCreate ? 'Novo Produto' : 'Edição de Produto';
   const subtitle = isCreate
-    ? 'Preencha os detalhes do seu produto digital'
-    : 'Atualize os detalhes do seu produto abaixo';
-  const submitButtonText = isCreate ? 'Salvar Produto' : 'Salvar Alterações';
+    ? 'Preencha os detalhes do seu produto digital para começar a vender.'
+    : 'Atualize as informações do seu produto abaixo.';
+  const submitButtonText = isCreate ? 'Criar Produto' : 'Salvar Alterações';
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -144,166 +145,210 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-        <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+    <div className="w-full p-8 pt-4 mx-auto pb-6">
+      <div className="flex flex-col mb-6">
+        <div className="flex items-center gap-2 mb-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 -ml-2 text-muted-foreground hover:text-foreground"
+            onClick={onCancel}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">{title}</h2>
+        </div>
+        <p className="text-[13px] text-muted-foreground ml-8">{subtitle}</p>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {/* Linha 1: 3 Colunas com Altura Uniforme */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+            {/* Coluna 1: Informações Básicas */}
+            <Card className="shadow-sm border-muted/60 h-full flex flex-col">
+              <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Package className="w-4 h-4 text-primary" />
+                  Informações Básicas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pt-3 pb-5 flex-1 flex flex-col space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Nome do produto</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Masterclass de Design Digital" {...field} className="bg-muted/30 focus-visible:ring-1 h-9 text-sm" />
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem className="flex-1 flex flex-col">
+                      <FormLabel className="text-xs">Descrição Completa</FormLabel>
+                      <FormControl className="flex-1">
+                        <Textarea
+                          placeholder="Benefícios e conteúdo que o cliente verá..."
+                          className="min-h-[100px] h-full bg-muted/30 focus-visible:ring-1 resize-none text-sm flex-1"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Coluna 2: Vendas & Checkout */}
+            <Card className="shadow-sm border-muted/60 h-full flex flex-col">
+              <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Layout className="w-4 h-4 text-primary" />
+                  Vendas & Checkout
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 px-5 pt-3 pb-5 flex-1">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Valor de Venda</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">R$</span>
+                          <Input type="number" step="0.01" placeholder="0,00" {...field} className="pl-10 bg-muted/30 focus-visible:ring-1 h-9 text-sm" />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+
                 <FormItem>
-                  <FormLabel>Nome do produto *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Curso Completo de Python" {...field} />
-                  </FormControl>
-                  <FormMessage />
+                  <FormLabel className="text-xs">Moeda</FormLabel>
+                  <div className="flex items-center px-3 h-9 bg-muted/50 border border-input rounded-md text-[13px] font-medium text-muted-foreground/70 cursor-not-allowed select-none">
+                    <span>BRL — Real Brasileiro</span>
+                    <Lock className="w-3 h-3 ml-auto opacity-50" />
+                  </div>
                 </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrição *</FormLabel>
-                  <FormControl>
-                    <TextAreaField
-                      placeholder="Descreva os detalhes do seu produto aqui..."
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="salesPageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Página de Vendas (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input type="url" placeholder="https://seu-produto.com" {...field} className="bg-muted/30 focus-visible:ring-1 h-9 text-sm" />
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Valor *</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" placeholder="199.90" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="space-y-2">
-                <FormLabel>Moeda</FormLabel>
-                <div className="flex items-center px-3 h-10 bg-muted border border-border rounded-md text-sm font-medium text-muted-foreground cursor-not-allowed select-none">
-                  <span>BRL — Real</span>
-                  <Lock className="w-4 h-4 ml-auto text-muted-foreground/60" />
-                </div>
-              </div>
-            </div>
-
-            <FormField
-              control={form.control}
-              name="salesPageUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Link da página de vendas (opcional)</FormLabel>
-                  <FormControl>
-                    <Input type="url" placeholder="https://seusite.com/produto" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="aiTrainingPrompt"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prompt param treinamento de IA (opcional)</FormLabel>
-                  <FormControl>
-                    <TextAreaField
-                      placeholder="Ex: Curso online para iniciantes em Python..."
-                      rows={2}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Coluna 3: Treinamento IA */}
+            <Card className="shadow-sm border-muted/60 h-full flex flex-col bg-primary/[0.01]">
+              <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  Treinamento IA (Opcional)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pt-3 pb-5 flex-1 flex flex-col">
+                <FormField
+                  control={form.control}
+                  name="aiTrainingPrompt"
+                  render={({ field }) => (
+                    <FormItem className="flex-1 flex flex-col">
+                      <FormLabel className="text-xs">Contexto para Treinamento</FormLabel>
+                      <FormControl className="flex-1">
+                        <Textarea
+                          placeholder="Ex: Este produto é focado em design UI/UX, as aulas são gravadas..."
+                          className="min-h-[145px] h-full bg-background focus-visible:ring-1 resize-none text-sm flex-1"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-card rounded-lg p-5 border shadow-sm">
-              <div className="mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <FileArchive className="w-4 h-4 text-primary" />
-                  Arquivos do Produto
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Faça upload da imagem de capa e do arquivo digital do seu produto
-                </p>
+          {/* Linha 2: Arquivos (Lado a Lado) */}
+          <Card className="shadow-sm border-muted/60">
+            <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <FileArchive className="w-4 h-4 text-primary" />
+                Arquivos & Entrega
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FileUploadField
+                  label="Capa do Produto"
+                  accept=".png,.jpg,.jpeg,.webp"
+                  maxSize={10 * 1024 * 1024}
+                  helpText="600px x 600px (Máx 10MB)"
+                  file={imageUpload.file}
+                  preview={imageUpload.preview}
+                  error={imageUpload.error}
+                  currentFileUrl={initialProduct?.imageUrl}
+                  onFileSelect={imageUpload.selectFile}
+                  onFileRemove={imageUpload.removeFile}
+                />
+
+                <FileUploadField
+                  label="Arquivo Digital"
+                  accept=".pdf,.zip,.epub,.mp4"
+                  maxSize={500 * 1024 * 1024}
+                  required={isCreate}
+                  file={productFileUpload.file}
+                  error={productFileUpload.error}
+                  currentFileUrl={initialProduct?.productUrl}
+                  onFileSelect={productFileUpload.selectFile}
+                  onFileRemove={productFileUpload.removeFile}
+                />
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="space-y-4">
-                <div className="bg-background rounded-lg p-3 border">
-                  <FileUploadField
-                    label="Imagem do produto"
-                    accept=".png,.jpg,.jpeg,.gif,.webp"
-                    maxSize={10 * 1024 * 1024}
-                    file={imageUpload.file}
-                    preview={imageUpload.preview}
-                    error={imageUpload.error}
-                    currentFileUrl={initialProduct?.imageUrl}
-                    helpText="PNG, JPG ou até 10MB"
-                    onFileSelect={imageUpload.selectFile}
-                    onFileRemove={imageUpload.removeFile}
-                  />
-                </div>
-
-                <div className="bg-background rounded-lg p-3 border">
-                  <FileUploadField
-                    label="Upload do produto *"
-                    accept=".pdf,.zip,.epub,.mp4,.mp3"
-                    maxSize={500 * 1024 * 1024}
-                    required={isCreate}
-                    file={productFileUpload.file}
-                    error={productFileUpload.error}
-                    currentFileUrl={initialProduct?.productUrl}
-                    helpText="PDF, ZIP, etc. até 500MB"
-                    onFileSelect={productFileUpload.selectFile}
-                    onFileRemove={productFileUpload.removeFile}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4 bg-secondary/10 rounded-md p-3">
-                <p className="text-xs text-secondary-foreground font-medium flex items-start gap-2">
-                  <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-secondary" />
-                  <span>
-                    A imagem será exibida na página de vendas. O arquivo digital será entregue
-                    imediatamente após o pagamento.
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-2 flex items-center justify-end gap-4 pt-4 border-t border-border">
-            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-muted/30">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              className="text-muted-foreground font-medium h-10 text-sm" 
+              onClick={onCancel} 
+              disabled={isSubmitting}
+            >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {submitButtonText}
+            <Button 
+              type="submit"
+              className="shadow-md px-8 h-10 font-bold text-sm bg-primary hover:bg-primary/90" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <RefreshCcw className="w-4 h-4 animate-spin" />
+                  Processando...
+                </span>
+              ) : submitButtonText}
             </Button>
           </div>
         </form>

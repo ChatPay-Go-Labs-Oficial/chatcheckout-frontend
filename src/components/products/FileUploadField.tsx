@@ -1,4 +1,7 @@
 import React, { useCallback, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { UploadCloud, X, FileText, Image as ImageIcon, RefreshCcw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface FileUploadFieldProps {
   label: string;
@@ -15,10 +18,6 @@ interface FileUploadFieldProps {
   onFileRemove: () => void;
 }
 
-/**
- * Componente de upload de arquivo com drag & drop
- * Suporta preview de imagens e feedback visual
- */
 export function FileUploadField({
   label,
   accept,
@@ -81,20 +80,31 @@ export function FileUploadField({
 
   const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(0);
 
-  // Estado: arquivo selecionado
   const hasFile = file || currentFileUrl;
   const fileName = file?.name || currentFileUrl?.split('/').pop() || '';
   const fileSize = file ? formatFileSize(file.size) : '';
+  const isImage = accept.includes('image');
 
   return (
-    <div className="flex flex-col">
-      {/* Label */}
-      <label className="text-sm font-medium text-gray-700 mb-2">
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
-      </label>
+    <div className="flex flex-col space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-semibold tracking-tight text-foreground">
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </label>
+        {hasFile && !isUploading && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 text-xs text-muted-foreground hover:text-destructive"
+            onClick={onFileRemove}
+          >
+            <X className="w-3 h-3 mr-1" />
+            Remover
+          </Button>
+        )}
+      </div>
 
-      {/* Upload Area ou Preview */}
       {!hasFile ? (
         <div
           onDragOver={handleDragOver}
@@ -102,10 +112,10 @@ export function FileUploadField({
           onDrop={handleDrop}
           onClick={handleClick}
           className={`
-            border-2 border-dashed rounded-xl p-4 text-center cursor-pointer
-            transition-all duration-200 min-h-[120px] flex items-center justify-center
-            ${isDragging ? 'border-[#6f43d0] bg-purple-50' : 'border-gray-300 hover:border-[#6fdcff]'}
-            ${error ? 'border-red-500 bg-red-50' : ''}
+            relative border-2 border-dashed rounded-xl p-4 text-center cursor-pointer
+            transition-all duration-200 min-h-[110px] flex flex-col items-center justify-center gap-2
+            ${isDragging ? 'border-primary bg-primary/5 ring-4 ring-primary/5' : 'border-muted hover:border-primary/50 hover:bg-muted/30'}
+            ${error ? 'border-destructive bg-destructive/5' : ''}
           `}
         >
           <input
@@ -116,88 +126,60 @@ export function FileUploadField({
             className="hidden"
           />
 
-          <div className="flex flex-col items-center gap-2">
-            {/* Ícone de upload */}
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#6fdcff] to-[#6f43d0] flex items-center justify-center">
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M12 4v13m0-13l-4 4m4-4l4 4M5 20h14"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+            <UploadCloud className={`w-5 h-5 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
+          </div>
 
-            <div>
-              <p className="text-xs font-medium text-gray-700">
-                Arraste e solte ou <span className="text-[#6f43d0]">clique para selecionar</span>
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {helpText || `Formatos aceitos • Máx. ${maxSizeMB}MB`}
-              </p>
-            </div>
+          <div className="space-y-0.5">
+            <p className="text-xs font-semibold">
+              Clique ou arraste o arquivo
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              {helpText || `Até ${maxSizeMB}MB`}
+            </p>
           </div>
         </div>
       ) : (
-        <div className="border border-gray-300 rounded-xl p-3 bg-white">
-          {/* Preview de imagem */}
-          {preview && (
-            <div className="mb-2 relative w-full h-24">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={preview} alt="Preview" className="w-full h-24 object-cover rounded-lg" />
+        <div className="relative border rounded-xl overflow-hidden bg-muted/20 border-muted">
+          <div className="flex items-center p-2.5 gap-3">
+            <div className="w-10 h-10 rounded-lg bg-background border flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
+              {preview ? (
+                <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+              ) : isImage && currentFileUrl ? (
+                <img src={currentFileUrl} alt="Atual" className="w-full h-full object-cover" />
+              ) : (
+                <FileText className="w-5 h-5 text-muted-foreground" />
+              )}
             </div>
-          )}
 
-          {/* Informações do arquivo */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#6fdcff] to-[#6f43d0] flex items-center justify-center">
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-                  <path
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-
-              <div>
-                <p className="text-xs font-medium text-gray-700 truncate max-w-xs">{fileName}</p>
-                {fileSize && <p className="text-xs text-gray-400">{fileSize}</p>}
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-sm font-medium truncate text-foreground pr-12">
+                {fileName}
+              </span>
+              <div className="flex items-center gap-2 mt-0.5">
+                {fileSize && <span className="text-xs text-muted-foreground font-mono">{fileSize}</span>}
+                <Badge variant="secondary" className="text-[10px] h-4 px-1 leading-none uppercase tracking-wider">
+                  {accept.includes('image') ? 'IMAGEM' : 'DIGITAL'}
+                </Badge>
               </div>
             </div>
 
-            {/* Botões de ação */}
-            <div className="flex items-center gap-2">
-              {!isUploading && (
-                <>
-                  <button
-                    type="button"
+            <div className="flex-shrink-0">
+               {isUploading ? (
+                  <div className="p-2">
+                    <RefreshCcw className="w-4 h-4 text-primary animate-spin" />
+                  </div>
+               ) : (
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-full shadow-sm"
                     onClick={handleClick}
-                    className="px-3 py-1.5 text-xs font-medium text-[#6f43d0] hover:bg-purple-50 rounded-lg transition"
+                    title="Substituir arquivo"
                   >
-                    Substituir
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onFileRemove}
-                    className="px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded-lg transition"
-                  >
-                    Remover
-                  </button>
-                </>
-              )}
-
-              {isUploading && (
-                <div className="flex items-center gap-2 text-[#6f43d0]">
-                  <div className="w-4 h-4 border-2 border-[#6f43d0] border-t-transparent rounded-full animate-spin" />
-                  <span className="text-xs font-medium">Enviando...</span>
-                </div>
-              )}
+                    <RefreshCcw className="w-3.5 h-3.5" />
+                  </Button>
+               )}
             </div>
           </div>
 
@@ -211,8 +193,12 @@ export function FileUploadField({
         </div>
       )}
 
-      {/* Mensagem de erro */}
-      {error && <span className="text-red-500 text-xs mt-1">{error}</span>}
+      {error && (
+        <p className="text-[11px] font-medium text-destructive flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+          <span className="h-1 w-1 rounded-full bg-destructive" />
+          {error}
+        </p>
+      )}
     </div>
   );
 }

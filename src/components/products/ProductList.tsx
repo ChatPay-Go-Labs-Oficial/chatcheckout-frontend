@@ -320,7 +320,7 @@ export function ProductList({ products, view, isLoading, onEdit, onDelete }: Pro
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48">
                                                     <DropdownMenuItem onClick={() => window.open(`${process.env.NEXT_PUBLIC_CHECKOUT_URL || ''}?hash=${product.productHash}`, '_blank')}>
-                                                        <Globe className="mr-2 h-4 w-4" /> Visualizar
+                                                        <ExternalLink className="mr-2 h-4 w-4" /> Ver Checkout
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem

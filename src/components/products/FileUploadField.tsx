@@ -34,6 +34,19 @@ export function FileUploadField({
 }: FileUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
+  const [removedExisting, setRemovedExisting] = React.useState(false);
+
+  const effectiveCurrentFileUrl = removedExisting ? undefined : currentFileUrl;
+
+  const handleRemove = useCallback(() => {
+    setRemovedExisting(true);
+    onFileRemove();
+  }, [onFileRemove]);
+
+  const handleSelect = useCallback((f: File) => {
+    setRemovedExisting(false);
+    onFileSelect(f);
+  }, [onFileSelect]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -52,20 +65,20 @@ export function FileUploadField({
 
       const droppedFile = e.dataTransfer.files[0];
       if (droppedFile) {
-        onFileSelect(droppedFile);
+        handleSelect(droppedFile);
       }
     },
-    [onFileSelect],
+    [handleSelect],
   );
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const selectedFile = e.target.files?.[0];
       if (selectedFile) {
-        onFileSelect(selectedFile);
+        handleSelect(selectedFile);
       }
     },
-    [onFileSelect],
+    [handleSelect],
   );
 
   const handleClick = () => {
@@ -80,8 +93,8 @@ export function FileUploadField({
 
   const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(0);
 
-  const hasFile = file || currentFileUrl;
-  const fileName = file?.name || currentFileUrl?.split('/').pop() || '';
+  const hasFile = file || effectiveCurrentFileUrl;
+  const fileName = file?.name || effectiveCurrentFileUrl?.split('/').pop() || '';
   const fileSize = file ? formatFileSize(file.size) : '';
   const isImage = accept.includes('image');
 
@@ -94,10 +107,11 @@ export function FileUploadField({
         </label>
         {hasFile && !isUploading && (
           <Button 
+            type="button"
             variant="ghost" 
             size="sm" 
             className="h-8 text-xs text-muted-foreground hover:text-destructive"
-            onClick={onFileRemove}
+            onClick={handleRemove}
           >
             <X className="w-3 h-3 mr-1" />
             Remover
@@ -145,8 +159,8 @@ export function FileUploadField({
             <div className="w-10 h-10 rounded-lg bg-background border flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
               {preview ? (
                 <img src={preview} alt="Preview" className="w-full h-full object-cover" />
-              ) : isImage && currentFileUrl ? (
-                <img src={currentFileUrl} alt="Atual" className="w-full h-full object-cover" />
+              ) : isImage && effectiveCurrentFileUrl ? (
+                <img src={effectiveCurrentFileUrl} alt="Atual" className="w-full h-full object-cover" />
               ) : (
                 <FileText className="w-5 h-5 text-muted-foreground" />
               )}
@@ -171,6 +185,7 @@ export function FileUploadField({
                   </div>
                ) : (
                   <Button 
+                    type="button"
                     variant="outline" 
                     size="icon" 
                     className="h-8 w-8 rounded-full shadow-sm"

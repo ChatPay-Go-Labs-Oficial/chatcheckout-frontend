@@ -29,48 +29,46 @@ export function WalletStatusIndicator({ onConnectClick }: WalletStatusIndicatorP
 
   if (isConnected) {
     return (
-      <div className="p-4 flex items-center gap-4 rounded-xl bg-muted/20 shadow-none">
-        <div className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center flex-shrink-0 text-emerald-600">
-          <CheckCircle2 className="w-5 h-5" />
-        </div>
+      <div className="flex items-center gap-4 transition-colors">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-bold text-foreground">Carteira Conectada</p>
-            <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-              Ativa
-            </span>
+            <p className="text-sm font-semibold text-foreground">Carteira Conectada</p>
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
           </div>
-          <p className="text-[12px] text-muted-foreground font-mono truncate mt-0.5" title={publicKey || undefined}>
-            {truncateAddress(publicKey)}
-          </p>
-          <div className="flex items-center gap-2 mt-1.5">
-            <p className="text-[11px] font-bold text-foreground bg-background px-2 py-0.5 rounded border border-muted/60">
-              {balance} XLM
+          <div className="flex gap-2 items-center mt-1">
+            <p className="text-[11px] text-muted-foreground font-mono truncate" title={publicKey || undefined}>
+              {truncateAddress(publicKey)}
             </p>
-            <span className="text-xs text-muted-foreground/40">•</span>
-            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-tight">{network}</p>
+            <div className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-bold text-foreground shrink-0">
+              {balance} XLM
+            </div>
           </div>
         </div>
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
           onClick={disconnectWallet}
-          className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-          title="Desconectar carteira"
+          className="h-7 w-7 hover:text-destructive hover:bg-destructive/5 shrink-0"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-3 h-3" />
         </Button>
       </div>
     );
   }
 
   return (
-    <Button
-      onClick={onConnectClick}
-      className="w-full h-14 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-md transition-all duration-200 group"
-    >
-      <WalletCards className="w-5 h-5 transition-transform group-hover:scale-110" />
-      <span className="text-sm tracking-tight">Conectar Carteira Stellar</span>
-    </Button>
+    <div className="py-2 flex flex-col gap-3">
+      <div className="space-y-1">
+        <p className="text-sm font-semibold text-foreground">Carteira Desconectada</p>
+        <p className="text-[11px] text-muted-foreground">Conecte sua carteira Stellar para gerenciar ativos e resgates.</p>
+      </div>
+      <Button
+        onClick={onConnectClick}
+        className="h-9 w-full font-bold shadow-sm"
+      >
+        <WalletCards className="w-4 h-4 mr-2" />
+        Conectar Carteira
+      </Button>
+    </div>
   );
 }

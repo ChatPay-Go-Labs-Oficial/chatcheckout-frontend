@@ -33,6 +33,7 @@ interface StellarWalletContextValue extends StellarWalletState {
   getFeePayerAddress: () => string | null;
   getBalance: () => Promise<void>;
   refreshConnection: () => Promise<void>;
+  isFetchingBalance: boolean;
 }
 
 const StellarWalletContext = createContext<StellarWalletContextValue | undefined>(undefined);
@@ -131,6 +132,7 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
         error: null,
       });
       await syncWalletAddress(data.accountId);
+      await getBalance(); // Immediate balance fetch on connect
       toast.success('Carteira Stellar conectada com sucesso!');
     },
     onError: (error: Error) => {
@@ -330,6 +332,7 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     getFeePayerAddress,
     getBalance,
     refreshConnection,
+    isFetchingBalance: balanceQuery.isLoading || balanceQuery.isFetching,
   };
 
   return <StellarWalletContext.Provider value={value}>{children}</StellarWalletContext.Provider>;

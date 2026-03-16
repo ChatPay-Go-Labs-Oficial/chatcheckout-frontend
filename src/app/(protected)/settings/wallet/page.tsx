@@ -4,21 +4,18 @@ import { useState } from 'react';
 import { useStellarWallet } from '@/contexts/StellarWalletContext';
 import { useWalletManagement } from '@/hooks/useWalletManagement';
 import { WalletConnectionModal } from '@/components/stellar/WalletConnectionModal';
-import { RefreshCcw } from 'lucide-react';
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { History, Settings2 } from 'lucide-react';
-
 // Modular Components
-import { WalletHeader } from '@/components/wallet/WalletHeader';
-import { WalletHero } from '@/components/wallet/WalletHero';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Copy, Check, LogOut, Wallet2, Network, RefreshCcw } from 'lucide-react';
 import { AssetsList } from '@/components/wallet/AssetsList';
-import { NetworkConfig } from '@/components/wallet/NetworkConfig';
-import { SecuritySection } from '@/components/wallet/SecuritySection';
+import { NetworkSwitcher } from '@/components/stellar/NetworkSwitcher';
 
 export default function WalletSettingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { isConnected, balance, accountId, network } = useStellarWallet();
+  const [isCopied, setIsCopied] = useState(false);
+  const { isConnected, balance, accountId, network, disconnectWallet, isFetchingBalance } = useStellarWallet();
 
   const {
     loadingEscrows,
@@ -28,6 +25,14 @@ export default function WalletSettingsPage() {
     refreshReleasableEscrows,
     handleReleaseBatch,
   } = useWalletManagement();
+
+  const handleCopyAddress = async () => {
+    if (accountId) {
+      await navigator.clipboard.writeText(accountId);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
 
   const truncateAddress = (address: string | null) => {
     if (!address) return 'Não conectado';
@@ -46,44 +51,116 @@ export default function WalletSettingsPage() {
   };
 
   return (
-    <div className="w-full min-h-screen p-8 pt-6 space-y-10 animate-in fade-in duration-700 bg-background/30">
-      {/* Top Header Section */}
-      <WalletHeader network={network} />
+    <div className="w-full p-8 pt-4 mx-auto pb-6">
+      {/* Page Header - Standard Pattern */}
+      <div className="flex flex-col mb-6 text-left">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Minha Carteira</h1>
+        <p className="text-[13px] text-muted-foreground mt-0.5">
+          Gerencie seu saldo Stellar, consulte ativos elegíveis e realize resgates com segurança.
+        </p>
+      </div>
 
-      {/* Hero Financial Area */}
-      <WalletHero
-        balance={balance}
-        accountId={accountId}
-        isConnected={isConnected}
-        isReleasing={isReleasing}
-        releasableCount={Object.keys(groupedByAsset).length}
-        onRelease={handleReleaseBatch}
-        onConnect={() => setIsModalOpen(true)}
-      />
+      {/* Wallet Hub - Unified Management Card */}
+      <div className="mb-8">
+        {!isConnected ? (
+          <Card className="shadow-sm border-dashed border-muted/80 bg-muted/5">
+            <CardContent className="flex flex-col items-center justify-center py-12 px-6 text-center space-y-4">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <Wallet2 className="h-6 w-6" />
+              </div>
+              <div className="space-y-1">
+                <CardTitle className="text-lg font-bold">Conecte sua Carteira</CardTitle>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Acesse seu saldo e gerencie seus ativos Stellar conectando sua carteira com segurança.
+                </p>
+              </div>
+              <Button 
+                onClick={() => setIsModalOpen(true)}
+                className="font-bold px-8"
+              >
+                Conectar Agora
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="shadow-sm border-muted/60 bg-card/60 backdrop-blur-sm overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-muted/10">
+              {/* Hub Left: Main Info (Stacked Balance & Identity) */}
+              <div className="lg:col-span-6 p-6 space-y-6">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                    <Wallet2 className="h-3 w-3" />
+                    Saldo da Carteira
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    {isFetchingBalance ? (
+                      <Skeleton className="h-10 w-32 bg-muted/30" />
+                    ) : (
+                      <>
+                        <span className="text-4xl font-bold tracking-tight text-foreground">{balance}</span>
+                        <span className="text-sm font-bold text-muted-foreground uppercase">XLM</span>
+                      </>
+                    )}
+                  </div>
+                </div>
 
-      {/* Professional Information Architecture with Tabs */}
-      <Tabs defaultValue="activity" className="w-full space-y-8">
-        <div className="flex items-center justify-between border-b border-muted/30 pb-1">
-          <TabsList className="bg-transparent h-fit p-0 gap-8">
-            <TabsTrigger
-              value="activity"
-              className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 text-sm font-bold uppercase tracking-widest gap-2 transition-all px-2"
-            >
-              <History className="w-4 h-4" />
-              Minhas Atividades
-            </TabsTrigger>
-            <TabsTrigger
-              value="settings"
-              className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 text-sm font-bold uppercase tracking-widest gap-2 transition-all px-2"
-            >
-              <Settings2 className="w-4 h-4" />
-              Configurações & Rede
-            </TabsTrigger>
-          </TabsList>
-        </div>
+                <div className="space-y-2 max-w-md">
+                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Identificador (Public Key)</p>
+                   <div className="flex items-center gap-2 group">
+                      <div className="flex-1 p-2 rounded-lg border bg-muted/20 font-mono text-[11px] truncate text-foreground/70 border-muted/60">
+                         {accountId}
+                      </div>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-8 w-8 flex-shrink-0 transition-all active:scale-95"
+                        onClick={handleCopyAddress}
+                      >
+                        {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                      </Button>
+                   </div>
+                </div>
+              </div>
 
-        <TabsContent value="activity" className="space-y-8 outline-none mt-0">
-          <div className="relative group">
+              {/* Hub Right: Actions and Settings */}
+              <div className="lg:col-span-6 p-6 flex flex-col justify-between space-y-6">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Rede Ativa</p>
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 w-fit rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="h-1 w-1 rounded-full bg-emerald-500" />
+                      <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter">{network}</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 font-bold gap-1.5 h-8"
+                    onClick={() => disconnectWallet()}
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    Desconectar carteira
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Trocar Ambiente de Operação</p>
+                    <NetworkSwitcher />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+      </div>
+
+      {/* Main Content Area - Only shown when connected */}
+      {isConnected && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          {/* Primary: Assets */}
+          <div className="lg:col-span-12">
             <AssetsList
               groupedByAsset={groupedByAsset}
               loading={loadingEscrows}
@@ -93,44 +170,30 @@ export default function WalletSettingsPage() {
               formatAmount={formatAssetAmount}
               truncateAddress={truncateAddress}
             />
-
-            {/* Batch Progress Overlay */}
-            {batchProgress && (
-              <div className="absolute inset-x-0 -bottom-6 px-12 z-20">
-                <div className="bg-primary px-6 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center justify-between animate-in slide-in-from-bottom-4 duration-500 ring-4 ring-background">
-                  <div className="flex items-center gap-3 text-primary-foreground">
-                    <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                    <span className="text-xs font-black uppercase tracking-[0.15em]">
-                      Liberação em Lote em Andamento
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <div className="w-48 h-2 bg-white/20 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-white transition-all duration-700 ease-out shadow-[0_0_12px_rgba(255,255,255,0.4)]"
-                        style={{ width: `${(batchProgress.done / batchProgress.total) * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-[13px] font-black text-white tabular-nums">
-                      {batchProgress.done} <span className="opacity-40">/</span> {batchProgress.total}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="settings" className="outline-none mt-0">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-            <NetworkConfig onConnectClick={() => setIsModalOpen(true)} />
-            <SecuritySection
-              accountId={accountId}
-              truncateAddress={truncateAddress}
-            />
+      {/* Batch Progress Overlay */}
+      {batchProgress && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+          <div className="bg-primary px-6 py-3 rounded-full shadow-2xl border border-white/10 flex items-center gap-6 animate-in slide-in-from-bottom-4">
+            <div className="flex items-center gap-2 text-primary-foreground">
+              <RefreshCcw className="size-3.5 animate-spin" />
+              <span className="text-xs font-bold uppercase tracking-widest">Processando Lote</span>
+            </div>
+            <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-white transition-all duration-700"
+                style={{ width: `${(batchProgress.done / batchProgress.total) * 100}%` }}
+              />
+            </div>
+            <span className="text-[11px] font-bold text-white uppercase tracking-tighter">
+              {batchProgress.done} / {batchProgress.total}
+            </span>
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
 
       <WalletConnectionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>

@@ -37,53 +37,46 @@ export function AssetsList({
     const assetEntries = Object.entries(groupedByAsset);
 
     return (
-        <Card className="shadow-sm border-muted ring-0 overflow-hidden bg-card/50 backdrop-blur-sm">
-            <CardHeader className="py-4 px-6 border-b bg-muted/5 flex flex-row items-center justify-between space-y-0">
+        <Card className="shadow-sm border-muted/60 bg-card overflow-hidden">
+            <CardHeader className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0 pb-6 px-6 pt-6">
                 <div className="space-y-1">
-                    <CardTitle className="text-base font-bold flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                            <Zap className="w-4 h-4" />
-                        </div>
-                        Valores Disponíveis
-                    </CardTitle>
-                    <CardDescription className="text-[11px] font-medium uppercase tracking-wider pl-10.5">
-                        Ativos processados e prontos para resgate na blockchain.
-                    </CardDescription>
+                    <CardTitle className="text-lg font-bold">Ativos & Payouts</CardTitle>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Status:</span>
+                        <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest bg-primary/5 text-primary border-primary/20">
+                            {assetEntries.length} Resgates Disponíveis
+                        </Badge>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <Button
-                        onClick={onRelease}
-                        disabled={loading || isReleasing || assetEntries.length === 0}
-                        className="h-10 px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-md transition-all gap-2"
-                    >
-                        {isReleasing ? (
-                            <RefreshCcw className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <ArrowUpRight className="w-4 h-4" />
-                        )}
-                        {isReleasing ? 'Resgatando...' : 'Solicitar Recebimento'}
-                    </Button>
-
-                    <Button
+                <div className="flex items-center gap-2">
+                    <Button 
                         variant="outline"
                         size="icon"
-                        className="h-10 w-10 text-muted-foreground hover:text-primary transition-colors border-muted bg-background"
                         onClick={onRefresh}
-                        disabled={loading}
+                        className="h-10 w-10 flex-shrink-0"
+                        title="Atualizar lista"
                     >
-                        <RefreshCcw className={cn("w-4 h-4", loading && "animate-spin")} />
+                        <RefreshCcw className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                        onClick={onRelease}
+                        disabled={loading || isReleasing || assetEntries.length === 0}
+                        className="h-10 px-4 font-bold shadow-sm"
+                    >
+                        <ArrowUpRight className="w-4 h-4 mr-2" />
+                        Solicitar Recebimento
                     </Button>
                 </div>
             </CardHeader>
 
             <CardContent className="p-0">
                 <Table>
-                    <TableHeader className="bg-muted/5">
+                    <TableHeader className="bg-muted/10">
                         <TableRow className="hover:bg-transparent border-none">
-                            <TableHead className="w-[300px] text-[10px] font-bold uppercase tracking-widest px-6 h-10">Ativo / Contrato</TableHead>
-                            <TableHead className="text-[10px] font-bold uppercase tracking-widest px-6 h-10">Status</TableHead>
-                            <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest px-6 h-10">Montante Total</TableHead>
+                            <TableHead className="w-[300px] text-[10px] font-bold uppercase tracking-widest px-6 h-9">Ativo / Identificador</TableHead>
+                            <TableHead className="text-[10px] font-bold uppercase tracking-widest px-6 h-9">Status Blockchain</TableHead>
+                            <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest px-6 h-9">Volume Total</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -105,14 +98,14 @@ export function AssetsList({
                             ))
                         ) : assetEntries.length === 0 ? (
                             <TableRow className="hover:bg-transparent border-none">
-                                <TableCell colSpan={3} className="h-64 text-center">
-                                    <div className="flex flex-col items-center justify-center space-y-3 opacity-60">
-                                        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground/40">
-                                            <Coins className="w-8 h-8" />
+                                <TableCell colSpan={3} className="h-32 text-center px-6">
+                                    <div className="flex flex-col items-center justify-center space-y-2 opacity-60">
+                                        <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground/40 border-2 border-dashed border-muted-foreground/20">
+                                            <Coins className="w-5 h-5" />
                                         </div>
-                                        <div className="space-y-1">
-                                            <p className="text-sm font-bold text-foreground">Nenhum ativo encontrado</p>
-                                            <p className="text-[11px] text-muted-foreground font-medium">Os ativos aparecerão aqui assim que o período de garantia expirar.</p>
+                                        <div className="space-y-0.5">
+                                            <p className="text-xs font-bold text-foreground">Aguardando Liberações</p>
+                                            <p className="text-[10px] text-muted-foreground font-medium max-w-[280px]">Os ativos aparecerão aqui assim que o período de garantia expirar.</p>
                                         </div>
                                     </div>
                                 </TableCell>
@@ -120,33 +113,33 @@ export function AssetsList({
                         ) : (
                             assetEntries.map(([assetAddress, amount]) => (
                                 <TableRow key={assetAddress} className="group border-muted/30 hover:bg-muted/[0.02] transition-colors">
-                                    <TableCell className="px-6 py-4">
+                                    <TableCell className="px-6 py-3.5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-lg bg-muted/20 border border-muted/60 flex items-center justify-center shadow-sm group-hover:bg-background transition-colors text-muted-foreground/60 group-hover:text-primary">
+                                            <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center border border-muted/60 shadow-sm group-hover:bg-background transition-colors text-muted-foreground/60 group-hover:text-primary">
                                                 <ArrowUpRight className="w-4 h-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                                             </div>
                                             <div>
-                                                <p className="text-[13px] font-bold text-foreground font-mono">
+                                                <p className="text-xs font-bold text-foreground font-mono tracking-tight">
                                                     {truncateAddress(assetAddress)}
                                                 </p>
-                                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5 opacity-70">Native Token</p>
+                                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5 opacity-70">Ativo Nativo</p>
                                             </div>
                                         </div>
                                     </TableCell>
                                     <TableCell className="px-6">
-                                        <Badge variant="outline" className="text-[9px] h-5 font-bold border-emerald-500/20 bg-emerald-500/[0.03] text-emerald-600 px-2 uppercase tracking-tight shadow-none">
-                                            Elegível para Resgate
+                                        <Badge variant="outline" className="text-[9px] h-5 font-bold border-emerald-500/30 bg-emerald-500/[0.05] text-emerald-600 px-2 uppercase tracking-tight shadow-none rounded-md">
+                                            Livre para Resgate
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="px-6 text-right">
                                         <div className="flex flex-col items-end gap-0.5">
-                                            <div className="flex items-baseline gap-1.5">
-                                                <span className="text-base font-bold text-primary tracking-tight">
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-sm font-bold text-primary tracking-tight">
                                                     {formatAmount(amount.toString())}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-primary uppercase">XLM</span>
                                             </div>
-                                            <span className="text-[9px] font-bold text-muted-foreground/50 uppercase">Valor Líquido</span>
+                                            <span className="text-[9px] font-bold text-muted-foreground/50 uppercase">Disponível</span>
                                         </div>
                                     </TableCell>
                                 </TableRow>

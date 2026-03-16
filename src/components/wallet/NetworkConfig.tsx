@@ -11,24 +11,20 @@ interface NetworkConfigProps {
 
 export function NetworkConfig({ onConnectClick }: NetworkConfigProps) {
     return (
-        <Card className="shadow-sm border-muted ring-0 bg-card/50 backdrop-blur-sm overflow-hidden">
-            <CardHeader className="py-3 px-6 border-b bg-muted/5 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm font-bold flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                        <Layers className="w-4 h-4" />
-                    </div>
-                    Rede & Conexão
-                </CardTitle>
+        <Card className="shadow-sm border-muted/60 bg-card overflow-hidden h-full">
+            <CardHeader className="pb-3 px-5">
+                <CardTitle className="text-sm font-medium">Conexão & Rede</CardTitle>
             </CardHeader>
-            <CardContent className="px-6 py-5 space-y-6">
-                <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Selecione a Rede</label>
-                    <NetworkSwitcher />
+            <CardContent className="px-5 pt-0 pb-4 flex flex-col justify-between h-[calc(100%-3rem)] min-h-[140px]">
+                {/* Connection Status & Action - Primary */}
+                <div className="pb-3 borber-b border-muted/30">
+                    <WalletStatusIndicator onConnectClick={onConnectClick} />
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Status da Carteira</label>
-                    <WalletStatusIndicator onConnectClick={onConnectClick} />
+                {/* Network Selection - Secondary */}
+                <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Rede</p>
+                    <NetworkSwitcher />
                 </div>
             </CardContent>
         </Card>

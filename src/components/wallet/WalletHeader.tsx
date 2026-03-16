@@ -9,15 +9,12 @@ interface WalletHeaderProps {
 
 export function WalletHeader({ network }: WalletHeaderProps) {
     return (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <Wallet className="w-5 h-5" />
-                    </div>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">
                     Minha Carteira
                 </h1>
-                <p className="text-[13px] text-muted-foreground mt-1.5 ml-12.5">
+                <p className="text-[13px] text-muted-foreground mt-1">
                     Gerencie seu saldo Stellar, consulte ativos elegíveis e realize resgates com segurança.
                 </p>
             </div>
@@ -34,7 +31,7 @@ export function WalletHeader({ network }: WalletHeaderProps) {
                 )}
                 <Badge
                     variant="secondary"
-                    className="bg-muted/50 text-muted-foreground border-muted px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-none"
+                    className="bg-muted text-muted-foreground border-muted px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-none"
                 >
                     Stellar Network
                 </Badge>

@@ -16,6 +16,19 @@ import { WalletStatusIndicator } from '@/components/stellar/WalletStatusIndicato
 import { WalletConnectionModal } from '@/components/stellar/WalletConnectionModal';
 import { NetworkSwitcher } from '@/components/stellar/NetworkSwitcher';
 import { stellarPayoutService, type ReleasableEscrow } from '@/services/stellarPayoutService';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { 
+  Wallet, 
+  RefreshCcw, 
+  Coins, 
+  Info, 
+  AlertTriangle, 
+  Fingerprint, 
+  Layers, 
+  ArrowUpRight 
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function WalletSettingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,7 +40,7 @@ export default function WalletSettingsPage() {
 
   const { user } = useAuth();
   const toast = useGlobalToast();
-  const { isConnected, balance, accountId, getFeePayerAddress, releaseEscrowPayment } =
+  const { isConnected, balance, accountId, getFeePayerAddress, releaseEscrowPayment, network } =
     usePasskeyWallet();
   const signerWallet = useSignerWallet();
 
@@ -198,143 +211,209 @@ export default function WalletSettingsPage() {
   ]);
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Configurações da Carteira</h1>
-        <p className="text-gray-600 mt-2">
-          Gerencie sua carteira Stellar para pagamentos com criptomoedas
+    <div className="w-full p-8 pt-4 mx-auto pb-6 animate-in fade-in duration-500">
+      <div className="flex flex-col mb-8">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Configurações da Carteira</h1>
+        <p className="text-[13px] text-muted-foreground mt-1">
+          Gerencie sua carteira Stellar e receba seus pagamentos em criptomoedas.
         </p>
       </div>
 
-      <div className="space-y-6">
-        {/* Network Selection */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h2 className="text-xl font-semibold mb-4">Rede Stellar</h2>
-          <NetworkSwitcher />
-          <p className="text-xs text-gray-500 mt-3">
-            {isConnected
-              ? 'Ao trocar de rede, você precisará reconectar sua carteira.'
-              : 'Selecione a rede antes de conectar sua carteira.'}
-          </p>
+      <div className="max-w-4xl space-y-6">
+        {/* Network Selection & Status Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="shadow-sm border-muted/60">
+            <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <Layers className="w-4 h-4 text-muted-foreground/80" />
+                Rede Stellar
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <NetworkSwitcher />
+              <p className="text-[11px] text-muted-foreground font-medium mt-3 px-1 leading-relaxed">
+                {isConnected
+                  ? 'Ao trocar de rede, sua carteira será desconectada automaticamente por segurança.'
+                  : 'Certifique-se de selecionar a rede correta antes de realizar a conexão.'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm border-muted/60">
+            <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <Wallet className="w-4 h-4 text-muted-foreground/80" />
+                Conexão
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <WalletStatusIndicator onConnectClick={() => setIsModalOpen(true)} />
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Wallet Connection */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h2 className="text-xl font-semibold mb-4">Carteira</h2>
-          <WalletStatusIndicator onConnectClick={() => setIsModalOpen(true)} />
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div>
-              <h2 className="text-xl font-semibold mb-1">Receber Valores em Cripto</h2>
-              <p className="text-sm text-gray-600">
-                Libera em lote os escrows ativos que já passaram do período de garantia.
-              </p>
-              <p className="text-xs text-gray-500 mt-2">
-                Carteira de recebimento: {truncateAddress(sellerAddress)}
-              </p>
-            </div>
-
-            <button
-              onClick={handleReleaseBatch}
-              disabled={loadingEscrows || isReleasing || releasableEscrows.length === 0}
-              className="px-5 py-3 rounded-xl bg-gradient-to-r from-[#6f43d0] to-[#6fdcff] text-white font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {isReleasing ? 'Processando recebimentos...' : 'Solicitar recebimento'}
-            </button>
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
-              <p className="text-xs text-gray-500">Escrows elegíveis</p>
-              <p className="text-xl font-bold text-gray-800">
-                {loadingEscrows ? '...' : releasableEscrows.length}
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3 sm:col-span-2">
-              <p className="text-xs text-gray-500 mb-1">Total estimado por ativo</p>
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {Object.keys(groupedByAsset).length === 0 ? (
-                  <span className="text-sm text-gray-600">Sem valores elegíveis</span>
+        {/* Payout Management Section */}
+        <Card className="shadow-sm border-muted/60">
+          <CardHeader className="py-3 px-5 border-b bg-muted/10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Coins className="w-4 h-4 text-muted-foreground/80" />
+                  Receber Valores em Cripto
+                </CardTitle>
+                <CardDescription className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                  Liberação de Escrows Elegíveis (Pós-Garantia)
+                </CardDescription>
+              </div>
+              <Button
+                onClick={handleReleaseBatch}
+                disabled={loadingEscrows || isReleasing || releasableEscrows.length === 0}
+                className="h-10 px-6 bg-primary hover:bg-primary/90 text-white font-bold shadow-md transition-all sm:w-fit"
+              >
+                {isReleasing ? (
+                  <span className="flex items-center gap-2">
+                    <RefreshCcw className="w-4 h-4 animate-spin" />
+                    Processando...
+                  </span>
                 ) : (
-                  Object.entries(groupedByAsset).map(([assetAddress, amount]) => (
-                    <span key={assetAddress} className="text-sm font-semibold text-gray-800">
-                      {formatAssetAmount(amount.toString())} ({truncateAddress(assetAddress)})
-                    </span>
-                  ))
+                  'Solicitar Recebimento'
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-5">
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 mb-5">
+              <div className="sm:col-span-5 space-y-4">
+                <div className="p-4 rounded-xl bg-muted/30 border border-muted/60 flex flex-col justify-center gap-1">
+                  <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">Escrows Elegíveis</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {loadingEscrows ? '...' : releasableEscrows.length}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block px-1">Carteira de Recebimento</label>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-muted/20 border border-muted/40 rounded-lg group">
+                    <div className="p-1 rounded bg-background border flex-shrink-0">
+                      <ArrowUpRight className="w-3 h-3 text-muted-foreground/60" />
+                    </div>
+                    <p className="text-[12px] font-mono font-medium text-foreground truncate" title={sellerAddress || undefined}>
+                      {truncateAddress(sellerAddress)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="sm:col-span-7">
+                <div className="h-full p-4 rounded-xl bg-muted/30 border border-muted/60">
+                  <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-3">Total Estimado por Ativo</p>
+                  <div className="space-y-2 max-h-[140px] overflow-y-auto pr-2 custom-scrollbar">
+                    {Object.keys(groupedByAsset).length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-4 text-center">
+                        <Info className="w-5 h-5 text-muted-foreground/20 mb-1" />
+                        <span className="text-xs text-muted-foreground/60 font-medium italic">Sem valores elegíveis no momento</span>
+                      </div>
+                    ) : (
+                      Object.entries(groupedByAsset).map(([assetAddress, amount]) => (
+                        <div key={assetAddress} className="flex items-center justify-between p-2.5 bg-background border rounded-lg shadow-sm">
+                          <span className="text-xs font-bold text-foreground font-mono">
+                            {truncateAddress(assetAddress)}
+                          </span>
+                          <span className="text-sm font-bold text-primary">
+                            {formatAssetAmount(amount.toString())}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-muted/30">
+              <div className="flex items-center gap-2">
+                {batchProgress ? (
+                  <div className="flex items-center gap-2 text-[11px] font-bold text-primary animate-pulse">
+                    <RefreshCcw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Lote: {batchProgress.done}/{batchProgress.total} processados</span>
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-muted-foreground font-medium flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
+                    Assinatura: {truncateAddress(signerWallet.address || null)}
+                  </div>
                 )}
               </div>
+              {escrowsError && (
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-destructive">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {escrowsError}
+                </div>
+              )}
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="mt-4 text-xs text-gray-500">
-            {batchProgress ? (
-              <span>
-                Processando lote: {batchProgress.done}/{batchProgress.total}
-              </span>
-            ) : (
-              <span>
-                Assinatura atual para envio: {truncateAddress(signerWallet.address || null)}.
-              </span>
-            )}
-          </div>
+        {/* Account Details & Info Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {isConnected && (
+            <Card className="shadow-sm border-muted/60">
+              <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Info className="w-4 h-4 text-muted-foreground/80" />
+                  Detalhes da Conta
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest px-1">Account ID</p>
+                  <p className="text-[12px] font-mono text-foreground bg-muted/20 border border-muted/40 p-2 rounded-lg break-all">
+                    {accountId}
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest px-1">Saldo Atual</p>
+                  <div className="flex items-center gap-2">
+                    <div className="p-1 px-3 bg-primary/10 border border-primary/20 rounded-lg">
+                      <span className="text-lg font-bold text-primary">{balance} XLM</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {escrowsError && <p className="mt-2 text-xs text-red-600">{escrowsError}</p>}
-        </div>
-
-        {/* Account Details */}
-        {isConnected && (
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-xl font-semibold mb-4">Detalhes da Conta</h2>
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Account ID</p>
-                <p
-                  className="text-sm text-gray-800 font-mono break-all"
-                  title={accountId || undefined}
-                >
-                  {truncateAddress(accountId)}
+          <Card className={cn("shadow-sm border-muted/60", !isConnected && "md:col-span-2")}>
+            <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <Fingerprint className="w-4 h-4 text-muted-foreground/80" />
+                Segurança Passkeys
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5">
+              <p className="text-[12px] text-muted-foreground leading-relaxed font-medium">
+                Esta carteira utiliza biometria do seu dispositivo (<strong className="text-foreground">WebAuthn</strong>) para proteger seus ativos. Suas chaves privadas nunca saem do seu hardware, garantindo segurança máxima contra ataques de rede.
+              </p>
+              <div className="mt-4 pt-4 border-t border-muted/30">
+                <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">Sobre a Rede Stellar</p>
+                <p className="text-[12px] text-muted-foreground leading-relaxed font-medium">
+                  Stellar é focada em pagamentos rápidos e eficientes. Com sua <strong className="text-foreground">Smart Account</strong>, você gerencia XLM e outros ativos digitais com taxas mínimas.
                 </p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Saldo</p>
-                <p className="text-lg font-semibold text-gray-800">{balance} XLM</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Information Section */}
-        <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
-          <h3 className="font-semibold text-blue-900 mb-2">Sobre Passkeys</h3>
-          <p className="text-sm text-blue-800 mb-3">
-            Esta carteira utiliza a tecnologia WebAuthn para proteger seus ativos com biometria.
-            Suas chaves privadas nunca saem do seu dispositivo e você pode autorizar transações
-            usando impressão digital, Face ID, ou PIN do dispositivo.
-          </p>
-          <h3 className="font-semibold text-blue-900 mb-2 mt-4">Sobre Stellar</h3>
-          <p className="text-sm text-blue-800">
-            Stellar é uma rede blockchain projetada para facilitar pagamentos rápidos e de baixo
-            custo. Com sua Smart Account, você pode enviar e receber XLM e outros ativos digitais
-            com segurança.
-          </p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Testnet Warning */}
-        {isConnected && (
-          <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-200">
-            <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-yellow-600 text-2xl">warning</span>
-              <div>
-                <h3 className="font-semibold text-yellow-900 mb-1">Modo Testnet Ativado</h3>
-                <p className="text-sm text-yellow-800">
-                  Você está conectado à rede de teste. Os tokens XLM na Testnet não têm valor real e
-                  são usados apenas para fins de teste. Use a Mainnet para transações com valor
-                  real.
-                </p>
-              </div>
+        {/* Warning Section */}
+        {network === 'testnet' && (
+          <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 text-amber-600">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-amber-700">Modo Testnet Ativado</h4>
+              <p className="text-[12px] text-amber-700/80 leading-relaxed font-medium mt-1">
+                Você esta operando na rede de testes da Stellar. Os tokens <strong className="text-amber-800">XLM</strong> exibidos são fictícios e não possuem valor real. Alterne para a <strong className="text-amber-800">Mainnet</strong> para transações oficiais.
+              </p>
             </div>
           </div>
         )}

@@ -8,6 +8,10 @@
  */
 
 import { useStellarWallet } from '@/contexts/StellarWalletContext';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Wallet, LogOut, CheckCircle2, WalletCards } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface WalletStatusIndicatorProps {
   onConnectClick: () => void;
@@ -20,44 +24,55 @@ export function WalletStatusIndicator({ onConnectClick }: WalletStatusIndicatorP
   const truncateAddress = (address: string | null) => {
     if (!address) return '';
     if (address.length <= 12) return address;
-    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+    return `${address.slice(0, 6)}...${address.slice(-6)}`;
   };
 
   if (isConnected) {
     return (
-      <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
-        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-          <span className="material-symbols-outlined text-white">check_circle</span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-800">Carteira Conectada</p>
-          <p className="text-xs text-gray-600 truncate" title={publicKey || undefined}>
-            {truncateAddress(publicKey)}
-          </p>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-xs font-medium text-green-700">Saldo: {balance} XLM</p>
-            <span className="text-xs text-gray-400">•</span>
-            <p className="text-xs text-gray-600 capitalize">{network}</p>
+      <Card className="shadow-sm border-muted/60 bg-muted/30">
+        <CardContent className="p-4 flex items-center gap-4">
+          <div className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center flex-shrink-0 text-emerald-600">
+            <CheckCircle2 className="w-5 h-5" />
           </div>
-        </div>
-        <button
-          onClick={disconnectWallet}
-          className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-          title="Desconectar carteira"
-        >
-          <span className="material-symbols-outlined text-red-600">logout</span>
-        </button>
-      </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold text-foreground">Carteira Conectada</p>
+              <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                Ativa
+              </span>
+            </div>
+            <p className="text-[12px] text-muted-foreground font-mono truncate mt-0.5" title={publicKey || undefined}>
+              {truncateAddress(publicKey)}
+            </p>
+            <div className="flex items-center gap-2 mt-1.5">
+              <p className="text-[11px] font-bold text-foreground bg-muted/50 px-2 py-0.5 rounded border border-muted/60">
+                {balance} XLM
+              </p>
+              <span className="text-xs text-muted-foreground/40">•</span>
+              <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-tight">{network}</p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={disconnectWallet}
+            className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            title="Desconectar carteira"
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <button
+    <Button
       onClick={onConnectClick}
-      className="w-full flex items-center justify-center gap-2 p-4 bg-gradient-to-r from-[#6f43d0] to-[#6fdcff] text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-200"
+      className="w-full h-14 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-md transition-all duration-200 group"
     >
-      <span className="material-symbols-outlined">account_balance_wallet</span>
-      Conectar Carteira Stellar
-    </button>
+      <WalletCards className="w-5 h-5 transition-transform group-hover:scale-110" />
+      <span className="text-sm tracking-tight">Conectar Carteira Stellar</span>
+    </Button>
   );
 }

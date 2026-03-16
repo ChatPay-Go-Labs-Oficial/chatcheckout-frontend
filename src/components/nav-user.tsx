@@ -1,10 +1,10 @@
 "use client"
 
 import {
-  BadgeCheck,
+  User,
+  Wallet,
   Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
   Sparkles,
 } from "lucide-react"
@@ -66,11 +66,11 @@ export function NavUser({
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">{getInitials(user.name)}</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-left text-sm leading-tight group-data-[state=collapsed]:hidden">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              <ChevronsUpDown className="ml-auto size-4 group-data-[state=collapsed]:hidden" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -95,13 +95,13 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
                 <Link href="/profile">
-                  <BadgeCheck className="mr-2 h-4 w-4" />
-                   Perfil
+                  <User className="mr-2 h-4 w-4" />
+                  Perfil
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/settings/wallet">
-                  <CreditCard className="mr-2 h-4 w-4" />
+                  <Wallet className="mr-2 h-4 w-4" />
                   Carteira
                 </Link>
               </DropdownMenuItem>

@@ -36,16 +36,16 @@ export function NavMain({
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Menu</SidebarGroupLabel>
-      <SidebarMenu>
+      <SidebarMenu className="gap-1">
         {items.map((item) => {
           const hasChildren = item.items && item.items.length > 0
 
           const button = (
-            <SidebarMenuButton tooltip={item.title} isActive={item.isActive}>
-              {item.icon && <item.icon />}
-              <span>{item.title}</span>
+            <SidebarMenuButton tooltip={item.title} isActive={item.isActive} size="lg" className="h-11 group-data-[state=collapsed]:!p-0 group-data-[state=collapsed]:justify-center">
+              {item.icon && <item.icon className="size-5 shrink-0" />}
+              <span className="text-[13px] font-semibold truncate group-data-[state=collapsed]:hidden">{item.title}</span>
               {hasChildren && (
-                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[state=collapsed]:hidden" />
               )}
             </SidebarMenuButton>
           )
@@ -53,10 +53,10 @@ export function NavMain({
           if (!hasChildren) {
             return (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild tooltip={item.title} isActive={item.isActive}>
-                  <Link href={item.url}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
+                <SidebarMenuButton asChild tooltip={item.title} isActive={item.isActive} size="lg" className="h-11 group-data-[state=collapsed]:!p-0 group-data-[state=collapsed]:justify-center">
+                  <Link href={item.url} className="flex items-center gap-3">
+                    {item.icon && <item.icon className="size-5 shrink-0" />}
+                    <span className="text-[13px] font-semibold truncate group-data-[state=collapsed]:hidden">{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

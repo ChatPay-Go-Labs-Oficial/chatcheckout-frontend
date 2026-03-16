@@ -7,7 +7,7 @@ import {
   Receipt,
   User,
   Wallet,
-  Command,
+  ShoppingCart,
   GalleryVerticalEnd,
   LifeBuoy,
   Send,
@@ -60,7 +60,7 @@ export function AppSidebar({ user, onLogout, ...props }: AppSidebarProps) {
       },
       {
         name: "Evil Corp.",
-        logo: Command,
+        logo: ShoppingCart,
         plan: "Free",
       },
     ],
@@ -103,14 +103,13 @@ export function AppSidebar({ user, onLogout, ...props }: AppSidebarProps) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Command className="size-4" />
+            <SidebarMenuButton size="lg" asChild className="group-data-[state=collapsed]:!p-0 group-data-[state=collapsed]:justify-center">
+              <Link href="/dashboard" className="flex items-center justify-center">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm shrink-0">
+                  <ShoppingCart className="size-4" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">ChatCheckout</span>
-                  <span className="truncate text-xs">Empresarial</span>
+                <div className="flex flex-1 flex-col text-left text-sm leading-tight group-data-[state=collapsed]:hidden ml-3">
+                  <span className="truncate font-semibold text-foreground">ChatCheckout</span>
                 </div>
               </Link>
             </SidebarMenuButton>

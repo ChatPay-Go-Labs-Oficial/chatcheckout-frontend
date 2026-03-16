@@ -165,10 +165,10 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* Linha 1: 3 Colunas com Altura Uniforme */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             {/* Coluna 1: Informações Básicas */}
-            <Card className="shadow-sm border-muted/60 h-full flex flex-col">
-              <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+            <Card className="shadow-sm border-muted/60 h-full flex flex-col bg-background">
+              <CardHeader className="py-3 px-5 border-b bg-muted/5">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Package className="w-4 h-4 text-primary" />
                   Informações Básicas
@@ -182,7 +182,7 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
                     <FormItem>
                       <FormLabel className="text-xs">Nome do produto</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Masterclass de Design Digital" {...field} className="bg-muted/30 focus-visible:ring-1 h-9 text-sm" />
+                        <Input placeholder="Ex: Masterclass de Design Digital" {...field} className="bg-background focus-visible:ring-1 h-10 text-sm border-muted/60" />
                       </FormControl>
                       <FormMessage className="text-[11px]" />
                     </FormItem>
@@ -198,7 +198,7 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
                       <FormControl className="flex-1">
                         <Textarea
                           placeholder="Benefícios e conteúdo que o cliente verá..."
-                          className="min-h-[100px] h-full bg-muted/30 focus-visible:ring-1 resize-none text-sm flex-1"
+                          className="min-h-[100px] h-full bg-background focus-visible:ring-1 resize-none text-sm flex-1 border-muted/60"
                           {...field}
                         />
                       </FormControl>
@@ -210,8 +210,8 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
             </Card>
 
             {/* Coluna 2: Vendas & Checkout */}
-            <Card className="shadow-sm border-muted/60 h-full flex flex-col">
-              <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+            <Card className="shadow-sm border-muted/60 h-full flex flex-col bg-background">
+              <CardHeader className="py-3 px-5 border-b bg-muted/5">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Layout className="w-4 h-4 text-primary" />
                   Vendas & Checkout
@@ -227,7 +227,7 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
                       <FormControl>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">R$</span>
-                          <Input type="number" step="0.01" placeholder="0,00" {...field} className="pl-10 bg-muted/30 focus-visible:ring-1 h-9 text-sm" />
+                          <Input type="number" step="0.01" placeholder="0,00" {...field} className="pl-10 bg-background focus-visible:ring-1 h-10 text-sm border-muted/60" />
                         </div>
                       </FormControl>
                       <FormMessage className="text-[11px]" />
@@ -237,7 +237,7 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
 
                 <FormItem>
                   <FormLabel className="text-xs">Moeda</FormLabel>
-                  <div className="flex items-center px-3 h-9 bg-muted/50 border border-input rounded-md text-[13px] font-medium text-muted-foreground/70 cursor-not-allowed select-none">
+                  <div className="flex items-center px-3 h-10 bg-muted/20 border border-muted/60 rounded-md text-[13px] font-medium text-muted-foreground/70 cursor-not-allowed select-none">
                     <span>BRL — Real Brasileiro</span>
                     <Lock className="w-3 h-3 ml-auto opacity-50" />
                   </div>
@@ -250,7 +250,7 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
                     <FormItem>
                       <FormLabel className="text-xs">Página de Vendas (Opcional)</FormLabel>
                       <FormControl>
-                        <Input type="url" placeholder="https://seu-produto.com" {...field} className="bg-muted/30 focus-visible:ring-1 h-9 text-sm" />
+                        <Input type="url" placeholder="https://seu-produto.com" {...field} className="bg-background focus-visible:ring-1 h-10 text-sm border-muted/60" />
                       </FormControl>
                       <FormMessage className="text-[11px]" />
                     </FormItem>
@@ -260,8 +260,8 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
             </Card>
 
             {/* Coluna 3: Treinamento IA */}
-            <Card className="shadow-sm border-muted/60 h-full flex flex-col bg-primary/[0.01]">
-              <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+            <Card className="shadow-sm border-muted/60 h-full flex flex-col bg-background">
+              <CardHeader className="py-3 px-5 border-b bg-muted/5">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary" />
                   Treinamento IA (Opcional)
@@ -277,7 +277,7 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
                       <FormControl className="flex-1">
                         <Textarea
                           placeholder="Ex: Este produto é focado em design UI/UX, as aulas são gravadas..."
-                          className="min-h-[145px] h-full bg-background focus-visible:ring-1 resize-none text-sm flex-1"
+                          className="min-h-[145px] h-full bg-background focus-visible:ring-1 resize-none text-sm flex-1 border-muted/60"
                           {...field}
                         />
                       </FormControl>
@@ -290,8 +290,8 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
           </div>
 
           {/* Linha 2: Arquivos (Lado a Lado) */}
-          <Card className="shadow-sm border-muted/60">
-            <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+          <Card className="shadow-sm border-muted/60 bg-background">
+            <CardHeader className="py-3 px-5 border-b bg-muted/5">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <FileArchive className="w-4 h-4 text-primary" />
                 Arquivos & Entrega

@@ -3,327 +3,217 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { salesService } from '@/services/salesService';
-import { SalesPaymentType, SalesSortBy, SalesSortOrder } from '@/types/sales';
-import { ChevronUp, ChevronDown } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+import { SalesSortBy, SalesSortOrder } from '@/types/sales';
+import { Filter, RefreshCcw, Search, Download } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { StatusBadge } from '@/components/sales/StatusBadge';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const PAGE_SIZE = 10;
-
-function formatDate(isoDate: string): string {
-  return new Intl.DateTimeFormat('pt-BR', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(new Date(isoDate));
-}
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format((cents || 0) / 100);
-}
-
-function getDefaultDateRange() {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(end.getDate() - 30);
-
-  const toInputDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  return {
-    startDate: toInputDate(start),
-    endDate: toInputDate(end),
-  };
-}
-
-function toIsoDateRange(startDate: string, endDate: string) {
-  const toStartOfLocalDayIso = (dateStr: string) => {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day, 0, 0, 0, 0).toISOString();
-  };
-
-  const toEndOfLocalDayIso = (dateStr: string) => {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day, 23, 59, 59, 999).toISOString();
-  };
-
-  return {
-    startDate: startDate ? toStartOfLocalDayIso(startDate) : undefined,
-    endDate: endDate ? toEndOfLocalDayIso(endDate) : undefined,
-  };
-}
-
-function getPaymentLabel(method: SalesPaymentType): string {
-  if (method === 'PIX') return 'Pix';
-  if (method === 'CARD') return 'Cartão';
-  return 'Cripto';
-}
-
-function getStatusLabel(status: 'CREATED' | 'COMPLETED' | 'FAILED'): string {
-  if (status === 'COMPLETED') return 'Concluído';
-  if (status === 'FAILED') return 'Falhou';
-  return 'Criado';
-}
+const PAGE_SIZE = 12;
 
 export default function SalesPage() {
-  const defaultRange = useMemo(() => getDefaultDateRange(), []);
-
-  const [draftPaymentType, setDraftPaymentType] = useState<SalesPaymentType | 'ALL'>('ALL');
-  const [draftStartDate, setDraftStartDate] = useState(defaultRange.startDate);
-  const [draftEndDate, setDraftEndDate] = useState(defaultRange.endDate);
-
-  const [paymentType, setPaymentType] = useState<SalesPaymentType | undefined>(undefined);
-  const [startDate, setStartDate] = useState(defaultRange.startDate);
-  const [endDate, setEndDate] = useState(defaultRange.endDate);
   const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SalesSortBy>('createdAt');
   const [sortOrder, setSortOrder] = useState<SalesSortOrder>('desc');
 
-  const dateRange = toIsoDateRange(startDate, endDate);
-
-  const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: [
-      'my-sales',
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
+    queryKey: ['sales', page, sortBy, sortOrder],
+    queryFn: () => salesService.getMySales({
       page,
-      paymentType,
-      dateRange.startDate,
-      dateRange.endDate,
+      limit: PAGE_SIZE,
       sortBy,
       sortOrder,
-    ],
-    queryFn: () =>
-      salesService.getMySales({
-        page,
-        limit: PAGE_SIZE,
-        paymentType,
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        sortBy,
-        sortOrder,
-      }),
+    }),
   });
 
-  function handleApplyFilters() {
-    setPaymentType(draftPaymentType === 'ALL' ? undefined : (draftPaymentType as SalesPaymentType));
-    setStartDate(draftStartDate);
-    setEndDate(draftEndDate);
-    setPage(1);
-  }
+  const sales = data?.data || [];
+  const totalPages = data?.totalPages || 1;
 
-  function handleClearFilters() {
-    const nextDefault = getDefaultDateRange();
-    setDraftPaymentType('ALL');
-    setDraftStartDate(nextDefault.startDate);
-    setDraftEndDate(nextDefault.endDate);
-
-    setPaymentType(undefined);
-    setStartDate(nextDefault.startDate);
-    setEndDate(nextDefault.endDate);
-    setPage(1);
-  }
-
-  function toggleSort(field: SalesSortBy) {
-    if (sortBy === field) {
-      setSortOrder((current) => (current === 'asc' ? 'desc' : 'asc'));
-      return;
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "dd 'de' MMM, yyyy • HH:mm", { locale: ptBR });
+    } catch {
+      return dateString;
     }
+  };
 
-    setSortBy(field);
-    setSortOrder('desc');
-  }
-
-  const sales = data?.data ?? [];
-  const total = data?.total ?? 0;
-  const totalPages = data?.totalPages ?? 0;
-  const canPrev = page > 1;
-  const canNext = page < totalPages;
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(amount);
+  };
 
   return (
-    <div className="w-full space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Vendas</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Filtre e acompanhe suas vendas por período e forma de pagamento
-        </p>
+    <div className="flex-1 space-y-4 p-8 pt-4">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">Vendas</h2>
+          <p className="text-sm text-muted-foreground">
+            Gerencie e acompanhe todo o seu histórico de transações.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-9 border-muted/60 bg-background hover:bg-muted/5">
+            <Download className="mr-2 h-4 w-4" />
+            Exportar
+          </Button>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="h-9 shadow-sm"
+            onClick={() => refetch()}
+          >
+            <RefreshCcw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+        </div>
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-            <div className="w-full lg:w-56 space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Tipo de pagamento
-              </label>
-              <Select
-                value={draftPaymentType}
-                onValueChange={(val) => setDraftPaymentType(val as SalesPaymentType | 'ALL')}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos</SelectItem>
-                  <SelectItem value="PIX">Pix</SelectItem>
-                  <SelectItem value="CARD">Cartão</SelectItem>
-                  <SelectItem value="CRYPTO">Cripto</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      {/* Filter Row */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
+          <Input 
+            placeholder="Buscar por produto ou ID..." 
+            className="pl-9 h-10 border-muted/60 bg-background focus-visible:ring-primary/20 transition-all"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-10 border-muted/60 bg-background px-3 font-medium hover:bg-muted/5">
+            <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+            Filtros Avançados
+          </Button>
+        </div>
+      </div>
 
-            <div className="w-full lg:w-56 space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Data inicial
-              </label>
-              <Input
-                type="date"
-                value={draftStartDate}
-                onChange={(e) => setDraftStartDate(e.target.value)}
-              />
-            </div>
-
-            <div className="w-full lg:w-56 space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Data final
-              </label>
-              <Input
-                type="date"
-                value={draftEndDate}
-                onChange={(e) => setDraftEndDate(e.target.value)}
-              />
-            </div>
-
-            <div className="flex gap-2 w-full lg:w-auto mt-4 lg:mt-0">
-              <Button onClick={handleApplyFilters} className="w-full lg:w-auto">
-                Aplicar
-              </Button>
-              <Button variant="outline" onClick={handleClearFilters} className="w-full lg:w-auto">
-                Limpar
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
-          <div className="flex flex-col gap-1">
-            <CardTitle className="text-lg">Lista de vendas</CardTitle>
-            <CardDescription>
-              {isFetching ? 'Atualizando...' : `${total} resultado(s)`}
+      {/* Main Table Content */}
+      <Card className="shadow-sm border-muted/60 overflow-hidden bg-background py-0 gap-0">
+        <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30 px-6 py-4 rounded-none">
+          <div className="space-y-0.5">
+            <CardTitle className="text-base font-semibold">Histórico de Pedidos</CardTitle>
+            <CardDescription className="text-xs">
+              Exibindo as vendas mais recentes da sua conta.
             </CardDescription>
           </div>
+          <div className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+            Total de {data?.total || 0} registros
+          </div>
         </CardHeader>
-
-        {error ? (
-          <div className="p-6 text-sm text-destructive">
-            {(error as Error).message || 'Não foi possível carregar as vendas.'}
-          </div>
-        ) : (
-          <div className="border-b">
-            <Table>
-              <TableHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader className="bg-muted/10">
+              <TableRow className="hover:bg-transparent border-muted/20">
+                <TableHead className="w-[180px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Data e Hora</TableHead>
+                <TableHead className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Produto</TableHead>
+                <TableHead className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Valor</TableHead>
+                <TableHead className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-center">Status</TableHead>
+                <TableHead className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-right">Método</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i} className="border-muted/10">
+                    <TableCell className="px-6 py-4"><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell className="px-6 py-4"><Skeleton className="h-4 w-48" /></TableCell>
+                    <TableCell className="px-6 py-4"><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell className="px-6 py-4"><div className="flex justify-center"><Skeleton className="h-6 w-24 rounded-full" /></div></TableCell>
+                    <TableCell className="px-6 py-4 text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : isError ? (
                 <TableRow>
-                  <TableHead>
-                    <button
-                      className="flex items-center gap-1 hover:text-foreground"
-                      onClick={() => toggleSort('createdAt')}
-                    >
-                      Data
-                      {sortBy === 'createdAt' && (sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
-                    </button>
-                  </TableHead>
-                  <TableHead>Produto</TableHead>
-                  <TableHead>Método</TableHead>
-                  <TableHead>
-                    <button
-                      className="flex items-center gap-1 hover:text-foreground"
-                      onClick={() => toggleSort('totalAmount')}
-                    >
-                      Valor bruto
-                      {sortBy === 'totalAmount' && (sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
-                    </button>
-                  </TableHead>
-                  <TableHead>Taxa</TableHead>
-                  <TableHead>Líquido</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableCell colSpan={5} className="h-32 text-center text-destructive font-medium">
+                    Ocorreu um erro ao carregar as vendas.
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
-                      Carregando vendas...
+              ) : sales.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                    Nenhuma venda encontrada no período selecionado.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sales.map((sale) => (
+                  <TableRow key={sale.orderId} className="group border-muted/10 hover:bg-muted/5 transition-colors">
+                    <TableCell className="text-[12px] font-medium text-foreground py-3 px-6">
+                      {formatDate(sale.createdAt)}
+                    </TableCell>
+                    <TableCell className="py-3 px-6">
+                      <div className="flex flex-col">
+                        <span className="text-[13px] font-semibold text-foreground truncate max-w-[200px]">
+                          {sale.product?.name || 'Produto não encontrado'}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-mono">
+                          ID: {sale.orderId.substring(0, 8)}...
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-[13px] font-bold text-foreground py-3 px-6">
+                      {formatCurrency(sale.totalAmount)}
+                    </TableCell>
+                    <TableCell className="py-3 px-6">
+                      <div className="flex justify-center items-center">
+                        <StatusBadge status={sale.status} />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right py-3 px-6">
+                      <span className="text-[11px] font-bold text-muted-foreground/80 bg-muted/30 px-2 py-0.5 rounded border border-muted/20 uppercase">
+                        {sale.paymentMethod}
+                      </span>
                     </TableCell>
                   </TableRow>
-                ) : sales.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
-                      Nenhuma venda encontrada para os filtros selecionados.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  sales.map((sale) => (
-                    <TableRow key={sale.orderId}>
-                      <TableCell className="font-medium">{formatDate(sale.createdAt)}</TableCell>
-                      <TableCell>{sale.productName}</TableCell>
-                      <TableCell className="text-muted-foreground">{getPaymentLabel(sale.paymentType)}</TableCell>
-                      <TableCell className="font-medium">{formatCurrency(sale.totalAmount)}</TableCell>
-                      <TableCell className="text-muted-foreground">{formatCurrency(sale.feeAmount)}</TableCell>
-                      <TableCell className="font-semibold text-emerald-600 dark:text-emerald-400">
-                        {formatCurrency(sale.netAmount)}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{getStatusLabel(sale.status)}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-
-        {/* Paginação */}
-        <div className="flex items-center justify-between p-4">
-          <span className="text-sm text-muted-foreground">
-            Página {page} de {Math.max(totalPages, 1)}
-          </span>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <div className="flex items-center justify-between border-t bg-muted/20 px-6 py-3">
+          <p className="text-[11px] font-medium text-muted-foreground">
+            Página {page} de {totalPages}
+          </p>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
-              disabled={!canPrev}
-              onClick={() => setPage((current) => current - 1)}
+              className="h-8 text-[11px] font-semibold border-muted/60 bg-background hover:bg-muted/5 disabled:opacity-50"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
             >
               Anterior
             </Button>
             <Button
               variant="outline"
               size="sm"
-              disabled={!canNext}
-              onClick={() => setPage((current) => current + 1)}
+              className="h-8 text-[11px] font-semibold border-muted/60 bg-background hover:bg-muted/5 disabled:opacity-50"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
             >
-              Próxima
+              Próximo
             </Button>
           </div>
         </div>

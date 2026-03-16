@@ -49,6 +49,10 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     accountId: null,
     publicKey: null,
     balance: '0',
+    balances: {
+      XLM: '0',
+      USDC: '0',
+    },
     network: 'testnet',
     isLoading: true,
     error: null,
@@ -66,6 +70,10 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
             accountId: stellarService.getAccountId(),
             publicKey: stellarService.getAccountId(),
             balance: '0',
+            balances: {
+              XLM: '0',
+              USDC: '0',
+            },
             network: stellarService.getNetwork(),
             isLoading: false,
             error: null,
@@ -73,8 +81,8 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
 
           // Fetch initial balance
           try {
-            const balance = await stellarService.getBalance();
-            setState((prev) => ({ ...prev, balance }));
+            const balances = await stellarService.getBalances();
+            setState((prev) => ({ ...prev, balance: balances.XLM, balances }));
           } catch (error) {
             console.error('Error fetching initial balance:', error);
           }
@@ -176,6 +184,10 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
       accountId: null,
       publicKey: null,
       balance: '0',
+      balances: {
+        XLM: '0',
+        USDC: '0',
+      },
       network: 'testnet',
       isLoading: false,
       error: null,
@@ -194,6 +206,10 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
         accountId: null,
         publicKey: null,
         balance: '0',
+        balances: {
+          XLM: '0',
+          USDC: '0',
+        },
         network,
         isLoading: false,
         error: null,
@@ -227,9 +243,9 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
   const balanceQuery = useQuery({
     queryKey: ['stellar-balance', state.accountId],
     queryFn: async () => {
-      const balance = await stellarService.getBalance();
-      setState((prev) => ({ ...prev, balance }));
-      return balance;
+      const balances = await stellarService.getBalances();
+      setState((prev) => ({ ...prev, balance: balances.XLM, balances }));
+      return balances;
     },
     enabled: state.isConnected,
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -301,14 +317,18 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
           accountId: stellarService.getAccountId(),
           publicKey: stellarService.getAccountId(),
           balance: '0',
+          balances: {
+            XLM: '0',
+            USDC: '0',
+          },
           network: stellarService.getNetwork(),
           isLoading: false,
           error: null,
         });
 
         // Fetch balance
-        const balance = await stellarService.getBalance();
-        setState((prev) => ({ ...prev, balance }));
+        const balances = await stellarService.getBalances();
+        setState((prev) => ({ ...prev, balance: balances.XLM, balances }));
       } else {
         setState((prev) => ({ ...prev, isLoading: false, isConnected: false }));
       }

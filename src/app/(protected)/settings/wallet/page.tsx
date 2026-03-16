@@ -11,11 +11,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Copy, Check, LogOut, Wallet2, Network, RefreshCcw } from 'lucide-react';
 import { AssetsList } from '@/components/wallet/AssetsList';
 import { NetworkSwitcher } from '@/components/stellar/NetworkSwitcher';
+import { XlmIcon } from '@/components/icons/XlmIcon';
+import { UsdcIcon } from '@/components/icons/UsdcIcon';
 
 export default function WalletSettingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  const { isConnected, balance, accountId, network, disconnectWallet, isFetchingBalance } = useStellarWallet();
+  const { isConnected, balance, balances, accountId, network, disconnectWallet, isFetchingBalance } = useStellarWallet();
 
   const {
     loadingEscrows,
@@ -87,20 +89,45 @@ export default function WalletSettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-muted/10">
               {/* Hub Left: Main Info (Stacked Balance & Identity) */}
               <div className="lg:col-span-6 p-6 space-y-6">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                    <Wallet2 className="h-3 w-3" />
-                    Saldo da Carteira
-                  </p>
-                  <div className="flex items-baseline gap-2">
-                    {isFetchingBalance ? (
-                      <Skeleton className="h-10 w-32 bg-muted/30" />
-                    ) : (
-                      <>
-                        <span className="text-4xl font-bold tracking-tight text-foreground">{balance}</span>
-                        <span className="text-sm font-bold text-muted-foreground uppercase">XLM</span>
-                      </>
-                    )}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-12 sm:gap-16">
+                  {/* XLM Balance */}
+                  <div className="flex items-center gap-4 group">
+                    <div className="flex aspect-square size-12 items-center justify-center rounded-2xl bg-muted/20 border border-muted/40 shadow-sm transition-transform group-hover:scale-105 duration-300">
+                      <XlmIcon size={24} className="text-foreground" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Saldo XLM</p>
+                      <div className="flex items-baseline gap-1.5">
+                        {isFetchingBalance ? (
+                          <Skeleton className="h-8 w-24 bg-muted/30" />
+                        ) : (
+                          <>
+                            <span className="text-2xl font-bold tracking-tight text-foreground">{balances.XLM}</span>
+                            <span className="text-[10px] font-bold text-muted-foreground/40 uppercase">XLM</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* USDC Balance */}
+                  <div className="flex items-center gap-4 group">
+                    <div className="flex aspect-square size-12 items-center justify-center rounded-2xl bg-white shadow-md border border-muted/20 transition-transform group-hover:scale-105 duration-300 overflow-hidden">
+                      <UsdcIcon size={48} />
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Saldo USDC</p>
+                      <div className="flex items-baseline gap-1.5">
+                        {isFetchingBalance ? (
+                          <Skeleton className="h-8 w-24 bg-muted/30" />
+                        ) : (
+                          <>
+                            <span className="text-2xl font-bold tracking-tight text-foreground">{balances.USDC}</span>
+                            <span className="text-[10px] font-bold text-muted-foreground/40 uppercase">USDC</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 

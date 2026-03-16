@@ -11,6 +11,7 @@ import { useCheckout } from '@/hooks/useCheckout';
 import { MessageList } from '@/components/checkout/MessageList';
 import { MessageInput } from '@/components/checkout/MessageInput';
 import { ProductHeader } from '@/components/checkout/ProductHeader';
+import { Loading } from '@/components/ui/Loading';
 
 function CheckoutPageContent() {
   const searchParams = useSearchParams();
@@ -33,14 +34,7 @@ function CheckoutPageContent() {
 export default function CheckoutPage() {
   return (
     <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-screen bg-background-light">
-          <div className="text-center">
-            <div className="inline-block w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-600">Carregando...</p>
-          </div>
-        </div>
-      }
+      fallback={<Loading />}
     >
       <CheckoutPageContent />
     </Suspense>
@@ -51,14 +45,7 @@ function CheckoutContainer({ hash }: { hash: string }) {
   const checkout = useCheckout(hash);
 
   if (checkout.loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background-light">
-        <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (checkout.error || !checkout.product) {

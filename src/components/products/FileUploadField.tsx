@@ -128,7 +128,7 @@ export function FileUploadField({
           className={`
             relative border-2 border-dashed rounded-xl p-4 text-center cursor-pointer
             transition-all duration-200 min-h-[110px] flex flex-col items-center justify-center gap-2
-            ${isDragging ? 'border-primary bg-primary/5 ring-4 ring-primary/5' : 'border-muted/60 hover:border-primary/50 hover:bg-muted/5 bg-background'}
+            ${isDragging ? 'border-primary bg-primary/5 ring-4 ring-primary/5' : 'border-muted/60 hover:border-primary/50 hover:bg-muted/5 bg-muted/10'}
             ${error ? 'border-destructive bg-destructive/5' : ''}
           `}
         >
@@ -154,7 +154,7 @@ export function FileUploadField({
           </div>
         </div>
       ) : (
-        <div className="relative border rounded-xl overflow-hidden bg-background border-muted/60 shadow-sm">
+        <div className="relative border rounded-xl overflow-hidden bg-background border-muted/60">
           <div className="flex items-center p-2.5 gap-3">
             <div className="w-10 h-10 rounded-lg bg-muted/20 border border-muted/40 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
               {preview ? (

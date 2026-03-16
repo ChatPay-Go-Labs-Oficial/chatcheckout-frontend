@@ -3,6 +3,7 @@
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { AppSidebar } from '@/components/app-sidebar';
+import { Loading } from '@/components/ui/Loading';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -34,7 +35,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }
 
   if (loading || !hydrated) {
-    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
+    return <Loading />;
   }
 
   if (!accessToken) {

@@ -267,19 +267,26 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     [sendTransactionMutation],
   );
 
-  const releaseEscrowPayment = useCallback(async (escrowId: number) => {
-    return stellarService.releaseEscrowPayment(escrowId);
-  }, []);
-
-  const getFeePayerAddress = useCallback(() => {
-    return stellarService.getFeePayerAddress();
-  }, []);
-
   const getBalance = useCallback(async () => {
     if (state.isConnected) {
       await balanceQuery.refetch();
     }
   }, [state.isConnected, balanceQuery]);
+
+  const getFeePayerAddress = useCallback(() => {
+    return stellarService.getFeePayerAddress();
+  }, []);
+
+  const releaseEscrowPayment = useCallback(
+    async (escrowId: number) => {
+      const result = await stellarService.releaseEscrowPayment(escrowId);
+      if (result.success) {
+        await getBalance();
+      }
+      return result;
+    },
+    [getBalance],
+  );
 
   const refreshConnection = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true }));

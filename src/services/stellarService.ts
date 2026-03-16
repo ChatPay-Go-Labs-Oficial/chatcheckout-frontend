@@ -9,6 +9,7 @@
  */
 
 import { SmartAccountKit, IndexedDBStorage } from 'smart-account-kit';
+import * as sdk from '@stellar/stellar-sdk';
 import { getStellarConfig } from '@/config/stellar.config';
 import { Client as EscrowClient } from '@/services/escrow';
 import { STELLAR_CONFIG as PAYMENT_STELLAR_CONFIG } from '@/utils/stellar/constants';
@@ -216,9 +217,53 @@ class StellarService {
     }
 
     try {
-      // TODO: Implement balance fetching using Stellar SDK
-      // SmartAccountKit doesn't provide a getBalance method
-      // Need to query the Stellar network directly using the accountId
+      const config = getStellarConfig();
+      const rpc = new sdk.rpc.Server(config.rpcUrl);
+
+      // In Soroban, native XLM balance is held in a special SAC contract
+      // We call the 'balance' method which takes the address (our contractId) as argument
+      const nativeContractId = PAYMENT_STELLAR_CONFIG.NETWORK === 'public'
+        ? 'CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA'
+        : 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC';
+
+      // We use the accountId (Contract ID) as the address to check
+      const addressParam = sdk.nativeToScVal(this.accountId, { type: 'address' });
+
+      // Create the contract call simulation (read-only)
+      const simulation = await rpc.simulateTransaction(
+        new sdk.TransactionBuilder(
+          new sdk.Account('GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF', '0'),
+          { fee: '100', networkPassphrase: config.networkPassphrase }
+        )
+          .addOperation(
+            sdk.Operation.invokeHostFunction({
+              func: sdk.xdr.HostFunction.hostFunctionTypeInvokeContract(
+                new sdk.xdr.InvokeContractArgs({
+                  contractAddress: sdk.Address.fromString(nativeContractId).toScAddress(),
+                  functionName: 'balance',
+                  args: [addressParam],
+                })
+              ),
+              auth: [],
+            })
+          )
+          .setTimeout(0)
+          .build()
+      );
+
+      if (sdk.rpc.Api.isSimulationSuccess(simulation)) {
+        const resultVal = simulation.result?.retval;
+        if (resultVal) {
+          // The result is an i128 (7 decimal places)
+          const amountStroops = sdk.scValToBigInt(resultVal);
+          // Convert to XLM string (divisor 10^7)
+          return (Number(amountStroops) / 10_000_000).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 7,
+          });
+        }
+      }
+
       return '0';
     } catch (error) {
       console.error('Error fetching balance:', error);

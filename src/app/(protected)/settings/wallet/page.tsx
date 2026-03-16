@@ -1,57 +1,37 @@
 'use client';
 
-/**
- * Wallet Settings Page
- *
- * Page for managing Stellar wallet settings.
- * Users can connect/create wallets, switch networks, and view account details.
- */
-
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useStellarWallet as usePasskeyWallet } from '@/contexts/StellarWalletContext';
-import { useStellarWallet as useSignerWallet } from '@/hooks/useStellarWallet';
-import { useAuth } from '@/hooks/useAuth';
-import { useGlobalToast } from '@/contexts/ToastContext';
-import { WalletStatusIndicator } from '@/components/stellar/WalletStatusIndicator';
+import { useState } from 'react';
+import { useStellarWallet } from '@/contexts/StellarWalletContext';
+import { useWalletManagement } from '@/hooks/useWalletManagement';
 import { WalletConnectionModal } from '@/components/stellar/WalletConnectionModal';
-import { NetworkSwitcher } from '@/components/stellar/NetworkSwitcher';
-import { stellarPayoutService, type ReleasableEscrow } from '@/services/stellarPayoutService';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { 
-  Wallet, 
-  RefreshCcw, 
-  Coins, 
-  Info, 
-  AlertTriangle, 
-  Fingerprint, 
-  Layers, 
-  ArrowUpRight 
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { RefreshCcw } from 'lucide-react';
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { History, Settings2 } from 'lucide-react';
+
+// Modular Components
+import { WalletHeader } from '@/components/wallet/WalletHeader';
+import { WalletHero } from '@/components/wallet/WalletHero';
+import { AssetsList } from '@/components/wallet/AssetsList';
+import { NetworkConfig } from '@/components/wallet/NetworkConfig';
+import { SecuritySection } from '@/components/wallet/SecuritySection';
 
 export default function WalletSettingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [releasableEscrows, setReleasableEscrows] = useState<ReleasableEscrow[]>([]);
-  const [loadingEscrows, setLoadingEscrows] = useState(false);
-  const [escrowsError, setEscrowsError] = useState<string | null>(null);
-  const [isReleasing, setIsReleasing] = useState(false);
-  const [batchProgress, setBatchProgress] = useState<{ done: number; total: number } | null>(null);
+  const { isConnected, balance, accountId, network } = useStellarWallet();
 
-  const { user } = useAuth();
-  const toast = useGlobalToast();
-  const { isConnected, balance, accountId, getFeePayerAddress, releaseEscrowPayment, network } =
-    usePasskeyWallet();
-  const signerWallet = useSignerWallet();
+  const {
+    loadingEscrows,
+    isReleasing,
+    batchProgress,
+    groupedByAsset,
+    refreshReleasableEscrows,
+    handleReleaseBatch,
+  } = useWalletManagement();
 
-  const sellerAddress = user?.cryptoWalletAddress || accountId || null;
-  const passkeyFeePayerAddress = getFeePayerAddress();
-
-  // Truncate address for display
   const truncateAddress = (address: string | null) => {
-    if (!address) return 'N/A';
-    if (address.length <= 20) return address;
-    return `${address.slice(0, 10)}...${address.slice(-10)}`;
+    if (!address) return 'Não conectado';
+    return `${address.slice(0, 8)}...${address.slice(-8)}`;
   };
 
   const formatAssetAmount = (stroopsAmount: string) => {
@@ -65,361 +45,95 @@ export default function WalletSettingsPage() {
     }
   };
 
-  const groupedByAsset = useMemo(() => {
-    return releasableEscrows.reduce<Record<string, bigint>>((acc, escrow) => {
-      const current = acc[escrow.asset] || 0n;
-      try {
-        acc[escrow.asset] = current + BigInt(escrow.amount);
-      } catch {
-        acc[escrow.asset] = current;
-      }
-      return acc;
-    }, {});
-  }, [releasableEscrows]);
-
-  const refreshReleasableEscrows = useCallback(async () => {
-    if (!sellerAddress) {
-      setReleasableEscrows([]);
-      setEscrowsError('Configure sua carteira de recebimento para visualizar escrows.');
-      return;
-    }
-
-    const requiresSource = sellerAddress.startsWith('C');
-    const sourceAddress = signerWallet.address || passkeyFeePayerAddress;
-
-    if (requiresSource && !sourceAddress) {
-      setReleasableEscrows([]);
-      setEscrowsError(
-        'Conecte uma carteira de assinatura para consultar escrows vinculados a endereço C...',
-      );
-      return;
-    }
-
-    try {
-      setLoadingEscrows(true);
-      setEscrowsError(null);
-      const escrows = await stellarPayoutService.getReleasableEscrows(
-        sellerAddress,
-        sourceAddress ?? undefined,
-      );
-      setReleasableEscrows(escrows);
-    } catch (error) {
-      setEscrowsError(
-        error instanceof Error ? error.message : 'Erro ao carregar escrows elegíveis',
-      );
-    } finally {
-      setLoadingEscrows(false);
-    }
-  }, [passkeyFeePayerAddress, sellerAddress, signerWallet.address]);
-
-  useEffect(() => {
-    void refreshReleasableEscrows();
-  }, [refreshReleasableEscrows]);
-
-  const handleReleaseBatch = useCallback(async () => {
-    if (!sellerAddress) {
-      toast.error('Configure um endereço de carteira para o vendedor antes de liberar valores.');
-      return;
-    }
-
-    if (releasableEscrows.length === 0) {
-      toast.info('Não há valores elegíveis para recebimento neste momento.');
-      return;
-    }
-
-    try {
-      setIsReleasing(true);
-      setBatchProgress({ done: 0, total: releasableEscrows.length });
-
-      let sourceAddress = signerWallet.address;
-      if (!sourceAddress) {
-        sourceAddress = passkeyFeePayerAddress ?? undefined;
-      }
-
-      if (!sourceAddress) {
-        sourceAddress = await signerWallet.connect();
-      }
-
-      if (!sourceAddress) {
-        throw new Error('Não foi possível obter uma carteira para assinatura/envio.');
-      }
-
-      const canUsePasskeyPath = isConnected && sourceAddress === passkeyFeePayerAddress;
-
-      if (canUsePasskeyPath) {
-        let success = 0;
-        let failed = 0;
-
-        for (let index = 0; index < releasableEscrows.length; index++) {
-          const escrow = releasableEscrows[index];
-          const txResult = await releaseEscrowPayment(escrow.escrowId);
-
-          if (txResult.success) {
-            success += 1;
-          } else {
-            failed += 1;
-          }
-
-          setBatchProgress({ done: index + 1, total: releasableEscrows.length });
-        }
-
-        if (failed === 0) {
-          toast.success(`${success} recebimento(s) processado(s) com smart account.`);
-        } else if (success > 0) {
-          toast.warning(`${success} recebido(s) e ${failed} falha(s) no fluxo smart account.`);
-        } else {
-          toast.error('Nenhum recebimento foi processado via smart account.');
-        }
-
-        await refreshReleasableEscrows();
-        return;
-      }
-
-      const result = await stellarPayoutService.releaseEscrowsBatch({
-        escrowIds: releasableEscrows.map((escrow) => escrow.escrowId),
-        sourceAddress,
-        signTransactionFn: signerWallet.signTransaction,
-        onProgress: (done, total) => setBatchProgress({ done, total }),
-      });
-
-      if (result.failed === 0) {
-        toast.success(`${result.success} recebimento(s) processado(s) com sucesso.`);
-      } else if (result.success > 0) {
-        toast.warning(
-          `${result.success} recebido(s) com sucesso e ${result.failed} falha(s). Verifique o histórico.`,
-        );
-      } else {
-        toast.error('Nenhum recebimento foi processado. Tente novamente.');
-      }
-
-      await refreshReleasableEscrows();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erro ao solicitar recebimento');
-    } finally {
-      setIsReleasing(false);
-      setBatchProgress(null);
-    }
-  }, [
-    isConnected,
-    passkeyFeePayerAddress,
-    releasableEscrows,
-    refreshReleasableEscrows,
-    releaseEscrowPayment,
-    sellerAddress,
-    signerWallet,
-    toast,
-  ]);
-
   return (
-    <div className="w-full p-8 pt-4 mx-auto pb-6 animate-in fade-in duration-500">
-      <div className="flex flex-col mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Configurações da Carteira</h1>
-        <p className="text-[13px] text-muted-foreground mt-1">
-          Gerencie sua carteira Stellar e receba seus pagamentos em criptomoedas.
-        </p>
-      </div>
+    <div className="w-full min-h-screen p-8 pt-6 space-y-10 animate-in fade-in duration-700 bg-background/30">
+      {/* Top Header Section */}
+      <WalletHeader network={network} />
 
-      <div className="max-w-4xl space-y-6">
-        {/* Network Selection & Status Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="shadow-sm border-muted/60">
-            <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Layers className="w-4 h-4 text-muted-foreground/80" />
-                Rede Stellar
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <NetworkSwitcher />
-              <p className="text-[11px] text-muted-foreground font-medium mt-3 px-1 leading-relaxed">
-                {isConnected
-                  ? 'Ao trocar de rede, sua carteira será desconectada automaticamente por segurança.'
-                  : 'Certifique-se de selecionar a rede correta antes de realizar a conexão.'}
-              </p>
-            </CardContent>
-          </Card>
+      {/* Hero Financial Area */}
+      <WalletHero
+        balance={balance}
+        accountId={accountId}
+        isConnected={isConnected}
+        isReleasing={isReleasing}
+        releasableCount={Object.keys(groupedByAsset).length}
+        onRelease={handleReleaseBatch}
+        onConnect={() => setIsModalOpen(true)}
+      />
 
-          <Card className="shadow-sm border-muted/60">
-            <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-muted-foreground/80" />
-                Conexão
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <WalletStatusIndicator onConnectClick={() => setIsModalOpen(true)} />
-            </CardContent>
-          </Card>
+      {/* Professional Information Architecture with Tabs */}
+      <Tabs defaultValue="activity" className="w-full space-y-8">
+        <div className="flex items-center justify-between border-b border-muted/30 pb-1">
+          <TabsList className="bg-transparent h-fit p-0 gap-8">
+            <TabsTrigger
+              value="activity"
+              className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 text-sm font-bold uppercase tracking-widest gap-2 transition-all px-2"
+            >
+              <History className="w-4 h-4" />
+              Minhas Atividades
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 text-sm font-bold uppercase tracking-widest gap-2 transition-all px-2"
+            >
+              <Settings2 className="w-4 h-4" />
+              Configurações & Rede
+            </TabsTrigger>
+          </TabsList>
         </div>
 
-        {/* Payout Management Section */}
-        <Card className="shadow-sm border-muted/60">
-          <CardHeader className="py-3 px-5 border-b bg-muted/10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Coins className="w-4 h-4 text-muted-foreground/80" />
-                  Receber Valores em Cripto
-                </CardTitle>
-                <CardDescription className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-                  Liberação de Escrows Elegíveis (Pós-Garantia)
-                </CardDescription>
-              </div>
-              <Button
-                onClick={handleReleaseBatch}
-                disabled={loadingEscrows || isReleasing || releasableEscrows.length === 0}
-                className="h-10 px-6 bg-primary hover:bg-primary/90 text-white font-bold shadow-md transition-all sm:w-fit"
-              >
-                {isReleasing ? (
-                  <span className="flex items-center gap-2">
-                    <RefreshCcw className="w-4 h-4 animate-spin" />
-                    Processando...
-                  </span>
-                ) : (
-                  'Solicitar Recebimento'
-                )}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-5">
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 mb-5">
-              <div className="sm:col-span-5 space-y-4">
-                <div className="p-4 rounded-xl bg-muted/30 border border-muted/60 flex flex-col justify-center gap-1">
-                  <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">Escrows Elegíveis</p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {loadingEscrows ? '...' : releasableEscrows.length}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block px-1">Carteira de Recebimento</label>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-muted/20 border border-muted/40 rounded-lg group">
-                    <div className="p-1 rounded bg-background border flex-shrink-0">
-                      <ArrowUpRight className="w-3 h-3 text-muted-foreground/60" />
+        <TabsContent value="activity" className="space-y-8 outline-none mt-0">
+          <div className="relative group">
+            <AssetsList
+              groupedByAsset={groupedByAsset}
+              loading={loadingEscrows}
+              isReleasing={isReleasing}
+              onRelease={handleReleaseBatch}
+              onRefresh={() => void refreshReleasableEscrows()}
+              formatAmount={formatAssetAmount}
+              truncateAddress={truncateAddress}
+            />
+
+            {/* Batch Progress Overlay */}
+            {batchProgress && (
+              <div className="absolute inset-x-0 -bottom-6 px-12 z-20">
+                <div className="bg-primary px-6 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center justify-between animate-in slide-in-from-bottom-4 duration-500 ring-4 ring-background">
+                  <div className="flex items-center gap-3 text-primary-foreground">
+                    <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                    <span className="text-xs font-black uppercase tracking-[0.15em]">
+                      Liberação em Lote em Andamento
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="w-48 h-2 bg-white/20 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-white transition-all duration-700 ease-out shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                        style={{ width: `${(batchProgress.done / batchProgress.total) * 100}%` }}
+                      />
                     </div>
-                    <p className="text-[12px] font-mono font-medium text-foreground truncate" title={sellerAddress || undefined}>
-                      {truncateAddress(sellerAddress)}
-                    </p>
+                    <span className="text-[13px] font-black text-white tabular-nums">
+                      {batchProgress.done} <span className="opacity-40">/</span> {batchProgress.total}
+                    </span>
                   </div>
                 </div>
               </div>
-
-              <div className="sm:col-span-7">
-                <div className="h-full p-4 rounded-xl bg-muted/30 border border-muted/60">
-                  <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-3">Total Estimado por Ativo</p>
-                  <div className="space-y-2 max-h-[140px] overflow-y-auto pr-2 custom-scrollbar">
-                    {Object.keys(groupedByAsset).length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-4 text-center">
-                        <Info className="w-5 h-5 text-muted-foreground/20 mb-1" />
-                        <span className="text-xs text-muted-foreground/60 font-medium italic">Sem valores elegíveis no momento</span>
-                      </div>
-                    ) : (
-                      Object.entries(groupedByAsset).map(([assetAddress, amount]) => (
-                        <div key={assetAddress} className="flex items-center justify-between p-2.5 bg-background border rounded-lg shadow-sm">
-                          <span className="text-xs font-bold text-foreground font-mono">
-                            {truncateAddress(assetAddress)}
-                          </span>
-                          <span className="text-sm font-bold text-primary">
-                            {formatAssetAmount(amount.toString())}
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t border-muted/30">
-              <div className="flex items-center gap-2">
-                {batchProgress ? (
-                  <div className="flex items-center gap-2 text-[11px] font-bold text-primary animate-pulse">
-                    <RefreshCcw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Lote: {batchProgress.done}/{batchProgress.total} processados</span>
-                  </div>
-                ) : (
-                  <div className="text-[11px] text-muted-foreground font-medium flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
-                    Assinatura: {truncateAddress(signerWallet.address || null)}
-                  </div>
-                )}
-              </div>
-              {escrowsError && (
-                <div className="flex items-center gap-1.5 text-[11px] font-bold text-destructive">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  {escrowsError}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Account Details & Info Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {isConnected && (
-            <Card className="shadow-sm border-muted/60">
-              <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Info className="w-4 h-4 text-muted-foreground/80" />
-                  Detalhes da Conta
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-5 space-y-4">
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest px-1">Account ID</p>
-                  <p className="text-[12px] font-mono text-foreground bg-muted/20 border border-muted/40 p-2 rounded-lg break-all">
-                    {accountId}
-                  </p>
-                </div>
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest px-1">Saldo Atual</p>
-                  <div className="flex items-center gap-2">
-                    <div className="p-1 px-3 bg-primary/10 border border-primary/20 rounded-lg">
-                      <span className="text-lg font-bold text-primary">{balance} XLM</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className={cn("shadow-sm border-muted/60", !isConnected && "md:col-span-2")}>
-            <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Fingerprint className="w-4 h-4 text-muted-foreground/80" />
-                Segurança Passkeys
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-5">
-              <p className="text-[12px] text-muted-foreground leading-relaxed font-medium">
-                Esta carteira utiliza biometria do seu dispositivo (<strong className="text-foreground">WebAuthn</strong>) para proteger seus ativos. Suas chaves privadas nunca saem do seu hardware, garantindo segurança máxima contra ataques de rede.
-              </p>
-              <div className="mt-4 pt-4 border-t border-muted/30">
-                <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">Sobre a Rede Stellar</p>
-                <p className="text-[12px] text-muted-foreground leading-relaxed font-medium">
-                  Stellar é focada em pagamentos rápidos e eficientes. Com sua <strong className="text-foreground">Smart Account</strong>, você gerencia XLM e outros ativos digitais com taxas mínimas.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Warning Section */}
-        {network === 'testnet' && (
-          <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-4">
-            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 text-amber-600">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-amber-700">Modo Testnet Ativado</h4>
-              <p className="text-[12px] text-amber-700/80 leading-relaxed font-medium mt-1">
-                Você esta operando na rede de testes da Stellar. Os tokens <strong className="text-amber-800">XLM</strong> exibidos são fictícios e não possuem valor real. Alterne para a <strong className="text-amber-800">Mainnet</strong> para transações oficiais.
-              </p>
-            </div>
+            )}
           </div>
-        )}
-      </div>
+        </TabsContent>
+
+        <TabsContent value="settings" className="outline-none mt-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+            <NetworkConfig onConnectClick={() => setIsModalOpen(true)} />
+            <SecuritySection
+              accountId={accountId}
+              truncateAddress={truncateAddress}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <WalletConnectionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }
+

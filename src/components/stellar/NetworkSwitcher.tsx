@@ -22,7 +22,7 @@ export function NetworkSwitcher() {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-muted/30 border border-muted/60 rounded-xl">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-muted/20">
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg bg-background border flex items-center justify-center text-muted-foreground/80">
           <Globe2 className="w-5 h-5" />
@@ -35,7 +35,7 @@ export function NetworkSwitcher() {
         </div>
       </div>
 
-      <div className="flex gap-2 p-1 bg-muted/40 rounded-lg border">
+      <div className="flex gap-2 p-1 rounded-lg bg-muted/20 border">
         <Button
           variant={network === 'testnet' ? 'default' : 'ghost'}
           size="sm"

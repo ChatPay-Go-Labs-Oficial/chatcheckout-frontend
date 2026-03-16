@@ -4,11 +4,11 @@ import ProfileForm from '@/components/ProfileForm';
 
 export default function ProfilePage() {
   return (
-    <div className="w-full pr-20">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-[#181b4a]">Perfil do Usuário</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Gerencie suas informações pessoais e configurações
+    <div className="w-full p-8 pt-4 mx-auto pb-6">
+      <div className="flex flex-col mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Perfil do Usuário</h1>
+        <p className="text-[13px] text-muted-foreground mt-1">
+          Gerencie suas informações pessoais e configurações da plataforma com segurança.
         </p>
       </div>
       <ProfileForm />

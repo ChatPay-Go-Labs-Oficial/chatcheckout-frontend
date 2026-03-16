@@ -35,7 +35,7 @@ export function LoginForm({
   const handleIdentifierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const lastChar = value[value.length - 1] || '';
-    
+
     // Se parece com um email (tem @) ou se o último caractere não é número, trata como email (não formata)
     if (value.includes('@') || !/^\d$/.test(lastChar)) {
       setIdentifier(value);
@@ -70,7 +70,7 @@ export function LoginForm({
     <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-10 text-center mb-8">
-          <Link href="/" className="flex items-center gap-3 font-bold text-2xl tracking-tight transition-opacity hover:opacity-90">
+          <Link href="/login" className="flex items-center gap-3 font-bold text-2xl tracking-tight transition-opacity hover:opacity-90">
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
               <ShoppingCart className="size-5 fill-current/10" />
             </div>
@@ -86,12 +86,12 @@ export function LoginForm({
 
         <Field>
           <FieldLabel htmlFor="identifier">E-mail, CPF ou CNPJ</FieldLabel>
-          <Input 
-            id="identifier" 
-            type="text" 
-            placeholder="m@example.com ou 000.000.000-00" 
+          <Input
+            id="identifier"
+            type="text"
+            placeholder="m@example.com ou 000.000.000-00"
             autoComplete="username"
-            required 
+            required
             value={identifier}
             onChange={handleIdentifierChange}
             className="bg-background/50 h-11"
@@ -108,11 +108,11 @@ export function LoginForm({
               Esqueceu a senha?
             </Link>
           </div>
-          <Input 
-            id="password" 
-            type="password" 
+          <Input
+            id="password"
+            type="password"
             autoComplete="current-password"
-            required 
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="bg-background/50 h-11"

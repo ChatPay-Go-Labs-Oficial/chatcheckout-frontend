@@ -124,7 +124,7 @@ export function RegisterForm({
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-sm">
         <FieldGroup className="gap-3">
           <div className="flex flex-col items-center gap-4 text-center mb-4">
-            <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight transition-opacity hover:opacity-90">
+            <Link href="/register" className="flex items-center gap-2.5 font-bold text-xl tracking-tight transition-opacity hover:opacity-90">
               <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
                 <ShoppingCart className="size-5 fill-current/10" />
               </div>
@@ -264,9 +264,9 @@ export function RegisterForm({
             </FieldError>
           )}
 
-          <Button 
-            type="submit" 
-            className="w-full h-10 font-bold shadow-sm active:scale-95 transition-all mt-1" 
+          <Button
+            type="submit"
+            className="w-full h-10 font-bold shadow-sm active:scale-95 transition-all mt-1"
             disabled={loading || success}
           >
             {loading ? 'Cadastrando...' : 'Criar minha conta'}

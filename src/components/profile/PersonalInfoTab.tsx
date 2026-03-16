@@ -5,11 +5,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/hooks/useUser';
 import { UserProfile, UserUpdatePayload } from '@/types/user';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useGlobalToast } from '@/contexts/ToastContext';
 import { formatDocument } from '@/utils/validations';
+import { ChevronDown, RefreshCcw, User as UserIcon, Building2 } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,7 +52,6 @@ export default function PersonalInfoTab() {
         companyName: userProfile.companyName,
         cnpj: userProfile.cnpj,
       });
-      // Se há dados empresariais, abre automaticamente
       if (userProfile.companyName || userProfile.cnpj) {
         setIsCompanyOpen(true);
       }
@@ -73,13 +73,11 @@ export default function PersonalInfoTab() {
       setSaving(false);
       return;
     }
-
     if (form.cpf && !validateCPF(form.cpf)) {
       setFormError('CPF inválido');
       setSaving(false);
       return;
     }
-
     if (form.cnpj && !validateCNPJ(form.cnpj)) {
       setFormError('CNPJ inválido');
       setSaving(false);
@@ -87,28 +85,13 @@ export default function PersonalInfoTab() {
     }
 
     try {
-      // Create payload with only changed fields (PATCH behavior)
       const changes: Partial<UserUpdatePayload> = {};
+      if (form.firstName !== userProfile?.firstName) changes.firstName = form.firstName;
+      if (form.lastName !== userProfile?.lastName) changes.lastName = form.lastName;
+      if (form.companyName !== userProfile?.companyName) changes.companyName = form.companyName;
+      if (form.cpf && !userProfile?.cpf) changes.cpf = form.cpf.replace(/\D/g, '');
+      if (form.cnpj && !userProfile?.cnpj) changes.cnpj = form.cnpj.replace(/\D/g, '');
 
-      if (form.firstName !== userProfile?.firstName) {
-        changes.firstName = form.firstName;
-      }
-      if (form.lastName !== userProfile?.lastName) {
-        changes.lastName = form.lastName;
-      }
-      if (form.companyName !== userProfile?.companyName) {
-        changes.companyName = form.companyName;
-      }
-
-      // CPF, CNPJ and Email are immutable - only send if they don't exist yet
-      if (form.cpf && !userProfile?.cpf) {
-        changes.cpf = form.cpf.replace(/\D/g, '');
-      }
-      if (form.cnpj && !userProfile?.cnpj) {
-        changes.cnpj = form.cnpj.replace(/\D/g, '');
-      }
-
-      // Don't send request if nothing changed
       if (Object.keys(changes).length === 0) {
         toast.info('Nenhuma alteração detectada');
         setSaving(false);
@@ -116,10 +99,7 @@ export default function PersonalInfoTab() {
       }
 
       const updatedUser = await update(userProfile?.id || '', changes);
-      if (updatedUser) {
-        // Merge com dados existentes para não perder campos não retornados pelo backend
-        setUserGlobal({ ...userProfile, ...updatedUser });
-      }
+      if (updatedUser) setUserGlobal({ ...userProfile, ...updatedUser });
       toast.success('Perfil atualizado com sucesso!');
     } catch {
       const errorMsg = error || 'Erro ao salvar alterações';
@@ -131,121 +111,129 @@ export default function PersonalInfoTab() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Card className="p-5">
-        <h3 className="text-xl font-semibold text-gray-900 pb-4">Informações Pessoais</h3>
-
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <div className="space-y-2">
-            <Label htmlFor="firstName">Nome</Label>
-            <Input
-              id="firstName"
-              name="firstName"
-              type="text"
-              placeholder="Digite seu nome"
-              value={form.firstName ?? ''}
-              onChange={handleChange}
-            />
+    <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in duration-300 w-full max-w-4xl">
+      <Card className="shadow-sm border-muted/60">
+        <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+          <CardTitle className="text-sm font-bold flex items-center gap-2">
+            <UserIcon className="w-4 h-4 text-muted-foreground/80" />
+            Informações Pessoais
+          </CardTitle>
+        </CardHeader>
+        
+        <CardContent className="px-5 pt-3 pb-5 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label htmlFor="firstName" className="text-xs font-medium text-foreground">Nome</label>
+              <Input
+                id="firstName"
+                name="firstName"
+                type="text"
+                placeholder="Ex: Matheus"
+                value={form.firstName ?? ''}
+                onChange={handleChange}
+                className="bg-muted/30 focus-visible:ring-1 h-9 text-sm"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="lastName">Sobrenome</Label>
-            <Input
-              id="lastName"
-              name="lastName"
-              type="text"
-              placeholder="Digite seu sobrenome"
-              value={form.lastName ?? ''}
-              onChange={handleChange}
-            />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="text-xs font-medium text-foreground">Email</label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                disabled
+                value={form.email ?? ''}
+                className="bg-muted/50 h-9 text-sm border-dashed"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="cpf" className="text-xs font-medium text-foreground">CPF</label>
+              <Input
+                id="cpf"
+                name="cpf"
+                type="text"
+                disabled
+                value={formatDocument(form.cpf ?? '')}
+                className="bg-muted/50 h-9 text-sm border-dashed"
+              />
+            </div>
           </div>
-        </div>
-
-        <div className="mb-3 space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="Digite seu email"
-            disabled
-            value={form.email ?? ''}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="space-y-2 mb-3">
-          <Label htmlFor="cpf">CPF</Label>
-          <Input
-            id="cpf"
-            name="cpf"
-            type="text"
-            placeholder="000.000.000-00"
-            disabled
-            value={formatDocument(form.cpf ?? '')}
-            onChange={handleChange}
-          />
-        </div>
+        </CardContent>
       </Card>
 
-      <Card className="p-6">
+      <Card className="shadow-sm border-muted/60">
         <button
           type="button"
           onClick={() => setIsCompanyOpen(!isCompanyOpen)}
-          className="w-full flex items-center justify-between text-left mb-4"
+          className="w-full flex items-center justify-between p-3 px-5 hover:bg-muted/5 transition-colors group"
         >
-          <div>
-            <h3 className="text-lg font-semibold text-[#181b4a]">Informações da Empresa</h3>
-            <p className="text-sm text-gray-500 mt-1">
-              {isCompanyOpen ? 'Clique para ocultar' : 'Clique para expandir'}
-            </p>
+          <div className="flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-muted-foreground/80" />
+            <div className="text-left">
+              <h3 className="text-sm font-bold text-foreground">Informações da Empresa</h3>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                {isCompanyOpen ? 'Recolher detalhes' : 'Exibir detalhes (Opcional)'}
+              </p>
+            </div>
           </div>
-          <svg
-            className={`w-5 h-5 text-gray-500 transition-transform ${isCompanyOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+          <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform duration-200", isCompanyOpen && "rotate-180")} />
         </button>
 
         {isCompanyOpen && (
-          <div className="grid grid-cols-2 gap-3 pt-4 mt-4 border-t border-gray-100">
-            <div className="space-y-2">
-              <Label htmlFor="companyName">Nome da Empresa</Label>
-              <Input
-                id="companyName"
-                name="companyName"
-                type="text"
-                placeholder="Nome da empresa"
-                value={form.companyName ?? ''}
-                onChange={handleChange}
-              />
+          <CardContent className="px-5 pt-0 pb-5 animate-in slide-in-from-top-1 duration-200">
+            <div className="border-t border-muted/30 pt-4 mt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="companyName" className="text-xs font-medium text-foreground">Nome da Empresa</label>
+                  <Input
+                    id="companyName"
+                    name="companyName"
+                    type="text"
+                    placeholder="Ex: Minha Empresa LTDA"
+                    value={form.companyName ?? ''}
+                    onChange={handleChange}
+                    className="bg-muted/30 focus-visible:ring-1 h-9 text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="cnpj" className="text-xs font-medium text-foreground">CNPJ</label>
+                  <Input
+                    id="cnpj"
+                    name="cnpj"
+                    type="text"
+                    disabled={!!userProfile?.cnpj}
+                    value={formatDocument(form.cnpj ?? '')}
+                    onChange={handleChange}
+                    className={cn("h-9 text-sm", userProfile?.cnpj ? "bg-muted/50 border-dashed" : "bg-muted/30")}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="cnpj">CNPJ</Label>
-              <Input
-                id="cnpj"
-                name="cnpj"
-                type="text"
-                placeholder="00.000.000/0000-00"
-                disabled={userProfile?.cnpj ? true : false}
-                value={formatDocument(form.cnpj ?? '')}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
+          </CardContent>
         )}
       </Card>
 
-      <div className="flex items-center justify-end gap-3 mt-6">
-        {formError && <span className="text-destructive text-sm font-medium">{formError}</span>}
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-muted/30">
+        {formError && (
+          <span className="text-destructive text-[13px] font-bold">
+            {formError}
+          </span>
+        )}
         <Button
           type="submit"
           disabled={saving}
-          className="bg-gradient-to-r from-accent to-secondary text-white font-semibold px-8 py-6 rounded-xl shadow hover:scale-[1.02] hover:shadow-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+          className="shadow-md px-8 h-10 font-bold text-sm bg-primary hover:bg-primary/90"
         >
-          {saving ? 'Salvando...' : 'Salvar Alterações'}
+          {saving ? (
+            <span className="flex items-center gap-2">
+              <RefreshCcw className="w-4 h-4 animate-spin" />
+              Processando...
+            </span>
+          ) : (
+            'Salvar Alterações'
+          )}
         </Button>
       </div>
     </form>

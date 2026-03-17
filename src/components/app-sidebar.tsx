@@ -13,6 +13,7 @@ import {
   Send,
   AudioWaveform,
 } from "lucide-react"
+import { Logo } from "@/components/ui/Logo"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 
@@ -105,11 +106,9 @@ export function AppSidebar({ user, onLogout, ...props }: AppSidebarProps) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild className="group-data-[state=collapsed]:!p-0 group-data-[state=collapsed]:justify-center">
               <Link href="/dashboard" className="flex items-center justify-center">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm shrink-0">
-                  <ShoppingCart className="size-4" />
-                </div>
-                <div className="flex flex-1 flex-col text-left text-sm leading-tight group-data-[state=collapsed]:hidden ml-3">
-                  <span className="truncate font-semibold text-foreground">ChatCheckout</span>
+                <Logo className="size-8 shadow-sm shrink-0 group-data-[state=collapsed]:size-7" />
+                <div className="flex flex-1 flex-col text-left text-sm leading-tight group-data-[state=collapsed]:hidden ml-1">
+                  <span className="truncate font-bold text-base text-foreground tracking-tight">ChatCheckout</span>
                 </div>
               </Link>
             </SidebarMenuButton>

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from 'next/link';
-import { ShoppingCart } from "lucide-react"
+import { Logo } from "@/components/ui/Logo"
 
 export function LoginForm({
   className,
@@ -71,9 +71,7 @@ export function LoginForm({
       <FieldGroup>
         <div className="flex flex-col items-center gap-10 text-center mb-8">
           <Link href="/login" className="flex items-center gap-3 font-bold text-2xl tracking-tight transition-opacity hover:opacity-90">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
-              <ShoppingCart className="size-5 fill-current/10" />
-            </div>
+            <Logo className="size-10 shadow-lg shadow-primary/25" />
             <span className="text-foreground">ChatCheckout</span>
           </Link>
           <div className="space-y-1">

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { Logo } from '@/components/ui/Logo';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
@@ -15,16 +15,17 @@ interface LoadingProps {
  * Features a branded logo, simulated progress bar, and smooth animations.
  */
 export function Loading({ className, fullScreen = true }: LoadingProps) {
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(15); // Start at 15% for immediate visual impact
 
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress((prevProgress) => {
-        if (prevProgress >= 90) return prevProgress;
-        const diff = Math.random() * 15;
-        return Math.min(prevProgress + diff, 90);
+        if (prevProgress >= 92) return prevProgress;
+        // Faster increments to reach ~85% in 2.5s (average increment of ~3.5% per 100ms)
+        const diff = Math.random() * 4 + 1.5;
+        return Math.min(prevProgress + diff, 92);
       });
-    }, 400);
+    }, 100);
 
     return () => clearInterval(timer);
   }, []);
@@ -41,9 +42,7 @@ export function Loading({ className, fullScreen = true }: LoadingProps) {
         {/* Branded Logo with Pulse Animation */}
         <div className="relative group">
           <div className="absolute -inset-4 bg-primary/20 rounded-full blur-xl animate-pulse group-hover:bg-primary/30 transition-all duration-700" />
-          <div className="relative flex aspect-square size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl shadow-primary/20 ring-1 ring-white/10 animate-in zoom-in-50 duration-500">
-            <ShoppingCart className="size-8" />
-          </div>
+          <Logo className="relative size-20 shadow-2xl shadow-primary/20 animate-in zoom-in-50 duration-500" />
         </div>
 
         {/* Brand Name */}
@@ -58,7 +57,10 @@ export function Loading({ className, fullScreen = true }: LoadingProps) {
 
         {/* Progress Bar Area */}
         <div className="w-full space-y-3 px-2 pt-2 animate-in fade-in duration-1000 delay-300">
-          <Progress value={progress} className="h-1.5 bg-muted/30 border border-muted/20" />
+          <Progress 
+            value={progress} 
+            className="h-1.5 bg-muted/30 border border-muted/20 transition-all duration-700 ease-out [&>div]:transition-all [&>div]:duration-700 [&>div]:ease-out" 
+          />
           <div className="flex justify-between items-center px-0.5">
             <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
               Secure Cloud

@@ -22,7 +22,7 @@ export default function ProfileForm() {
             className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-semibold"
           >
             <CreditCard className="size-3.5 mr-2" />
-            Pagamentos
+            Configuração de Conta de Pagamentos
           </TabsTrigger>
           <TabsTrigger 
             value="password" 

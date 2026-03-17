@@ -102,7 +102,7 @@ export function NavUser({
               <DropdownMenuItem asChild>
                 <Link href="/settings/wallet">
                   <Wallet className="mr-2 h-4 w-4" />
-                  Carteira
+                  Carteira Stellar
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

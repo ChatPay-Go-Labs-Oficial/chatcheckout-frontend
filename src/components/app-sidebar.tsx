@@ -91,7 +91,7 @@ export function AppSidebar({ user, onLogout, ...props }: AppSidebarProps) {
         isActive: pathname.startsWith("/profile"),
       },
       {
-        title: "Carteira",
+        title: "Carteira Stellar",
         url: "/settings/wallet",
         icon: Wallet,
         isActive: pathname.startsWith("/settings/wallet"),

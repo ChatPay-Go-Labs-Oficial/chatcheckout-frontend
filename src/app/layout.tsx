@@ -17,9 +17,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'ChatCheckout',
   description: 'ChatCheckout application',
-  icons: {
-    icon: '/favicon.ico',
-  },
 };
 
 export default function RootLayout({

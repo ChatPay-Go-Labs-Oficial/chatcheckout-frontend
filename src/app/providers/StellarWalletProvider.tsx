@@ -45,11 +45,11 @@ function StellarWalletsKitInitializer() {
   useEffect(() => {
     const initializeKit = async () => {
       // Dynamic import to prevent SSR from loading the library
-      const { StellarWalletsKit } = await import('@jsr/creit-tech__stellar-wallets-kit/sdk');
+      const { StellarWalletsKit } = await import('@creit-tech/stellar-wallets-kit/sdk');
       const { FreighterModule } = await import(
-        '@jsr/creit-tech__stellar-wallets-kit/modules/freighter'
+        '@creit-tech/stellar-wallets-kit/modules/freighter'
       );
-      const { LobstrModule } = await import('@jsr/creit-tech__stellar-wallets-kit/modules/lobstr');
+      const { LobstrModule } = await import('@creit-tech/stellar-wallets-kit/modules/lobstr');
 
       try {
         // Inicializar Stellar Wallets Kit

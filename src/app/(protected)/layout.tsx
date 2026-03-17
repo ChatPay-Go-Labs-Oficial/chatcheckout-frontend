@@ -21,10 +21,16 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const { accessToken, loading } = useAuthGuard();
   const { logout, user } = useAuth();
   const router = useRouter();
-  const [hydrated, setHydrated] = useState(false);
+   const [hydrated, setHydrated] = useState(false);
+   const [minLoadingFinished, setMinLoadingFinished] = useState(false);
 
   useEffect(() => {
     setHydrated(true);
+    // Ensure a more deliberate loading time for a premium "full refresh" feel
+    const timer = setTimeout(() => {
+      setMinLoadingFinished(true);
+    }, 2500);
+    return () => clearTimeout(timer);
   }, []);
 
   const pathname = usePathname();
@@ -34,7 +40,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     router.replace('/login');
   }
 
-  if (loading || !hydrated) {
+  if (loading || !hydrated || !minLoadingFinished) {
     return <Loading />;
   }
 

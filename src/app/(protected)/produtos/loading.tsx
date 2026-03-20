@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProdutosLoading() {
   return (
-    <div className="w-full p-8 pt-4">
+    <div className="w-full p-8 pt-4 mx-auto pb-6 min-w-0 max-w-[100vw]">
       <div className="flex items-center justify-between mb-6 animate-pulse">
         <div>
           <div className="h-8 w-40 bg-gray-200 rounded mb-2"></div>

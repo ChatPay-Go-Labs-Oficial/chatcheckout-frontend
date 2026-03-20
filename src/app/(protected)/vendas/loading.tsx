@@ -4,11 +4,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 export default function VendasLoading() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-4 w-full min-w-0 max-w-[100vw]">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="w-full p-8 pt-4 mx-auto pb-6 min-w-0 max-w-[100vw]">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Vendas</h2>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Vendas</h1>
+          <p className="text-[13px] text-muted-foreground mt-0.5">
             Gerencie e acompanhe todo o seu histórico de transações.
           </p>
         </div>

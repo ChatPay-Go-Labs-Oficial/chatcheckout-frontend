@@ -2,10 +2,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardLoading() {
   return (
-    <div className="w-full p-4 md:p-6 lg:p-8 pt-4 mx-auto pb-6 bg-background">
-      <div className="flex flex-col mb-4 text-left">
-        <h1 className="text-xl font-bold tracking-tight text-foreground">Dashboard</h1>
-        <p className="text-[12px] text-muted-foreground mt-0.5">
+    <div className="w-full p-8 pt-4 mx-auto pb-6 bg-background min-w-0 max-w-[100vw]">
+      <div className="flex flex-col mb-6 text-left">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        <p className="text-[13px] text-muted-foreground mt-0.5">
           Visão geral do desempenho e métricas em tempo real.
         </p>
       </div>

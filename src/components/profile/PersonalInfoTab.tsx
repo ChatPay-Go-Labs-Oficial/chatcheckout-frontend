@@ -215,16 +215,16 @@ export default function PersonalInfoTab() {
         )}
       </Card>
 
-      <div className="flex items-center justify-end gap-3 pt-4 border-t border-muted/30">
+      <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-muted/30">
         {formError && (
-          <span className="text-destructive text-[13px] font-bold">
+          <span className="text-destructive text-[13px] font-bold w-full text-center sm:text-right sm:w-auto">
             {formError}
           </span>
         )}
         <Button
           type="submit"
           disabled={saving}
-          className="shadow-md px-8 h-10 font-bold text-sm bg-primary hover:bg-primary/90"
+          className="shadow-md px-8 h-10 font-bold text-sm bg-primary hover:bg-primary/90 w-full sm:w-auto"
         >
           {saving ? (
             <span className="flex items-center gap-2">

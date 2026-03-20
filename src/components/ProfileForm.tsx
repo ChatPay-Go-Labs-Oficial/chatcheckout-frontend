@@ -8,8 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function ProfileForm() {
   return (
     <Tabs defaultValue="personal" className="w-full">
-      <div className="h-9 p-1 bg-muted rounded-lg flex items-center border shadow-sm w-fit mb-6">
-        <TabsList className="bg-transparent h-7 p-0 gap-1">
+      <div className="p-1 bg-muted rounded-lg flex items-center border shadow-sm w-full sm:w-fit mb-6 overflow-x-auto">
+        <TabsList className="bg-transparent h-auto sm:h-7 p-0 gap-1 min-w-max">
           <TabsTrigger 
             value="personal" 
             className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-semibold"

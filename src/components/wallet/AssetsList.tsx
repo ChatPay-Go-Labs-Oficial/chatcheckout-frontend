@@ -49,7 +49,7 @@ export function AssetsList({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <Button 
                         variant="outline"
                         size="icon"
@@ -70,8 +70,8 @@ export function AssetsList({
                 </div>
             </CardHeader>
 
-            <CardContent className="p-0">
-                <Table>
+            <CardContent className="p-0 overflow-x-auto w-full max-w-[calc(100vw-2rem)] md:max-w-none">
+                <Table className="min-w-[650px]">
                     <TableHeader className="bg-muted/10">
                         <TableRow className="hover:bg-transparent border-none">
                             <TableHead className="w-[300px] text-[10px] font-bold uppercase tracking-widest px-6 h-9">Ativo / Identificador</TableHead>

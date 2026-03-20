@@ -11,7 +11,15 @@ import { MessageComponentData } from '@/types/checkout';
 import { UseCheckoutReturn } from '@/types/checkout-hook';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wallet, ShieldCheck, Info, MapPin, RefreshCcw, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  Wallet,
+  ShieldCheck,
+  Info,
+  MapPin,
+  RefreshCcw,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface WalletConnectionStepProps {
@@ -73,14 +81,18 @@ export function WalletConnectionStep({ checkout }: WalletConnectionStepProps) {
           </div>
           <div>
             <h3 className="text-base font-bold text-foreground">Conectar Carteira Stellar</h3>
-            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Pague com Cripto (XLM ou USDC)</p>
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
+              Pague com Cripto (XLM ou USDC)
+            </p>
           </div>
         </div>
 
         {/* Descrição */}
         <div className="mb-6 space-y-4">
           <p className="text-[13px] text-muted-foreground leading-relaxed font-medium">
-            Para finalizar seu pagamento utilizando <strong className="text-foreground">Cripto</strong>, é necessário realizar a conexão com sua carteira Stellar ativa.
+            Para finalizar seu pagamento utilizando{' '}
+            <strong className="text-foreground">Cripto</strong>, é necessário realizar a conexão com
+            sua carteira Stellar ativa.
           </p>
 
           {/* Carteiras suportadas */}
@@ -89,12 +101,15 @@ export function WalletConnectionStep({ checkout }: WalletConnectionStepProps) {
               <Info className="w-3.5 h-3.5" />
             </div>
             <div>
-              <p className="text-[11px] font-bold text-foreground uppercase tracking-wider mb-2">Carteiras recomendadas:</p>
+              <p className="text-[11px] font-bold text-foreground uppercase tracking-wider mb-2">
+                Carteiras recomendadas:
+              </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                   <span className="text-[11px] font-semibold text-muted-foreground">
-                    <strong className="text-foreground">Freighter</strong> — Navegador (Chrome/Firefox)
+                    <strong className="text-foreground">Freighter</strong> — Navegador
+                    (Chrome/Firefox)
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -147,7 +162,10 @@ export function WalletConnectionStep({ checkout }: WalletConnectionStepProps) {
           <div className="mt-4 flex flex-col items-center gap-2 pt-4 border-t border-muted/30 animate-in fade-in duration-500">
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-medium">
               <MapPin className="w-3 h-3 text-emerald-500" />
-              Conectado: <span className="font-mono font-bold text-foreground tracking-tight">{address.slice(0, 8)}...{address.slice(-8)}</span>
+              Conectado:{' '}
+              <span className="font-mono font-bold text-foreground tracking-tight">
+                {address.slice(0, 8)}...{address.slice(-8)}
+              </span>
             </div>
             <button
               onClick={() => connect()}

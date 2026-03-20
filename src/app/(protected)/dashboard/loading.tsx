@@ -9,7 +9,7 @@ export default function DashboardLoading() {
           Visão geral do desempenho e métricas em tempo real.
         </p>
       </div>
-      
+
       <div className="mb-4 rounded border border-muted/60 bg-muted/20 px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
         <div className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse" />
         Sincronizando dados...
@@ -17,14 +17,17 @@ export default function DashboardLoading() {
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4 mb-6">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 flex flex-col justify-between space-y-4 min-h-[120px]">
+          <div
+            key={i}
+            className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 flex flex-col justify-between space-y-4 min-h-[120px]"
+          >
             <div className="flex flex-row items-center justify-between space-y-0">
-               <Skeleton className="h-4 w-24" />
-               <Skeleton className="h-4 w-4 rounded-full" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-4 rounded-full" />
             </div>
             <div className="space-y-2 text-left">
-               <Skeleton className="h-8 w-2/3" />
-               <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="h-8 w-2/3" />
+              <Skeleton className="h-3 w-1/2" />
             </div>
           </div>
         ))}
@@ -41,7 +44,10 @@ export default function DashboardLoading() {
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-card shadow-sm p-6 flex flex-col justify-center min-h-[150px] space-y-4">
+          <div
+            key={i}
+            className="rounded-xl border bg-card shadow-sm p-6 flex flex-col justify-center min-h-[150px] space-y-4"
+          >
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />

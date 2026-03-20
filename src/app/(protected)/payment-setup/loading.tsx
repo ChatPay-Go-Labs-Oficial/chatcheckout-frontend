@@ -10,13 +10,13 @@ export default function GenericSkeletonLoading() {
         </div>
       </div>
       <div className="grid gap-6 md:grid-cols-2">
-         <div className="space-y-6">
-           <Skeleton className="h-[250px] w-full rounded-xl" />
-           <Skeleton className="h-[200px] w-full rounded-xl" />
-         </div>
-         <div className="space-y-6">
-           <Skeleton className="h-[474px] w-full rounded-xl" />
-         </div>
+        <div className="space-y-6">
+          <Skeleton className="h-[250px] w-full rounded-xl" />
+          <Skeleton className="h-[200px] w-full rounded-xl" />
+        </div>
+        <div className="space-y-6">
+          <Skeleton className="h-[474px] w-full rounded-xl" />
+        </div>
       </div>
     </div>
   );

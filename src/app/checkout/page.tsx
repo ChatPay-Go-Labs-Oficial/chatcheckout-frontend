@@ -33,9 +33,7 @@ function CheckoutPageContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense
-      fallback={<Loading />}
-    >
+    <Suspense fallback={<Loading />}>
       <CheckoutPageContent />
     </Suspense>
   );

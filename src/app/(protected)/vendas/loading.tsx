@@ -1,6 +1,13 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 export default function VendasLoading() {
   return (
@@ -32,21 +39,43 @@ export default function VendasLoading() {
           <Table className="min-w-[800px]">
             <TableHeader className="bg-muted/10">
               <TableRow className="hover:bg-transparent border-muted/20">
-                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Data e Hora</TableHead>
-                <TableHead className="w-[250px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Produto</TableHead>
-                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Valor</TableHead>
-                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-center">Status</TableHead>
-                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-right">Método</TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">
+                  Data e Hora
+                </TableHead>
+                <TableHead className="w-[250px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">
+                  Produto
+                </TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">
+                  Valor
+                </TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-center">
+                  Status
+                </TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-right">
+                  Método
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i} className="border-muted/10">
-                  <TableCell className="px-6 py-4"><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell className="px-6 py-4"><Skeleton className="h-4 w-48" /></TableCell>
-                  <TableCell className="px-6 py-4"><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell className="px-6 py-4"><div className="flex justify-center"><Skeleton className="h-6 w-24 rounded-full" /></div></TableCell>
-                  <TableCell className="px-6 py-4 text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                  <TableCell className="px-6 py-4">
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <Skeleton className="h-4 w-48" />
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <div className="flex justify-center">
+                      <Skeleton className="h-6 w-24 rounded-full" />
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-right">
+                    <Skeleton className="h-4 w-16 ml-auto" />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

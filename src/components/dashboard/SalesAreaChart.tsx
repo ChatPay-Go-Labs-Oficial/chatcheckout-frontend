@@ -33,10 +33,7 @@ interface SalesAreaChartProps {
 }
 
 export default function SalesAreaChart({ data }: SalesAreaChartProps) {
-  const total = React.useMemo(
-    () => data.reduce((acc, curr) => acc + curr.value, 0),
-    [data]
-  );
+  const total = React.useMemo(() => data.reduce((acc, curr) => acc + curr.value, 0), [data]);
 
   return (
     <Card className="shadow-sm border-muted/60 bg-card h-full">
@@ -73,7 +70,11 @@ export default function SalesAreaChart({ data }: SalesAreaChartProps) {
                 <stop offset="95%" stopColor="var(--color-value)" stopOpacity={0.01} />
               </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.1)" />
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              stroke="hsl(var(--muted-foreground) / 0.1)"
+            />
             <XAxis
               dataKey="day"
               tickLine={false}

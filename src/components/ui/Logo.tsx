@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-interface LogoProps extends React.SVGProps<SVGSVGElement> {}
+type LogoProps = React.SVGProps<SVGSVGElement>;
 
 /**
  * Enterprise Logo Component (Definitive Standard)
@@ -14,7 +14,7 @@ export function Logo({ className, ...props }: LogoProps) {
       viewBox="-15.6 -15.6 83.20 83.20"
       xmlns="http://www.w3.org/2000/svg"
       stroke="#f5f3ff"
-      className={cn("size-6 transition-all duration-300", className)}
+      className={cn('size-6 transition-all duration-300', className)}
       {...props}
     >
       <g id="SVGRepo_bgCarrier" strokeWidth="0">

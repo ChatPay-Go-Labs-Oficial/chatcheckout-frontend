@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { validateIdentifier } from '@/utils/validations/field-validators';
 import { formatDocument } from '@/utils/validations';
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   Field,
   FieldDescription,
@@ -14,15 +14,12 @@ import {
   FieldLabel,
   FieldSeparator,
   FieldError,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { Logo } from "@/components/ui/Logo"
+import { Logo } from '@/components/ui/Logo';
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
+export function LoginForm({ className, ...props }: React.ComponentProps<'form'>) {
   const { login, loading: authLoading, error: authError } = useAuth();
   const router = useRouter();
   const [identifier, setIdentifier] = useState('');
@@ -67,10 +64,13 @@ export function LoginForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
+    <form onSubmit={handleSubmit} className={cn('flex flex-col gap-6', className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-10 text-center mb-8">
-          <Link href="/login" className="flex items-center gap-3 font-bold text-2xl tracking-tight transition-opacity hover:opacity-90">
+          <Link
+            href="/login"
+            className="flex items-center gap-3 font-bold text-2xl tracking-tight transition-opacity hover:opacity-90"
+          >
             <Logo className="size-10 shadow-lg shadow-primary/25" />
             <span className="text-foreground">ChatCheckout</span>
           </Link>
@@ -118,13 +118,15 @@ export function LoginForm({
         </Field>
 
         {(formError || authError) && (
-          <FieldError className="text-center font-medium">
-            {formError || authError}
-          </FieldError>
+          <FieldError className="text-center font-medium">{formError || authError}</FieldError>
         )}
 
         <Field>
-          <Button type="submit" className="w-full h-11 font-bold shadow-sm active:scale-95 transition-all" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full h-11 font-bold shadow-sm active:scale-95 transition-all"
+            disabled={loading}
+          >
             {loading ? 'Autenticando...' : 'Entrar'}
           </Button>
         </Field>
@@ -132,8 +134,17 @@ export function LoginForm({
         <FieldSeparator>Ou continue com</FieldSeparator>
 
         <Field>
-          <Button variant="outline" type="button" disabled className="w-full h-11 font-medium bg-background border-muted-foreground/20 opacity-50 cursor-not-allowed">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 mr-2 grayscale">
+          <Button
+            variant="outline"
+            type="button"
+            disabled
+            className="w-full h-11 font-medium bg-background border-muted-foreground/20 opacity-50 cursor-not-allowed"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="w-4 h-4 mr-2 grayscale"
+            >
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -155,13 +166,16 @@ export function LoginForm({
           </Button>
 
           <FieldDescription className="text-center mt-4">
-            Ainda não tem uma conta?{" "}
-            <Link href="/register" className="font-bold text-primary underline-offset-4 hover:underline">
+            Ainda não tem uma conta?{' '}
+            <Link
+              href="/register"
+              className="font-bold text-primary underline-offset-4 hover:underline"
+            >
               Cadastre-se
             </Link>
           </FieldDescription>
         </Field>
       </FieldGroup>
     </form>
-  )
+  );
 }

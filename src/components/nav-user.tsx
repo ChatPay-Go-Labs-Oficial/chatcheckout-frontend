@@ -1,20 +1,9 @@
-"use client"
+'use client';
 
-import {
-  User,
-  Wallet,
-  Bell,
-  ChevronsUpDown,
-  LogOut,
-  Sparkles,
-} from "lucide-react"
-import Link from "next/link"
+import { User, Wallet, Bell, ChevronsUpDown, LogOut, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,35 +12,35 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar';
 
 export function NavUser({
   user,
   onLogout,
 }: {
   user: {
-    name: string
-    email: string
-    avatar: string
-  },
-  onLogout?: () => void
+    name: string;
+    email: string;
+    avatar: string;
+  };
+  onLogout?: () => void;
 }) {
-  const { isMobile } = useSidebar()
+  const { isMobile } = useSidebar();
 
   const getInitials = (name: string) => {
     return name
-      .split(" ")
+      .split(' ')
       .map((n) => n[0])
-      .join("")
+      .join('')
       .toUpperCase()
-      .substring(0, 2)
-  }
+      .substring(0, 2);
+  };
 
   return (
     <SidebarMenu>
@@ -64,7 +53,9 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">{getInitials(user.name)}</AvatarFallback>
+                <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
+                  {getInitials(user.name)}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[state=collapsed]:hidden">
                 <span className="truncate font-medium">{user.name}</span>
@@ -75,7 +66,7 @@ export function NavUser({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={4}
           >
@@ -83,7 +74,9 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">{getInitials(user.name)}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -115,5 +108,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

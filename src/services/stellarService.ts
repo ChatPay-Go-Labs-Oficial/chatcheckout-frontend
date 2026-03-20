@@ -20,10 +20,7 @@ import type {
   ConnectWalletResult,
   StellarNetwork,
 } from '@/types/stellar';
-import {
-  XLM_CONTRACT,
-  USDC_CONTRACT,
-} from '@/utils/stellar/constants';
+import { XLM_CONTRACT, USDC_CONTRACT } from '@/utils/stellar/constants';
 
 const ESCROW_CONTRACT_ID = 'CA7KSUEHPBPOY2Z253B5IFY6E6H6JYQ5VL5GEUXLIYRDTX4PTSFMSVKV';
 
@@ -226,7 +223,9 @@ class StellarService {
 
       const isMainnet = this.currentNetwork === 'mainnet';
       const xlmContractId = isMainnet ? XLM_CONTRACT.ADDRESS_PUBLIC : XLM_CONTRACT.ADDRESS_TESTNET;
-      const usdcContractId = isMainnet ? USDC_CONTRACT.ADDRESS_PUBLIC : USDC_CONTRACT.ADDRESS_TESTNET;
+      const usdcContractId = isMainnet
+        ? USDC_CONTRACT.ADDRESS_PUBLIC
+        : USDC_CONTRACT.ADDRESS_TESTNET;
 
       const addressParam = sdk.nativeToScVal(this.accountId, { type: 'address' });
 
@@ -235,7 +234,7 @@ class StellarService {
           const simulation = await rpc.simulateTransaction(
             new sdk.TransactionBuilder(
               new sdk.Account('GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF', '0'),
-              { fee: '100', networkPassphrase: config.networkPassphrase }
+              { fee: '100', networkPassphrase: config.networkPassphrase },
             )
               .addOperation(
                 sdk.Operation.invokeHostFunction({
@@ -244,13 +243,13 @@ class StellarService {
                       contractAddress: sdk.Address.fromString(contractId).toScAddress(),
                       functionName: 'balance',
                       args: [addressParam],
-                    })
+                    }),
                   ),
                   auth: [],
-                })
+                }),
               )
               .setTimeout(0)
-              .build()
+              .build(),
           );
 
           if (sdk.rpc.Api.isSimulationSuccess(simulation)) {

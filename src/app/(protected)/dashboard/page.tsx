@@ -1,14 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { 
-  DollarSign, 
-  Activity, 
-  CreditCard, 
-  TrendingUp, 
-  PieChart,
-  Zap
-} from 'lucide-react';
+import { DollarSign, Activity, CreditCard, TrendingUp, PieChart, Zap } from 'lucide-react';
 import StellarCard from '@/components/dashboard/StellarCard';
 import PaymentsBreakdownCard from '@/components/dashboard/PaymentsBreakdownCard';
 import AbandonCard from '@/components/dashboard/AbandonCard';
@@ -227,7 +220,7 @@ export default function DashboardPage() {
       {/* Details Row */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <StellarCard {...stellarStats} />
-        <PaymentsBreakdownCard 
+        <PaymentsBreakdownCard
           data={state.paymentsBreakdown.map((row) => ({
             paymentMethod: row.paymentMethod,
             count: row.success,

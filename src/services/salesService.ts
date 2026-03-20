@@ -11,7 +11,7 @@ function toQueryString(query: SalesQueryParams): string {
   if (query.endDate) params.set('endDate', query.endDate);
   if (query.sortBy) params.set('sortBy', query.sortBy);
   if (query.sortOrder) params.set('sortOrder', query.sortOrder);
-  
+
   const qs = params.toString();
   return qs ? `?${qs}` : '';
 }

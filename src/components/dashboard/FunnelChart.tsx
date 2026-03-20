@@ -24,7 +24,8 @@ export default function FunnelChart({ data }: FunnelChartProps) {
         <div className="flex flex-col gap-3">
           {data.map((item, index) => {
             const percentage = max > 0 ? (item.value / max) * 100 : 0;
-            const dropoff = initialValue > 0 ? ((item.value / initialValue) * 100).toFixed(1) : '0.0';
+            const dropoff =
+              initialValue > 0 ? ((item.value / initialValue) * 100).toFixed(1) : '0.0';
 
             return (
               <div key={item.label} className="group flex flex-col gap-1.5">

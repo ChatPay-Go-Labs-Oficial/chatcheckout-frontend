@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Search, LayoutGrid, List } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { useAuth } from '@/hooks/useAuth';
 
@@ -45,7 +45,9 @@ export default function ProductsPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Produtos</h1>
-            <p className="text-[13px] text-muted-foreground mt-1">Gerencie, edite e acompanhe seus produtos digitais em diferentes visualizações.</p>
+            <p className="text-[13px] text-muted-foreground mt-1">
+              Gerencie, edite e acompanhe seus produtos digitais em diferentes visualizações.
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -60,18 +62,28 @@ export default function ProductsPage() {
             </div>
 
             <div className="h-9 p-1 bg-muted rounded-lg flex items-center border shadow-sm">
-                <Tabs value={view} onValueChange={(v) => setView(v as 'grid' | 'list')} className="w-full">
-                    <TabsList className="bg-transparent h-7 p-0 gap-1">
-                        <TabsTrigger value="grid" className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                            <LayoutGrid className="h-3.5 w-3.5 mr-2" />
-                            <span className="text-xs font-semibold">Grid</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="list" className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                            <List className="h-3.5 w-3.5 mr-2" />
-                            <span className="text-xs font-semibold">Lista</span>
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
+              <Tabs
+                value={view}
+                onValueChange={(v) => setView(v as 'grid' | 'list')}
+                className="w-full"
+              >
+                <TabsList className="bg-transparent h-7 p-0 gap-1">
+                  <TabsTrigger
+                    value="grid"
+                    className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5 mr-2" />
+                    <span className="text-xs font-semibold">Grid</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="list"
+                    className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  >
+                    <List className="h-3.5 w-3.5 mr-2" />
+                    <span className="text-xs font-semibold">Lista</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
 
             <Button
@@ -87,9 +99,10 @@ export default function ProductsPage() {
 
       {/* Lista de Produtos */}
       <ProductList
-        products={products.filter(p => 
-          p.name.toLowerCase().includes(search.toLowerCase()) || 
-          p.description?.toLowerCase().includes(search.toLowerCase())
+        products={products.filter(
+          (p) =>
+            p.name.toLowerCase().includes(search.toLowerCase()) ||
+            p.description?.toLowerCase().includes(search.toLowerCase()),
         )}
         view={view}
         isLoading={isLoading}

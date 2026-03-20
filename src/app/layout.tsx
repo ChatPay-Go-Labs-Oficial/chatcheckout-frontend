@@ -40,9 +40,7 @@ export default function RootLayout({
             <StellarWalletsKitProvider>
               <StellarWalletProvider>
                 <AuthGuard />
-                <TooltipProvider>
-                  {children}
-                </TooltipProvider>
+                <TooltipProvider>{children}</TooltipProvider>
               </StellarWalletProvider>
             </StellarWalletsKitProvider>
           </ToastProvider>

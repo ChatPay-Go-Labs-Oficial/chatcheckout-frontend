@@ -42,8 +42,8 @@ export function NetworkSwitcher() {
           onClick={() => handleNetworkChange('testnet')}
           disabled={isLoading}
           className={cn(
-            "h-7 px-4 text-[11px] font-bold uppercase tracking-wide transition-all",
-            network === 'testnet' && "shadow-sm bg-primary hover:bg-primary/90"
+            'h-7 px-4 text-[11px] font-bold uppercase tracking-wide transition-all',
+            network === 'testnet' && 'shadow-sm bg-primary hover:bg-primary/90',
           )}
         >
           Testnet
@@ -54,8 +54,8 @@ export function NetworkSwitcher() {
           onClick={() => handleNetworkChange('mainnet')}
           disabled={isLoading}
           className={cn(
-            "h-7 px-4 text-[11px] font-bold uppercase tracking-wide transition-all",
-            network === 'mainnet' && "shadow-sm bg-primary hover:bg-primary/90"
+            'h-7 px-4 text-[11px] font-bold uppercase tracking-wide transition-all',
+            network === 'mainnet' && 'shadow-sm bg-primary hover:bg-primary/90',
           )}
         >
           Mainnet

@@ -3,12 +3,11 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { salesService } from '@/services/salesService';
-import { SalesSortBy, SalesSortOrder } from '@/types/sales';
+import { SalesPaymentType, SalesSortBy, SalesSortOrder } from '@/types/sales';
 import { RefreshCcw, Filter, Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-
 
 import {
   Select,
@@ -20,11 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 import {
   Table,
@@ -32,15 +27,9 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from '@/components/ui/table';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/sales/StatusBadge';
@@ -82,16 +71,27 @@ export default function SalesPage() {
   };
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ['sales', page, sortBy, sortOrder, appliedPaymentType, appliedStartDate, appliedEndDate],
-    queryFn: () => salesService.getMySales({
+    queryKey: [
+      'sales',
       page,
-      limit: PAGE_SIZE,
       sortBy,
       sortOrder,
-      ...(appliedPaymentType !== 'ALL' ? { paymentType: appliedPaymentType as any } : {}),
-      ...(appliedStartDate ? { startDate: appliedStartDate } : {}),
-      ...(appliedEndDate ? { endDate: appliedEndDate } : {}),
-    }),
+      appliedPaymentType,
+      appliedStartDate,
+      appliedEndDate,
+    ],
+    queryFn: () =>
+      salesService.getMySales({
+        page,
+        limit: PAGE_SIZE,
+        sortBy,
+        sortOrder,
+        ...(appliedPaymentType !== 'ALL'
+          ? { paymentType: appliedPaymentType as SalesPaymentType }
+          : {}),
+        ...(appliedStartDate ? { startDate: appliedStartDate } : {}),
+        ...(appliedEndDate ? { endDate: appliedEndDate } : {}),
+      }),
   });
 
   const sales = data?.data || [];
@@ -125,18 +125,23 @@ export default function SalesPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 border-muted/60 bg-background hover:bg-muted/5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 border-muted/60 bg-background hover:bg-muted/5"
+              >
                 <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
                 Filtros Avançados
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 p-4 shadow-lg border-muted/60" align="end">
+            <PopoverContent
+              className="w-[calc(100vw-2rem)] sm:w-80 p-4 shadow-lg border-muted/60"
+              align="end"
+            >
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium leading-none mb-1.5">Filtros Avançados</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Refine sua busca pelas vendas.
-                  </p>
+                  <p className="text-sm text-muted-foreground">Refine sua busca pelas vendas.</p>
                 </div>
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -160,12 +165,18 @@ export default function SalesPage() {
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full h-9 justify-start text-left font-normal",
-                            !startDate && "text-muted-foreground"
+                            'w-full h-9 justify-start text-left font-normal',
+                            !startDate && 'text-muted-foreground',
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {startDate ? format(new Date(startDate + 'T12:00:00'), "dd 'de' MMM, yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
+                          {startDate ? (
+                            format(new Date(startDate + 'T12:00:00'), "dd 'de' MMM, yyyy", {
+                              locale: ptBR,
+                            })
+                          ) : (
+                            <span>Selecione uma data</span>
+                          )}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -186,12 +197,18 @@ export default function SalesPage() {
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full h-9 justify-start text-left font-normal",
-                            !endDate && "text-muted-foreground"
+                            'w-full h-9 justify-start text-left font-normal',
+                            !endDate && 'text-muted-foreground',
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {endDate ? format(new Date(endDate + 'T12:00:00'), "dd 'de' MMM, yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
+                          {endDate ? (
+                            format(new Date(endDate + 'T12:00:00'), "dd 'de' MMM, yyyy", {
+                              locale: ptBR,
+                            })
+                          ) : (
+                            <span>Selecione uma data</span>
+                          )}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -207,30 +224,17 @@ export default function SalesPage() {
                   </div>
                 </div>
                 <div className="pt-2 flex flex-col gap-2">
-                  <Button 
-                    variant="default" 
-                    className="w-full"
-                    onClick={handleApplyFilters}
-                  >
+                  <Button variant="default" className="w-full" onClick={handleApplyFilters}>
                     Aplicar filtros
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={handleClearFilters}
-                  >
+                  <Button variant="outline" className="w-full" onClick={handleClearFilters}>
                     Limpar filtros
                   </Button>
                 </div>
               </div>
             </PopoverContent>
           </Popover>
-          <Button
-            variant="default"
-            size="sm"
-            className="h-9 shadow-sm"
-            onClick={() => refetch()}
-          >
+          <Button variant="default" size="sm" className="h-9 shadow-sm" onClick={() => refetch()}>
             <RefreshCcw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
@@ -254,22 +258,44 @@ export default function SalesPage() {
           <Table className="min-w-[800px]">
             <TableHeader className="bg-muted/10">
               <TableRow className="hover:bg-transparent border-muted/20">
-                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Data e Hora</TableHead>
-                <TableHead className="w-[250px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Produto</TableHead>
-                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Valor</TableHead>
-                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-center">Status</TableHead>
-                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-right">Método</TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">
+                  Data e Hora
+                </TableHead>
+                <TableHead className="w-[250px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">
+                  Produto
+                </TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">
+                  Valor
+                </TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-center">
+                  Status
+                </TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-right">
+                  Método
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i} className="border-muted/10">
-                    <TableCell className="px-6 py-4"><Skeleton className="h-4 w-32" /></TableCell>
-                    <TableCell className="px-6 py-4"><Skeleton className="h-4 w-48" /></TableCell>
-                    <TableCell className="px-6 py-4"><Skeleton className="h-4 w-20" /></TableCell>
-                    <TableCell className="px-6 py-4"><div className="flex justify-center"><Skeleton className="h-6 w-24 rounded-full" /></div></TableCell>
-                    <TableCell className="px-6 py-4 text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                    <TableCell className="px-6 py-4">
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell className="px-6 py-4">
+                      <Skeleton className="h-4 w-48" />
+                    </TableCell>
+                    <TableCell className="px-6 py-4">
+                      <Skeleton className="h-4 w-20" />
+                    </TableCell>
+                    <TableCell className="px-6 py-4">
+                      <div className="flex justify-center">
+                        <Skeleton className="h-6 w-24 rounded-full" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-right">
+                      <Skeleton className="h-4 w-16 ml-auto" />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : isError ? (
@@ -286,7 +312,10 @@ export default function SalesPage() {
                 </TableRow>
               ) : (
                 sales.map((sale) => (
-                  <TableRow key={sale.orderId} className="group border-muted/10 hover:bg-muted/5 transition-colors">
+                  <TableRow
+                    key={sale.orderId}
+                    className="group border-muted/10 hover:bg-muted/5 transition-colors"
+                  >
                     <TableCell className="text-[12px] font-medium text-foreground py-3 px-6">
                       {formatDate(sale.createdAt)}
                     </TableCell>

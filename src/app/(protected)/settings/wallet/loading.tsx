@@ -32,11 +32,11 @@ export default function WalletLoading() {
                 </div>
               </div>
               <div className="space-y-2 max-w-md">
-                 <Skeleton className="h-3 w-40" />
-                 <div className="flex items-center gap-2">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-8 w-8 flex-shrink-0" />
-                 </div>
+                <Skeleton className="h-3 w-40" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-8 w-8 flex-shrink-0" />
+                </div>
               </div>
             </div>
             <div className="lg:col-span-6 p-6 flex flex-col justify-between space-y-6 min-h-[160px]">
@@ -60,16 +60,16 @@ export default function WalletLoading() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-12">
-           <Card className="shadow-sm border-muted/60">
-             <div className="p-6">
-                <Skeleton className="h-6 w-48 mb-6" />
-                <div className="space-y-4">
-                   <Skeleton className="h-16 w-full" />
-                   <Skeleton className="h-16 w-full" />
-                   <Skeleton className="h-16 w-full" />
-                </div>
-             </div>
-           </Card>
+          <Card className="shadow-sm border-muted/60">
+            <div className="p-6">
+              <Skeleton className="h-6 w-48 mb-6" />
+              <div className="space-y-4">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
     </div>

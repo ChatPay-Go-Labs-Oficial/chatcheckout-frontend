@@ -43,10 +43,13 @@ export function FileUploadField({
     onFileRemove();
   }, [onFileRemove]);
 
-  const handleSelect = useCallback((f: File) => {
-    setRemovedExisting(false);
-    onFileSelect(f);
-  }, [onFileSelect]);
+  const handleSelect = useCallback(
+    (f: File) => {
+      setRemovedExisting(false);
+      onFileSelect(f);
+    },
+    [onFileSelect],
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -106,10 +109,10 @@ export function FileUploadField({
           {required && <span className="text-destructive ml-1">*</span>}
         </label>
         {hasFile && !isUploading && (
-          <Button 
+          <Button
             type="button"
-            variant="ghost" 
-            size="sm" 
+            variant="ghost"
+            size="sm"
             className="h-8 text-xs text-muted-foreground hover:text-destructive"
             onClick={handleRemove}
           >
@@ -141,16 +144,14 @@ export function FileUploadField({
           />
 
           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-            <UploadCloud className={`w-5 h-5 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
+            <UploadCloud
+              className={`w-5 h-5 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`}
+            />
           </div>
 
           <div className="space-y-0.5">
-            <p className="text-xs font-semibold">
-              Clique ou arraste o arquivo
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              {helpText || `Até ${maxSizeMB}MB`}
-            </p>
+            <p className="text-xs font-semibold">Clique ou arraste o arquivo</p>
+            <p className="text-[10px] text-muted-foreground">{helpText || `Até ${maxSizeMB}MB`}</p>
           </div>
         </div>
       ) : (
@@ -160,41 +161,48 @@ export function FileUploadField({
               {preview ? (
                 <img src={preview} alt="Preview" className="w-full h-full object-cover" />
               ) : isImage && effectiveCurrentFileUrl ? (
-                <img src={effectiveCurrentFileUrl} alt="Atual" className="w-full h-full object-cover" />
+                <img
+                  src={effectiveCurrentFileUrl}
+                  alt="Atual"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <FileText className="w-5 h-5 text-muted-foreground" />
               )}
             </div>
 
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-sm font-medium truncate text-foreground pr-12">
-                {fileName}
-              </span>
+              <span className="text-sm font-medium truncate text-foreground pr-12">{fileName}</span>
               <div className="flex items-center gap-2 mt-0.5">
-                {fileSize && <span className="text-xs text-muted-foreground font-mono">{fileSize}</span>}
-                <Badge variant="secondary" className="text-[10px] h-4 px-1 leading-none uppercase tracking-wider">
+                {fileSize && (
+                  <span className="text-xs text-muted-foreground font-mono">{fileSize}</span>
+                )}
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] h-4 px-1 leading-none uppercase tracking-wider"
+                >
                   {accept.includes('image') ? 'IMAGEM' : 'DIGITAL'}
                 </Badge>
               </div>
             </div>
 
             <div className="flex-shrink-0">
-               {isUploading ? (
-                  <div className="p-2">
-                    <RefreshCcw className="w-4 h-4 text-primary animate-spin" />
-                  </div>
-               ) : (
-                  <Button 
-                    type="button"
-                    variant="outline" 
-                    size="icon" 
-                    className="h-8 w-8 rounded-full shadow-sm"
-                    onClick={handleClick}
-                    title="Substituir arquivo"
-                  >
-                    <RefreshCcw className="w-3.5 h-3.5" />
-                  </Button>
-               )}
+              {isUploading ? (
+                <div className="p-2">
+                  <RefreshCcw className="w-4 h-4 text-primary animate-spin" />
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 rounded-full shadow-sm"
+                  onClick={handleClick}
+                  title="Substituir arquivo"
+                >
+                  <RefreshCcw className="w-3.5 h-3.5" />
+                </Button>
+              )}
             </div>
           </div>
 

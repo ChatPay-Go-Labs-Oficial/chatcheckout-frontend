@@ -18,21 +18,18 @@ export default function AbandonCard({ reasons }: AbandonCardProps) {
         <div className="flex flex-col gap-4 mt-2">
           {reasons.length > 0 ? (
             reasons.map((item) => (
-              <div
-                key={item.reason}
-                className="flex justify-between items-center group"
-              >
+              <div key={item.reason} className="flex justify-between items-center group">
                 <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-tight group-hover:text-foreground transition-colors">
                   {item.reason}
                 </span>
-                <span className="text-xs font-bold text-foreground">
-                  {item.count}
-                </span>
+                <span className="text-xs font-bold text-foreground">{item.count}</span>
               </div>
             ))
           ) : (
             <div className="flex items-center justify-center py-4 text-center">
-              <span className="text-[10px] font-medium text-muted-foreground uppercase">Nenhum abandono registrado</span>
+              <span className="text-[10px] font-medium text-muted-foreground uppercase">
+                Nenhum abandono registrado
+              </span>
             </div>
           )}
         </div>

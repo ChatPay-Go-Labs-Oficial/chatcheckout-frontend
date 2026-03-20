@@ -10,22 +10,22 @@ export default function ProfileForm() {
     <Tabs defaultValue="personal" className="w-full">
       <div className="p-1 bg-muted rounded-lg flex items-center border shadow-sm w-full sm:w-fit mb-6 overflow-x-auto">
         <TabsList className="bg-transparent h-auto sm:h-7 p-0 gap-1 min-w-max">
-          <TabsTrigger 
-            value="personal" 
+          <TabsTrigger
+            value="personal"
             className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-semibold"
           >
             <User className="size-3.5 mr-2" />
             Informações Pessoais
           </TabsTrigger>
-          <TabsTrigger 
-            value="payment" 
+          <TabsTrigger
+            value="payment"
             className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-semibold"
           >
             <CreditCard className="size-3.5 mr-2" />
             Configuração de Conta de Pagamentos
           </TabsTrigger>
-          <TabsTrigger 
-            value="password" 
+          <TabsTrigger
+            value="password"
             className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-semibold"
           >
             <Lock className="size-3.5 mr-2" />

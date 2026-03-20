@@ -46,9 +46,7 @@ function StellarWalletsKitInitializer() {
     const initializeKit = async () => {
       // Dynamic import to prevent SSR from loading the library
       const { StellarWalletsKit } = await import('@creit-tech/stellar-wallets-kit/sdk');
-      const { FreighterModule } = await import(
-        '@creit-tech/stellar-wallets-kit/modules/freighter'
-      );
+      const { FreighterModule } = await import('@creit-tech/stellar-wallets-kit/modules/freighter');
       const { LobstrModule } = await import('@creit-tech/stellar-wallets-kit/modules/lobstr');
 
       try {

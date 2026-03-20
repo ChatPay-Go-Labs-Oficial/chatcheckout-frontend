@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useGlobalToast } from '@/contexts/ToastContext';
 import { formatDocument } from '@/utils/validations';
 import { ChevronDown, RefreshCcw, User as UserIcon, Building2 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -111,7 +111,10 @@ export default function PersonalInfoTab() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in duration-300 w-full max-w-4xl">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 animate-in fade-in duration-300 w-full max-w-4xl"
+    >
       <Card className="shadow-sm border-muted/60">
         <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
           <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -119,11 +122,13 @@ export default function PersonalInfoTab() {
             Informações Pessoais
           </CardTitle>
         </CardHeader>
-        
+
         <CardContent className="px-5 pt-3 pb-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label htmlFor="firstName" className="text-xs font-medium text-foreground">Nome</label>
+              <label htmlFor="firstName" className="text-xs font-medium text-foreground">
+                Nome
+              </label>
               <Input
                 id="firstName"
                 name="firstName"
@@ -138,7 +143,9 @@ export default function PersonalInfoTab() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-xs font-medium text-foreground">Email</label>
+              <label htmlFor="email" className="text-xs font-medium text-foreground">
+                Email
+              </label>
               <Input
                 id="email"
                 name="email"
@@ -149,7 +156,9 @@ export default function PersonalInfoTab() {
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="cpf" className="text-xs font-medium text-foreground">CPF</label>
+              <label htmlFor="cpf" className="text-xs font-medium text-foreground">
+                CPF
+              </label>
               <Input
                 id="cpf"
                 name="cpf"
@@ -178,7 +187,12 @@ export default function PersonalInfoTab() {
               </p>
             </div>
           </div>
-          <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform duration-200", isCompanyOpen && "rotate-180")} />
+          <ChevronDown
+            className={cn(
+              'w-4 h-4 text-muted-foreground transition-transform duration-200',
+              isCompanyOpen && 'rotate-180',
+            )}
+          />
         </button>
 
         {isCompanyOpen && (
@@ -186,7 +200,9 @@ export default function PersonalInfoTab() {
             <div className="border-t border-muted/30 pt-4 mt-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="companyName" className="text-xs font-medium text-foreground">Nome da Empresa</label>
+                  <label htmlFor="companyName" className="text-xs font-medium text-foreground">
+                    Nome da Empresa
+                  </label>
                   <Input
                     id="companyName"
                     name="companyName"
@@ -198,7 +214,9 @@ export default function PersonalInfoTab() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="cnpj" className="text-xs font-medium text-foreground">CNPJ</label>
+                  <label htmlFor="cnpj" className="text-xs font-medium text-foreground">
+                    CNPJ
+                  </label>
                   <Input
                     id="cnpj"
                     name="cnpj"
@@ -206,7 +224,10 @@ export default function PersonalInfoTab() {
                     disabled={!!userProfile?.cnpj}
                     value={formatDocument(form.cnpj ?? '')}
                     onChange={handleChange}
-                    className={cn("h-9 text-sm", userProfile?.cnpj ? "bg-muted/50 border-dashed" : "bg-muted/30")}
+                    className={cn(
+                      'h-9 text-sm',
+                      userProfile?.cnpj ? 'bg-muted/50 border-dashed' : 'bg-muted/30',
+                    )}
                   />
                 </div>
               </div>

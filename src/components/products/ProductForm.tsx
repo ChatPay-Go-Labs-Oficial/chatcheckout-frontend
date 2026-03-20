@@ -4,7 +4,14 @@ import React, { useState } from 'react';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,7 +20,16 @@ import { CheckoutLinkModal } from './CheckoutLinkModal';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { FILE_VALIDATIONS, Product, Currency } from '@/types/product';
 import { useGlobalToast } from '@/contexts/ToastContext';
-import { Lock, FileArchive, Info, Package, Sparkles, Layout, RefreshCcw, ArrowLeft } from 'lucide-react';
+import {
+  Lock,
+  FileArchive,
+  Info,
+  Package,
+  Sparkles,
+  Layout,
+  RefreshCcw,
+  ArrowLeft,
+} from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { productService } from '@/services/productService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -90,8 +106,9 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
       setShowCheckoutModal(true);
       toast.success('Produto criado com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Erro ao criar produto');
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Erro ao criar produto';
+      toast.error(message);
     },
   });
 
@@ -119,8 +136,9 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
       setShowCheckoutModal(true);
       toast.success('Produto atualizado com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Erro ao atualizar produto');
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Erro ao atualizar produto';
+      toast.error(message);
     },
   });
 
@@ -182,7 +200,11 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
                     <FormItem>
                       <FormLabel className="text-xs">Nome do produto</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Masterclass de Design Digital" {...field} className="bg-muted/30 focus-visible:ring-1 h-10 text-sm border-muted/60" />
+                        <Input
+                          placeholder="Ex: Masterclass de Design Digital"
+                          {...field}
+                          className="bg-muted/30 focus-visible:ring-1 h-10 text-sm border-muted/60"
+                        />
                       </FormControl>
                       <FormMessage className="text-[11px]" />
                     </FormItem>
@@ -226,8 +248,16 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
                       <FormLabel className="text-xs">Valor de Venda</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">R$</span>
-                          <Input type="number" step="0.01" placeholder="0,00" {...field} className="pl-10 bg-muted/30 focus-visible:ring-1 h-10 text-sm border-muted/60" />
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                            R$
+                          </span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0,00"
+                            {...field}
+                            className="pl-10 bg-muted/30 focus-visible:ring-1 h-10 text-sm border-muted/60"
+                          />
                         </div>
                       </FormControl>
                       <FormMessage className="text-[11px]" />
@@ -250,7 +280,12 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
                     <FormItem>
                       <FormLabel className="text-xs">Página de Vendas (Opcional)</FormLabel>
                       <FormControl>
-                        <Input type="url" placeholder="https://seu-produto.com" {...field} className="bg-muted/30 focus-visible:ring-1 h-10 text-sm border-muted/60" />
+                        <Input
+                          type="url"
+                          placeholder="https://seu-produto.com"
+                          {...field}
+                          className="bg-muted/30 focus-visible:ring-1 h-10 text-sm border-muted/60"
+                        />
                       </FormControl>
                       <FormMessage className="text-[11px]" />
                     </FormItem>
@@ -329,18 +364,18 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
 
           {/* Action Buttons */}
           <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-muted/30">
-            <Button 
-              type="button" 
-              variant="ghost" 
-              className="text-muted-foreground font-medium h-10 text-sm w-full sm:w-auto" 
-              onClick={onCancel} 
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-muted-foreground font-medium h-10 text-sm w-full sm:w-auto"
+              onClick={onCancel}
               disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button 
+            <Button
               type="submit"
-              className="shadow-md px-8 h-10 font-bold text-sm bg-primary hover:bg-primary/90 w-full sm:w-auto" 
+              className="shadow-md px-8 h-10 font-bold text-sm bg-primary hover:bg-primary/90 w-full sm:w-auto"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -348,7 +383,9 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
                   <RefreshCcw className="w-4 h-4 animate-spin" />
                   Processando...
                 </span>
-              ) : submitButtonText}
+              ) : (
+                submitButtonText
+              )}
             </Button>
           </div>
         </form>

@@ -9,7 +9,7 @@ export default function ProfileLoading() {
           Gerencie suas informações pessoais e configurações da plataforma com segurança.
         </p>
       </div>
-      
+
       <div className="w-full max-w-2xl bg-card rounded-xl border border-muted/60 shadow-sm overflow-hidden mt-8">
         <div className="flex flex-col items-center justify-center p-8 bg-muted/10 border-b border-muted/30">
           <Skeleton className="h-24 w-24 rounded-full mb-4" />

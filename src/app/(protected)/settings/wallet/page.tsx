@@ -17,7 +17,15 @@ import { UsdcIcon } from '@/components/icons/UsdcIcon';
 export default function WalletSettingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  const { isConnected, balance, balances, accountId, network, disconnectWallet, isFetchingBalance } = useStellarWallet();
+  const {
+    isConnected,
+    balance,
+    balances,
+    accountId,
+    network,
+    disconnectWallet,
+    isFetchingBalance,
+  } = useStellarWallet();
 
   const {
     loadingEscrows,
@@ -73,13 +81,11 @@ export default function WalletSettingsPage() {
               <div className="space-y-1">
                 <CardTitle className="text-lg font-bold">Conecte sua Carteira</CardTitle>
                 <p className="text-sm text-muted-foreground max-w-xs">
-                  Acesse seu saldo e gerencie seus ativos Stellar conectando sua carteira com segurança.
+                  Acesse seu saldo e gerencie seus ativos Stellar conectando sua carteira com
+                  segurança.
                 </p>
               </div>
-              <Button 
-                onClick={() => setIsModalOpen(true)}
-                className="font-bold px-8"
-              >
+              <Button onClick={() => setIsModalOpen(true)} className="font-bold px-8">
                 Conectar Agora
               </Button>
             </CardContent>
@@ -96,14 +102,20 @@ export default function WalletSettingsPage() {
                       <XlmIcon size={24} className="text-foreground" />
                     </div>
                     <div className="space-y-0.5">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Saldo XLM</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        Saldo XLM
+                      </p>
                       <div className="flex items-baseline gap-1.5">
                         {isFetchingBalance ? (
                           <Skeleton className="h-8 w-24 bg-muted/30" />
                         ) : (
                           <>
-                            <span className="text-2xl font-bold tracking-tight text-foreground">{balances.XLM}</span>
-                            <span className="text-[10px] font-bold text-muted-foreground/40 uppercase">XLM</span>
+                            <span className="text-2xl font-bold tracking-tight text-foreground">
+                              {balances.XLM}
+                            </span>
+                            <span className="text-[10px] font-bold text-muted-foreground/40 uppercase">
+                              XLM
+                            </span>
                           </>
                         )}
                       </div>
@@ -116,14 +128,20 @@ export default function WalletSettingsPage() {
                       <UsdcIcon size={48} />
                     </div>
                     <div className="space-y-0.5">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Saldo USDC</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        Saldo USDC
+                      </p>
                       <div className="flex items-baseline gap-1.5">
                         {isFetchingBalance ? (
                           <Skeleton className="h-8 w-24 bg-muted/30" />
                         ) : (
                           <>
-                            <span className="text-2xl font-bold tracking-tight text-foreground">{balances.USDC}</span>
-                            <span className="text-[10px] font-bold text-muted-foreground/40 uppercase">USDC</span>
+                            <span className="text-2xl font-bold tracking-tight text-foreground">
+                              {balances.USDC}
+                            </span>
+                            <span className="text-[10px] font-bold text-muted-foreground/40 uppercase">
+                              USDC
+                            </span>
                           </>
                         )}
                       </div>
@@ -132,20 +150,26 @@ export default function WalletSettingsPage() {
                 </div>
 
                 <div className="space-y-2 max-w-md">
-                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Identificador (Public Key)</p>
-                   <div className="flex items-center gap-2 group">
-                      <div className="flex-1 p-2 rounded-lg border bg-muted/20 font-mono text-[11px] truncate text-foreground/70 border-muted/60">
-                         {accountId}
-                      </div>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="h-8 w-8 flex-shrink-0 transition-all active:scale-95"
-                        onClick={handleCopyAddress}
-                      >
-                        {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                      </Button>
-                   </div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    Identificador (Public Key)
+                  </p>
+                  <div className="flex items-center gap-2 group">
+                    <div className="flex-1 p-2 rounded-lg border bg-muted/20 font-mono text-[11px] truncate text-foreground/70 border-muted/60">
+                      {accountId}
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-8 w-8 flex-shrink-0 transition-all active:scale-95"
+                      onClick={handleCopyAddress}
+                    >
+                      {isCopied ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-500" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -153,10 +177,14 @@ export default function WalletSettingsPage() {
               <div className="lg:col-span-6 p-6 flex flex-col justify-between space-y-6">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Rede Ativa</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Rede Ativa
+                    </p>
                     <div className="flex items-center gap-1.5 px-2 py-0.5 w-fit rounded-full bg-emerald-500/10 border border-emerald-500/20">
                       <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                      <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter">{network}</span>
+                      <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter">
+                        {network}
+                      </span>
                     </div>
                   </div>
 
@@ -173,7 +201,9 @@ export default function WalletSettingsPage() {
 
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Trocar Ambiente de Operação</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Trocar Ambiente de Operação
+                    </p>
                     <NetworkSwitcher />
                   </div>
                 </div>
@@ -226,4 +256,3 @@ export default function WalletSettingsPage() {
     </div>
   );
 }
-

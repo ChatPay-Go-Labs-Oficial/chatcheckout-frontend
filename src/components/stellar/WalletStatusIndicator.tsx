@@ -36,7 +36,10 @@ export function WalletStatusIndicator({ onConnectClick }: WalletStatusIndicatorP
             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
           </div>
           <div className="flex gap-2 items-center mt-1">
-            <p className="text-[11px] text-muted-foreground font-mono truncate" title={publicKey || undefined}>
+            <p
+              className="text-[11px] text-muted-foreground font-mono truncate"
+              title={publicKey || undefined}
+            >
               {truncateAddress(publicKey)}
             </p>
             <div className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-bold text-foreground shrink-0">
@@ -60,12 +63,11 @@ export function WalletStatusIndicator({ onConnectClick }: WalletStatusIndicatorP
     <div className="py-2 flex flex-col gap-3">
       <div className="space-y-1">
         <p className="text-sm font-semibold text-foreground">Carteira Desconectada</p>
-        <p className="text-[11px] text-muted-foreground">Conecte sua carteira Stellar para gerenciar ativos e resgates.</p>
+        <p className="text-[11px] text-muted-foreground">
+          Conecte sua carteira Stellar para gerenciar ativos e resgates.
+        </p>
       </div>
-      <Button
-        onClick={onConnectClick}
-        className="h-9 w-full font-bold shadow-sm"
-      >
+      <Button onClick={onConnectClick} className="h-9 w-full font-bold shadow-sm">
         <WalletCards className="w-4 h-4 mr-2" />
         Conectar Carteira
       </Button>

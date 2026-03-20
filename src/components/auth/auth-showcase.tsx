@@ -1,7 +1,7 @@
 'use client';
 
-import { Sparkles, ShoppingBag, Headset, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Sparkles, ShoppingBag, Headset, TrendingUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ShowcaseItemProps {
   label: string;
@@ -19,7 +19,10 @@ function ShowcaseItem({ label, icon }: ShowcaseItemProps) {
             </div>
           </div>
           <div className="flex-1">
-            <div className="text-[15px] font-bold text-white tracking-tight leading-none" style={{ letterSpacing: '-0.2px' }}>
+            <div
+              className="text-[15px] font-bold text-white tracking-tight leading-none"
+              style={{ letterSpacing: '-0.2px' }}
+            >
               {label}
             </div>
           </div>
@@ -38,13 +41,18 @@ export function AuthShowcase() {
 
       {/* Dynamic Animated Blobs - Intensified with Primary Color */}
       <div className="absolute top-[-10%] right-[-10%] w-[70%] h-[70%] bg-primary/25 rounded-full blur-[120px] animate-pulse z-0" />
-      <div className="absolute bottom-[-15%] left-[-10%] w-[70%] h-[70%] bg-primary/10 rounded-full blur-[140px] animate-pulse z-0" style={{ animationDelay: '3s' }} />
+      <div
+        className="absolute bottom-[-15%] left-[-10%] w-[70%] h-[70%] bg-primary/10 rounded-full blur-[140px] animate-pulse z-0"
+        style={{ animationDelay: '3s' }}
+      />
 
       {/* Content Container */}
       <div className="relative z-20 flex flex-col items-center justify-center h-full px-16 text-center text-white">
         <div className="mb-8 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md inline-flex items-center gap-2">
           <div className="size-2 rounded-full bg-primary animate-ping shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
-          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60">Checkout Intelligence</span>
+          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60">
+            Checkout Intelligence
+          </span>
         </div>
 
         <h2 className="text-4xl lg:text-6xl font-extrabold tracking-[-0.04em] mb-7 leading-[1.05]">
@@ -56,31 +64,23 @@ export function AuthShowcase() {
 
         <p className="text-lg text-white/70 max-w-lg leading-relaxed mb-14 font-medium font-sans">
           Venda sem barreiras. Seu cliente paga direto no chat, sem redirecionamento.
-          <span className="text-primary font-bold block mt-1 brightness-110">Sua marca, seu fluxo, seu cliente.</span>
+          <span className="text-primary font-bold block mt-1 brightness-110">
+            Sua marca, seu fluxo, seu cliente.
+          </span>
         </p>
 
         <div className="grid grid-cols-2 gap-5 w-full max-w-xl">
-          <ShowcaseItem
-            label="Digital Products"
-            icon={<Sparkles className="size-5" />}
-          />
-          <ShowcaseItem
-            label="E-commerce"
-            icon={<ShoppingBag className="size-5" />}
-          />
-          <ShowcaseItem
-            label="Services"
-            icon={<Headset className="size-5" />}
-          />
-          <ShowcaseItem
-            label="Business"
-            icon={<TrendingUp className="size-5" />}
-          />
+          <ShowcaseItem label="Digital Products" icon={<Sparkles className="size-5" />} />
+          <ShowcaseItem label="E-commerce" icon={<ShoppingBag className="size-5" />} />
+          <ShowcaseItem label="Services" icon={<Headset className="size-5" />} />
+          <ShowcaseItem label="Business" icon={<TrendingUp className="size-5" />} />
         </div>
 
         <div className="mt-20 flex items-center gap-8 opacity-30">
           <div className="h-px w-12 bg-gradient-to-r from-transparent to-white" />
-          <span className="text-[11px] font-bold uppercase tracking-widest">Powered by Stellar</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest">
+            Powered by Stellar
+          </span>
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-white" />
         </div>
       </div>

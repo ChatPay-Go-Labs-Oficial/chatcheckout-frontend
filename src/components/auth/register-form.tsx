@@ -7,24 +7,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRegisterForm } from '@/hooks/useRegisterForm';
 import { useDocumentFormatter } from '@/hooks/useDocumentFormatter';
 import { sanitizeDocument } from '@/utils/validations';
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldError,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Field, FieldDescription, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { Logo } from "@/components/ui/Logo"
+import { Logo } from '@/components/ui/Logo';
 import RegisterSuccess from '@/components/RegisterSuccess';
 
-export function RegisterForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function RegisterForm({ className, ...props }: React.ComponentProps<'div'>) {
   const router = useRouter();
   const { register, loading, error: registerError } = useUser();
   const { login } = useAuth();
@@ -109,7 +100,7 @@ export function RegisterForm({
 
   if (success) {
     return (
-      <div className={cn("w-full max-w-md", className)}>
+      <div className={cn('w-full max-w-md', className)}>
         <RegisterSuccess
           showLoader={success}
           message="Preparando sua conta para você..."
@@ -120,11 +111,14 @@ export function RegisterForm({
   }
 
   return (
-    <div className={cn("flex flex-col gap-4", className)} {...props}>
+    <div className={cn('flex flex-col gap-4', className)} {...props}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-sm">
         <FieldGroup className="gap-3">
           <div className="flex flex-col items-center gap-4 text-center mb-4">
-            <Link href="/register" className="flex items-center gap-2.5 font-bold text-xl tracking-tight transition-opacity hover:opacity-90">
+            <Link
+              href="/register"
+              className="flex items-center gap-2.5 font-bold text-xl tracking-tight transition-opacity hover:opacity-90"
+            >
               <Logo className="size-10 shadow-lg shadow-primary/25" />
               <span className="text-foreground">ChatCheckout</span>
             </Link>
@@ -146,7 +140,10 @@ export function RegisterForm({
                 value={form.firstName}
                 onChange={(e) => handleFieldChange('firstName', e.target.value)}
                 onBlur={(e) => handleFieldBlur('firstName', e.target.value)}
-                className={cn("bg-background/50 h-9", hasFieldError('firstName') && "border-destructive")}
+                className={cn(
+                  'bg-background/50 h-9',
+                  hasFieldError('firstName') && 'border-destructive',
+                )}
                 required
               />
               {hasFieldError('firstName') && <FieldError>{getFieldError('firstName')}</FieldError>}
@@ -160,7 +157,10 @@ export function RegisterForm({
                 value={form.lastName}
                 onChange={(e) => handleFieldChange('lastName', e.target.value)}
                 onBlur={(e) => handleFieldBlur('lastName', e.target.value)}
-                className={cn("bg-background/50 h-9", hasFieldError('lastName') && "border-destructive")}
+                className={cn(
+                  'bg-background/50 h-9',
+                  hasFieldError('lastName') && 'border-destructive',
+                )}
                 required
               />
               {hasFieldError('lastName') && <FieldError>{getFieldError('lastName')}</FieldError>}
@@ -177,7 +177,7 @@ export function RegisterForm({
               value={form.email}
               onChange={(e) => handleFieldChange('email', e.target.value)}
               onBlur={(e) => handleFieldBlur('email', e.target.value)}
-              className={cn("bg-background/50 h-9", hasFieldError('email') && "border-destructive")}
+              className={cn('bg-background/50 h-9', hasFieldError('email') && 'border-destructive')}
               required
             />
             {hasFieldError('email') && <FieldError>{getFieldError('email')}</FieldError>}
@@ -192,7 +192,7 @@ export function RegisterForm({
               value={form.cpf}
               onChange={handleCPF}
               onBlur={(e) => handleFieldBlur('cpf', e.target.value)}
-              className={cn("bg-background/50 h-9", hasFieldError('cpf') && "border-destructive")}
+              className={cn('bg-background/50 h-9', hasFieldError('cpf') && 'border-destructive')}
               required
             />
             {hasFieldError('cpf') && <FieldError>{getFieldError('cpf')}</FieldError>}
@@ -208,7 +208,10 @@ export function RegisterForm({
                 value={form.password}
                 onChange={(e) => handleFieldChange('password', e.target.value)}
                 onBlur={(e) => handleFieldBlur('password', e.target.value)}
-                className={cn("bg-background/50 h-9", hasFieldError('password') && "border-destructive")}
+                className={cn(
+                  'bg-background/50 h-9',
+                  hasFieldError('password') && 'border-destructive',
+                )}
                 required
               />
               {hasFieldError('password') && <FieldError>{getFieldError('password')}</FieldError>}
@@ -222,10 +225,15 @@ export function RegisterForm({
                 value={form.confirmPassword}
                 onChange={(e) => handleFieldChange('confirmPassword', e.target.value)}
                 onBlur={(e) => handleFieldBlur('confirmPassword', e.target.value)}
-                className={cn("bg-background/50 h-9", hasFieldError('confirmPassword') && "border-destructive")}
+                className={cn(
+                  'bg-background/50 h-9',
+                  hasFieldError('confirmPassword') && 'border-destructive',
+                )}
                 required
               />
-              {hasFieldError('confirmPassword') && <FieldError>{getFieldError('confirmPassword')}</FieldError>}
+              {hasFieldError('confirmPassword') && (
+                <FieldError>{getFieldError('confirmPassword')}</FieldError>
+              )}
             </Field>
           </div>
 
@@ -240,7 +248,9 @@ export function RegisterForm({
                 onBlur={(e) => handleFieldBlur('companyName', e.target.value)}
                 className="bg-background/50 h-9"
               />
-              {hasFieldError('companyName') && <FieldError>{getFieldError('companyName')}</FieldError>}
+              {hasFieldError('companyName') && (
+                <FieldError>{getFieldError('companyName')}</FieldError>
+              )}
             </Field>
             <Field>
               <FieldLabel htmlFor="cnpj">CNPJ (Opcional)</FieldLabel>
@@ -271,13 +281,16 @@ export function RegisterForm({
           </Button>
 
           <FieldDescription className="text-center mt-3">
-            Já possui uma conta?{" "}
-            <Link href="/login" className="font-bold text-primary underline-offset-4 hover:underline">
+            Já possui uma conta?{' '}
+            <Link
+              href="/login"
+              className="font-bold text-primary underline-offset-4 hover:underline"
+            >
               Fazer login
             </Link>
           </FieldDescription>
         </FieldGroup>
       </form>
     </div>
-  )
+  );
 }

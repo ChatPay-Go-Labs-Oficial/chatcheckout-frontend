@@ -8,12 +8,7 @@ interface DashboardCardProps {
   icon?: LucideIcon;
 }
 
-export default function DashboardCard({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-}: DashboardCardProps) {
+export default function DashboardCard({ title, value, subtitle, icon: Icon }: DashboardCardProps) {
   return (
     <Card className="shadow-sm border-muted/60 bg-card">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -24,9 +19,7 @@ export default function DashboardCard({
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold tracking-tight text-foreground">{value}</div>
-        <p className="text-[10px] text-muted-foreground font-medium mt-1">
-          {subtitle}
-        </p>
+        <p className="text-[10px] text-muted-foreground font-medium mt-1">{subtitle}</p>
       </CardContent>
     </Card>
   );

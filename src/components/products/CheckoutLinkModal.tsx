@@ -12,14 +12,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  CheckCircle2, 
-  AlertTriangle, 
-  Copy, 
-  ExternalLink, 
+import {
+  CheckCircle2,
+  AlertTriangle,
+  Copy,
+  ExternalLink,
   Check,
   ChevronRight,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react';
 import { useGlobalToast } from '@/contexts/ToastContext';
 import { cn } from '@/lib/utils';
@@ -58,12 +58,16 @@ export function CheckoutLinkModal({
   };
 
   const isCreate = mode === 'create';
-  const title = isCreate ? 'Produto Criado!' : (hashChanged ? 'Link Atualizado!' : 'Produto Atualizado!');
-  const subtitle = isCreate 
+  const title = isCreate
+    ? 'Produto Criado!'
+    : hashChanged
+      ? 'Link Atualizado!'
+      : 'Produto Atualizado!';
+  const subtitle = isCreate
     ? `Seu produto "${product.name}" está pronto para vender.`
-    : (hashChanged 
-        ? 'O link de checkout foi alterado devido às novas configurações.' 
-        : `As alterações em "${product.name}" foram salvas.`);
+    : hashChanged
+      ? 'O link de checkout foi alterado devido às novas configurações.'
+      : `As alterações em "${product.name}" foram salvas.`;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -72,11 +76,21 @@ export function CheckoutLinkModal({
           {/* Header with Icon and Title */}
           <DialogHeader className="text-left space-y-4">
             <div className="flex items-start gap-4">
-              <div className={cn(
-                "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-muted/50",
-                isCreate ? "bg-green-50 text-green-600" : (hashChanged ? "bg-amber-50 text-amber-600" : "bg-primary/10 text-primary")
-              )}>
-                {hashChanged ? <AlertTriangle className="w-6 h-6" /> : <CheckCircle2 className="w-6 h-6" />}
+              <div
+                className={cn(
+                  'w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-muted/50',
+                  isCreate
+                    ? 'bg-green-50 text-green-600'
+                    : hashChanged
+                      ? 'bg-amber-50 text-amber-600'
+                      : 'bg-primary/10 text-primary',
+                )}
+              >
+                {hashChanged ? (
+                  <AlertTriangle className="w-6 h-6" />
+                ) : (
+                  <CheckCircle2 className="w-6 h-6" />
+                )}
               </div>
               <div className="space-y-1.5 pt-0.5 min-w-0 flex-1">
                 <DialogTitle className="text-xl font-bold tracking-tight text-foreground leading-tight truncate-none">
@@ -96,9 +110,12 @@ export function CheckoutLinkModal({
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
               </div>
               <div className="space-y-1">
-                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Atenção Necessária</p>
+                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">
+                  Atenção Necessária
+                </p>
                 <p className="text-[12.5px] text-amber-800/80 leading-relaxed">
-                  A alteração na URL ou no prompt de IA gerou um novo link. Certifique-se de atualizar seus anúncios e páginas externas.
+                  A alteração na URL ou no prompt de IA gerou um novo link. Certifique-se de
+                  atualizar seus anúncios e páginas externas.
                 </p>
               </div>
             </div>
@@ -108,10 +125,16 @@ export function CheckoutLinkModal({
           <div className="flex items-center gap-4 p-4 bg-muted/40 border border-muted/60 rounded-2xl w-full">
             <div className="h-16 w-16 rounded-xl bg-background border shadow-sm overflow-hidden shrink-0 flex items-center justify-center ring-1 ring-muted/50">
               {product.imageUrl ? (
-                <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-primary font-bold text-lg">{product.name.charAt(0).toUpperCase()}</span>
+                  <span className="text-primary font-bold text-lg">
+                    {product.name.charAt(0).toUpperCase()}
+                  </span>
                 </div>
               )}
             </div>
@@ -125,25 +148,34 @@ export function CheckoutLinkModal({
 
           {/* Link Section */}
           <div className="space-y-2.5">
-            <h5 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Link de Checkout</h5>
+            <h5 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">
+              Link de Checkout
+            </h5>
             <div className="flex items-center gap-2">
               <div className="relative flex-1 group">
-                <Input 
-                  readOnly 
+                <Input
+                  readOnly
                   value={checkoutUrl}
                   className="bg-muted/30 h-10 pr-10 font-mono text-[11px] focus-visible:ring-1 border-muted/60 group-hover:border-primary/20 transition-colors"
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                   <ExternalLink className="w-3.5 h-3.5 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity" />
+                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
-              <Button 
-                variant={copied ? "default" : "secondary"}
+              <Button
+                variant={copied ? 'default' : 'secondary'}
                 size="sm"
-                className={cn("h-10 px-4 font-bold text-xs shrink-0 transition-all", copied && "bg-green-600 hover:bg-green-600 shadow-lg shadow-green-500/20")}
+                className={cn(
+                  'h-10 px-4 font-bold text-xs shrink-0 transition-all',
+                  copied && 'bg-green-600 hover:bg-green-600 shadow-lg shadow-green-500/20',
+                )}
                 onClick={handleCopy}
               >
-                {copied ? <Check className="w-3.5 h-3.5 mr-2" /> : <Copy className="w-3.5 h-3.5 mr-2" />}
+                {copied ? (
+                  <Check className="w-3.5 h-3.5 mr-2" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 mr-2" />
+                )}
                 {copied ? 'Copiado' : 'Copiar'}
               </Button>
             </div>
@@ -151,26 +183,34 @@ export function CheckoutLinkModal({
 
           {/* Next Steps List */}
           <div className="pt-2">
-             <h5 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1 mb-3">Próximos Passos</h5>
-             <div className="grid grid-cols-1 gap-2">
-                {[
-                  "Adicione o link ao botão de compra na sua página de vendas",
-                  "Configure sua IA para atendimento automático",
-                  "Acompanhe as vendas no seu Dashboard Real-time"
-                ].map((step, i) => (
-                  <div key={i} className="flex items-center gap-2.5 text-[12.5px] text-muted-foreground group">
-                    <div className="w-5 h-5 rounded-full bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-                      <ChevronRight className="w-3 h-3 text-primary/60" />
-                    </div>
-                    <span>{step}</span>
+            <h5 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1 mb-3">
+              Próximos Passos
+            </h5>
+            <div className="grid grid-cols-1 gap-2">
+              {[
+                'Adicione o link ao botão de compra na sua página de vendas',
+                'Configure sua IA para atendimento automático',
+                'Acompanhe as vendas no seu Dashboard Real-time',
+              ].map((step, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2.5 text-[12.5px] text-muted-foreground group"
+                >
+                  <div className="w-5 h-5 rounded-full bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                    <ChevronRight className="w-3 h-3 text-primary/60" />
                   </div>
-                ))}
-             </div>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
         <DialogFooter className="bg-muted/30 p-6 px-8 border-t border-muted/20 mt-auto shrink-0">
-          <Button className="w-full h-11 font-bold text-[14px] shadow-sm active:scale-95 transition-all" onClick={onClose}>
+          <Button
+            className="w-full h-11 font-bold text-[14px] shadow-sm active:scale-95 transition-all"
+            onClick={onClose}
+          >
             Continuar
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>

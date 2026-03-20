@@ -14,11 +14,9 @@ const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ showLoader, message, 
       <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary mb-2 shadow-sm">
         <CheckCircle2 className="size-10" />
       </div>
-      
+
       <div className="space-y-1.5 px-4">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          Cadastro realizado!
-        </h2>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">Cadastro realizado!</h2>
         <p className="text-sm text-muted-foreground max-w-[240px] mx-auto">
           Sua conta foi criada com sucesso. Estamos preparando tudo.
         </p>
@@ -28,12 +26,12 @@ const RegisterSuccess: React.FC<RegisterSuccessProps> = ({ showLoader, message, 
         <div className="relative h-1 w-full overflow-hidden rounded-full bg-primary/10">
           <div
             className={cn(
-              "h-full bg-primary shadow-[0_0_12px_rgba(var(--primary),0.4)] shadow-primary",
-              showLoader && "animate-loaderBar"
+              'h-full bg-primary shadow-[0_0_12px_rgba(var(--primary),0.4)] shadow-primary',
+              showLoader && 'animate-loaderBar',
             )}
           />
         </div>
-        
+
         <div className="flex flex-col items-center gap-2">
           <span className="text-xs font-bold uppercase tracking-widest text-primary animate-pulse flex items-center gap-2">
             {loading ? (

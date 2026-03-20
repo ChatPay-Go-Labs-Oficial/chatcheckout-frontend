@@ -8,12 +8,7 @@ interface StellarCardProps {
   settlement: string;
 }
 
-export default function StellarCard({
-  transacoes,
-  volume,
-  taxa,
-  settlement,
-}: StellarCardProps) {
+export default function StellarCard({ transacoes, volume, taxa, settlement }: StellarCardProps) {
   const stats = [
     { label: 'Transações Hoje', value: transacoes },
     { label: 'Volume USDC', value: volume.toFixed(2) },
@@ -32,16 +27,11 @@ export default function StellarCard({
       <CardContent>
         <div className="flex flex-col gap-4 mt-1">
           {stats.map((item) => (
-            <div
-              key={item.label}
-              className="flex justify-between items-center"
-            >
+            <div key={item.label} className="flex justify-between items-center">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
                 {item.label}
               </span>
-              <span className="text-xs font-bold text-foreground">
-                {item.value}
-              </span>
+              <span className="text-xs font-bold text-foreground">{item.value}</span>
             </div>
           ))}
         </div>

@@ -10,10 +10,13 @@ export default function ProdutosLoading() {
         </div>
         <div className="h-11 w-40 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl"></div>
       </div>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-card shadow-sm overflow-hidden flex flex-col min-h-[300px]">
+          <div
+            key={i}
+            className="rounded-xl border bg-card shadow-sm overflow-hidden flex flex-col min-h-[300px]"
+          >
             <Skeleton className="h-40 w-full rounded-none" />
             <div className="p-4 space-y-4 flex-1">
               <Skeleton className="h-5 w-3/4" />

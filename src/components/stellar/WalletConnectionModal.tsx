@@ -82,7 +82,9 @@ export function WalletConnectionModal({ isOpen, onClose }: WalletConnectionModal
                 <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
                   <Plus className="w-4 h-4" />
                 </div>
-                <span className="text-sm">{isCreating ? 'Criando carteira...' : 'Criar Nova Carteira'}</span>
+                <span className="text-sm">
+                  {isCreating ? 'Criando carteira...' : 'Criar Nova Carteira'}
+                </span>
               </div>
               <Sparkles className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
             </Button>
@@ -97,7 +99,9 @@ export function WalletConnectionModal({ isOpen, onClose }: WalletConnectionModal
                 <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                   <ArrowRight className="w-4 h-4" />
                 </div>
-                <span className="text-sm">{isLoading ? 'Conectando...' : 'Conectar Carteira Existente'}</span>
+                <span className="text-sm">
+                  {isLoading ? 'Conectando...' : 'Conectar Carteira Existente'}
+                </span>
               </div>
             </Button>
 
@@ -115,7 +119,9 @@ export function WalletConnectionModal({ isOpen, onClose }: WalletConnectionModal
               <ShieldCheck className="w-3.5 h-3.5" />
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">
-              <strong className="text-foreground font-bold italic">Segurança Biométrica:</strong> Usamos WebAuthn para garantir que suas chaves privadas nunca saiam do seu dispositivo. Sua biometria é o acesso.
+              <strong className="text-foreground font-bold italic">Segurança Biométrica:</strong>{' '}
+              Usamos WebAuthn para garantir que suas chaves privadas nunca saiam do seu dispositivo.
+              Sua biometria é o acesso.
             </p>
           </div>
         </div>

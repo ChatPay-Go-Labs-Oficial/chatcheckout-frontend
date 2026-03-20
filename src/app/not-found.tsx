@@ -22,7 +22,7 @@ export default function NotFound() {
       router.push('/login');
     }
   };
-  
+
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-4">
       {/* Background Subtle Watermark */}
@@ -48,22 +48,26 @@ export default function NotFound() {
             Página não encontrada
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-            Parece que o caminho que você tentou acessar não existe ou foi movido.
-            Não se preocupe, vamos te ajudar a se encontrar.
+            Parece que o caminho que você tentou acessar não existe ou foi movido. Não se preocupe,
+            vamos te ajudar a se encontrar.
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full px-8 pt-4 animate-in slide-in-from-bottom-4 duration-700 delay-300">
-          <Button 
-            onClick={handleHomeClick} 
+          <Button
+            onClick={handleHomeClick}
             disabled={loading}
             className="w-full sm:flex-1 h-11 px-6 rounded-xl font-semibold shadow-lg shadow-primary/20"
           >
             <Home className="mr-2 size-4" />
             Início
           </Button>
-          <Button onClick={() => router.back()} variant="outline" className="w-full sm:flex-1 h-11 px-6 rounded-xl font-semibold border-muted-foreground/30 hover:bg-muted/50 transition-colors">
+          <Button
+            onClick={() => router.back()}
+            variant="outline"
+            className="w-full sm:flex-1 h-11 px-6 rounded-xl font-semibold border-muted-foreground/30 hover:bg-muted/50 transition-colors"
+          >
             <ArrowLeft className="mr-2 size-4" />
             Voltar
           </Button>

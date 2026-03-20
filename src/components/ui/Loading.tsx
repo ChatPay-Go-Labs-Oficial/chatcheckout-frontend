@@ -33,9 +33,9 @@ export function Loading({ className, fullScreen = true }: LoadingProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center bg-background p-4 animate-in fade-in duration-500",
-        fullScreen && "fixed inset-0 z-[100] min-h-screen w-screen",
-        className
+        'flex flex-col items-center justify-center bg-background p-4 animate-in fade-in duration-500',
+        fullScreen && 'fixed inset-0 z-[100] min-h-screen w-screen',
+        className,
       )}
     >
       <div className="flex flex-col items-center max-w-[280px] w-full space-y-8">
@@ -47,9 +47,7 @@ export function Loading({ className, fullScreen = true }: LoadingProps) {
 
         {/* Brand Name */}
         <div className="space-y-1.5 text-center px-4 animate-in slide-in-from-bottom-2 duration-700 delay-100">
-          <h2 className="text-xl font-bold tracking-tight text-foreground">
-            ChatCheckout
-          </h2>
+          <h2 className="text-xl font-bold tracking-tight text-foreground">ChatCheckout</h2>
           <p className="text-[13px] text-muted-foreground font-medium">
             Preparando seu ambiente...
           </p>
@@ -57,9 +55,9 @@ export function Loading({ className, fullScreen = true }: LoadingProps) {
 
         {/* Progress Bar Area */}
         <div className="w-full space-y-3 px-2 pt-2 animate-in fade-in duration-1000 delay-300">
-          <Progress 
-            value={progress} 
-            className="h-1.5 bg-muted/30 border border-muted/20 transition-all duration-700 ease-out [&>div]:transition-all [&>div]:duration-700 [&>div]:ease-out" 
+          <Progress
+            value={progress}
+            className="h-1.5 bg-muted/30 border border-muted/20 transition-all duration-700 ease-out [&>div]:transition-all [&>div]:duration-700 [&>div]:ease-out"
           />
           <div className="flex justify-between items-center px-0.5">
             <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
@@ -71,7 +69,7 @@ export function Loading({ className, fullScreen = true }: LoadingProps) {
           </div>
         </div>
       </div>
-      
+
       {/* Footer subtle hint */}
       <div className="absolute bottom-8 text-[11px] text-muted-foreground/40 font-medium tracking-wide animate-in fade-in duration-1000 delay-500">
         Enterprise Standard 2.0

@@ -22,16 +22,11 @@ export default function PaymentsBreakdownCard({ data }: PaymentsBreakdownCardPro
       <CardContent>
         <div className="flex flex-col gap-4 mt-2">
           {data.map((item) => (
-            <div
-              key={item.paymentMethod}
-              className="flex justify-between items-center group"
-            >
+            <div key={item.paymentMethod} className="flex justify-between items-center group">
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-tight group-hover:text-foreground transition-colors">
                 {item.paymentMethod}
               </span>
-              <span className="text-xs font-bold text-foreground">
-                {item.count}
-              </span>
+              <span className="text-xs font-bold text-foreground">{item.count}</span>
             </div>
           ))}
         </div>

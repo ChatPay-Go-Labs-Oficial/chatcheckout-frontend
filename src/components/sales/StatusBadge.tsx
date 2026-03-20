@@ -11,7 +11,8 @@ const statusConfig = {
     label: 'Concluído',
     variant: 'success' as const,
     icon: CheckCircle2,
-    className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20',
+    className:
+      'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20',
   },
   FAILED: {
     label: 'Falhou',

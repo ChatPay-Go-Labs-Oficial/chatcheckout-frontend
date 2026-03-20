@@ -24,7 +24,7 @@ interface SalesAreaChartProps {
 const chartConfig = {
   value: {
     label: 'Vendas',
-    color: 'hsl(var(--primary))',
+    color: 'var(--primary)',
   },
 } satisfies ChartConfig;
 
@@ -88,9 +88,11 @@ export default function SalesAreaChart({ data }: SalesAreaChartProps) {
             />
             <Area
               dataKey="value"
-              stroke="var(--color-vendas)"
+              type="monotone"
+              fill="url(#fillSales)"
+              fillOpacity={1}
+              stroke="var(--color-value)"
               strokeWidth={2}
-              stackId="a"
             />
           </AreaChart>
         </ChartContainer>

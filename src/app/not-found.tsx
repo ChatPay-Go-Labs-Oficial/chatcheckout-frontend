@@ -1,6 +1,7 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import { Home, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/Logo';
@@ -10,6 +11,18 @@ import { Logo } from '@/components/ui/Logo';
  * Provides a branded, helpful experience for missing routes.
  */
 export default function NotFound() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+
+  const handleHomeClick = () => {
+    if (loading) return;
+    if (user) {
+      router.push('/dashboard');
+    } else {
+      router.push('/login');
+    }
+  };
+  
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-4">
       {/* Background Subtle Watermark */}
@@ -17,7 +30,7 @@ export default function NotFound() {
         <span className="text-[40vw] font-black leading-none">404</span>
       </div>
 
-      <div className="relative flex flex-col items-center max-w-[420px] w-full text-center space-y-8 animate-in fade-in zoom-in-95 duration-1000">
+      <div className="relative flex flex-col items-center max-w-xl w-full text-center space-y-8 animate-in fade-in zoom-in-95 duration-1000">
         {/* Branded Logo Section */}
         <div className="relative group">
           <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl animate-pulse group-hover:bg-primary/30 transition-all duration-1000" />
@@ -42,17 +55,17 @@ export default function NotFound() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full px-8 pt-4 animate-in slide-in-from-bottom-4 duration-700 delay-300">
-          <Button asChild className="w-full sm:flex-1 h-11 px-6 rounded-xl font-semibold shadow-lg shadow-primary/20">
-            <Link href="/dashboard">
-              <Home className="mr-2 size-4" />
-              Dashboard
-            </Link>
+          <Button 
+            onClick={handleHomeClick} 
+            disabled={loading}
+            className="w-full sm:flex-1 h-11 px-6 rounded-xl font-semibold shadow-lg shadow-primary/20"
+          >
+            <Home className="mr-2 size-4" />
+            Início
           </Button>
-          <Button asChild variant="outline" className="w-full sm:flex-1 h-11 px-6 rounded-xl font-semibold border-muted-foreground/30 hover:bg-muted/50 transition-colors">
-            <Link href="/">
-              <ArrowLeft className="mr-2 size-4" />
-              Voltar
-            </Link>
+          <Button onClick={() => router.back()} variant="outline" className="w-full sm:flex-1 h-11 px-6 rounded-xl font-semibold border-muted-foreground/30 hover:bg-muted/50 transition-colors">
+            <ArrowLeft className="mr-2 size-4" />
+            Voltar
           </Button>
         </div>
       </div>

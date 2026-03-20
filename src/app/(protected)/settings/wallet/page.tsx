@@ -53,7 +53,7 @@ export default function WalletSettingsPage() {
   };
 
   return (
-    <div className="w-full p-8 pt-4 mx-auto pb-6">
+    <div className="w-full p-8 pt-4 mx-auto pb-6 min-w-0 max-w-[100vw]">
       {/* Page Header - Standard Pattern */}
       <div className="flex flex-col mb-6 text-left">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Minha Carteira</h1>

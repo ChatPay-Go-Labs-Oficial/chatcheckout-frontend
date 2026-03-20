@@ -58,9 +58,5 @@ export default function EditProductPage() {
     );
   }
 
-  return (
-    <div className="p-3">
-      <ProductForm mode="update" initialProduct={product} onSuccess={handleSuccess} onCancel={handleCancel} />
-    </div>
-  );
+  return <ProductForm mode="update" initialProduct={product} onSuccess={handleSuccess} onCancel={handleCancel} />;
 }

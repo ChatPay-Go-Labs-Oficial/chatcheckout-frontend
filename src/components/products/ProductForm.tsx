@@ -145,7 +145,7 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="w-full p-8 pt-4 mx-auto pb-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-4 w-full min-w-0 max-w-[100vw]">
       <div className="flex flex-col mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Button
@@ -328,11 +328,11 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-muted/30">
+          <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-muted/30">
             <Button 
               type="button" 
               variant="ghost" 
-              className="text-muted-foreground font-medium h-10 text-sm" 
+              className="text-muted-foreground font-medium h-10 text-sm w-full sm:w-auto" 
               onClick={onCancel} 
               disabled={isSubmitting}
             >
@@ -340,7 +340,7 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
             </Button>
             <Button 
               type="submit"
-              className="shadow-md px-8 h-10 font-bold text-sm bg-primary hover:bg-primary/90" 
+              className="shadow-md px-8 h-10 font-bold text-sm bg-primary hover:bg-primary/90 w-full sm:w-auto" 
               disabled={isSubmitting}
             >
               {isSubmitting ? (

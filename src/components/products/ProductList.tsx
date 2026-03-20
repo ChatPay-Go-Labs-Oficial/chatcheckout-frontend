@@ -132,8 +132,9 @@ export function ProductList({ products, view, isLoading, onEdit, onDelete }: Pro
                         </Card>
                     ))
                 ) : (
-                    <Table>
-                        <TableHeader className="bg-muted/50">
+                    <div className="rounded-lg border bg-card shadow-sm overflow-x-auto w-full max-w-[calc(100vw-2rem)] md:max-w-none">
+                        <Table className="min-w-[650px]">
+                            <TableHeader className="bg-muted/50">
                             <TableRow>
                                 <TableHead className="w-[400px]">Produto</TableHead>
                                 <TableHead>Valor</TableHead>
@@ -162,6 +163,7 @@ export function ProductList({ products, view, isLoading, onEdit, onDelete }: Pro
                             ))}
                         </TableBody>
                     </Table>
+                    </div>
                 )}
             </div>
         );
@@ -251,8 +253,8 @@ export function ProductList({ products, view, isLoading, onEdit, onDelete }: Pro
                     ))}
                 </div>
             ) : (
-                <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
-                    <Table>
+                <div className="rounded-lg border bg-card shadow-sm overflow-x-auto w-full max-w-[calc(100vw-2rem)] md:max-w-none">
+                    <Table className="min-w-[650px]">
                         <TableHeader>
                             <TableRow className="hover:bg-transparent bg-muted/50">
                                 <TableHead className="px-4 h-11 text-[10px] font-bold text-muted-foreground uppercase tracking-wider w-[160px]">Produto</TableHead>

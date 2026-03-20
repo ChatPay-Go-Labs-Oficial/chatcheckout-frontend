@@ -18,6 +18,6 @@ function toQueryString(query: SalesQueryParams): string {
 
 export const salesService = {
   async getMySales(query: SalesQueryParams): Promise<SalesListResponse> {
-    return apiClient.get<SalesListResponse>(`/order/my${toQueryString(query)}`);
+    return apiClient.get<SalesListResponse>(`/order/my/sales${toQueryString(query)}`);
   },
 };

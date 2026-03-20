@@ -6,13 +6,12 @@ export type SalesSortOrder = 'asc' | 'desc';
 export interface SalesListItem {
   orderId: string;
   createdAt: string;
-  product?: {
-    name: string;
-  };
+  productName: string;
   totalAmount: number;
   feeAmount: number;
+  netAmount: number;
   status: SalesOrderStatus;
-  paymentMethod: string;
+  paymentType: SalesPaymentType;
 }
 
 export interface SalesListResponse {

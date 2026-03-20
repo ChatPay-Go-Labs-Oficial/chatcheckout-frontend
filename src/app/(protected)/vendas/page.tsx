@@ -8,13 +8,13 @@ import { Filter, RefreshCcw, Search, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import {
   Card,
@@ -61,7 +61,7 @@ export default function SalesPage() {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-    }).format(amount);
+    }).format(amount / 100);
   };
 
   return (
@@ -79,9 +79,9 @@ export default function SalesPage() {
             <Download className="mr-2 h-4 w-4" />
             Exportar
           </Button>
-          <Button 
-            variant="default" 
-            size="sm" 
+          <Button
+            variant="default"
+            size="sm"
             className="h-9 shadow-sm"
             onClick={() => refetch()}
           >
@@ -95,8 +95,8 @@ export default function SalesPage() {
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
-          <Input 
-            placeholder="Buscar por produto ou ID..." 
+          <Input
+            placeholder="Buscar por produto ou ID..."
             className="pl-9 h-10 border-muted/60 bg-background focus-visible:ring-primary/20 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -127,11 +127,11 @@ export default function SalesPage() {
           <Table>
             <TableHeader className="bg-muted/10">
               <TableRow className="hover:bg-transparent border-muted/20">
-                <TableHead className="w-[180px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Data e Hora</TableHead>
-                <TableHead className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Produto</TableHead>
-                <TableHead className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Valor</TableHead>
-                <TableHead className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-center">Status</TableHead>
-                <TableHead className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-right">Método</TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Data e Hora</TableHead>
+                <TableHead className="w-[250px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Produto</TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Valor</TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-center">Status</TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-right">Método</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -165,8 +165,8 @@ export default function SalesPage() {
                     </TableCell>
                     <TableCell className="py-3 px-6">
                       <div className="flex flex-col">
-                        <span className="text-[13px] font-semibold text-foreground truncate max-w-[200px]">
-                          {sale.product?.name || 'Produto não encontrado'}
+                        <span className="text-[13px] font-semibold text-foreground truncate">
+                          {sale.productName || 'Produto não encontrado'}
                         </span>
                         <span className="text-[10px] text-muted-foreground font-mono">
                           ID: {sale.orderId.substring(0, 8)}...
@@ -183,7 +183,7 @@ export default function SalesPage() {
                     </TableCell>
                     <TableCell className="text-right py-3 px-6">
                       <span className="text-[11px] font-bold text-muted-foreground/80 bg-muted/30 px-2 py-0.5 rounded border border-muted/20 uppercase">
-                        {sale.paymentMethod}
+                        {sale.paymentType}
                       </span>
                     </TableCell>
                   </TableRow>

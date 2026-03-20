@@ -4,9 +4,27 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { salesService } from '@/services/salesService';
 import { SalesSortBy, SalesSortOrder } from '@/types/sales';
-import { Filter, RefreshCcw, Search, Download } from 'lucide-react';
+import { RefreshCcw, Filter, Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 import {
   Table,
@@ -23,7 +41,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/sales/StatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,17 +50,47 @@ const PAGE_SIZE = 12;
 
 export default function SalesPage() {
   const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SalesSortBy>('createdAt');
   const [sortOrder, setSortOrder] = useState<SalesSortOrder>('desc');
+  const [paymentType, setPaymentType] = useState<string>('ALL');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+
+  const [appliedPaymentType, setAppliedPaymentType] = useState<string>('ALL');
+  const [appliedStartDate, setAppliedStartDate] = useState<string>('');
+  const [appliedEndDate, setAppliedEndDate] = useState<string>('');
+
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const handleApplyFilters = () => {
+    setAppliedPaymentType(paymentType);
+    setAppliedStartDate(startDate);
+    setAppliedEndDate(endDate);
+    setPage(1);
+    setIsFilterOpen(false);
+  };
+
+  const handleClearFilters = () => {
+    setPaymentType('ALL');
+    setStartDate('');
+    setEndDate('');
+    setAppliedPaymentType('ALL');
+    setAppliedStartDate('');
+    setAppliedEndDate('');
+    setPage(1);
+    setIsFilterOpen(false);
+  };
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ['sales', page, sortBy, sortOrder],
+    queryKey: ['sales', page, sortBy, sortOrder, appliedPaymentType, appliedStartDate, appliedEndDate],
     queryFn: () => salesService.getMySales({
       page,
       limit: PAGE_SIZE,
       sortBy,
       sortOrder,
+      ...(appliedPaymentType !== 'ALL' ? { paymentType: appliedPaymentType as any } : {}),
+      ...(appliedStartDate ? { startDate: appliedStartDate } : {}),
+      ...(appliedEndDate ? { endDate: appliedEndDate } : {}),
     }),
   });
 
@@ -75,10 +123,108 @@ export default function SalesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-9 border-muted/60 bg-background hover:bg-muted/5">
-            <Download className="mr-2 h-4 w-4" />
-            Exportar
-          </Button>
+          <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 border-muted/60 bg-background hover:bg-muted/5">
+                <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+                Filtros Avançados
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4 shadow-lg border-muted/60" align="end">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium leading-none mb-1.5">Filtros Avançados</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Refine sua busca pelas vendas.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Método de pagamento</Label>
+                    <Select value={paymentType} onValueChange={(val) => setPaymentType(val)}>
+                      <SelectTrigger className="w-full h-9">
+                        <SelectValue placeholder="Selecione o método" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">Todos os métodos</SelectItem>
+                        <SelectItem value="PIX">Pix</SelectItem>
+                        <SelectItem value="CARD">Cartão de Crédito</SelectItem>
+                        <SelectItem value="CRYPTO">Criptomoedas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2 flex flex-col">
+                    <Label>Data inicial</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-9 justify-start text-left font-normal",
+                            !startDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {startDate ? format(new Date(startDate + 'T12:00:00'), "dd 'de' MMM, yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={startDate ? new Date(startDate + 'T12:00:00') : undefined}
+                          onSelect={(date) => setStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                          initialFocus
+                          locale={ptBR}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="space-y-2 flex flex-col">
+                    <Label>Data final</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-9 justify-start text-left font-normal",
+                            !endDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {endDate ? format(new Date(endDate + 'T12:00:00'), "dd 'de' MMM, yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={endDate ? new Date(endDate + 'T12:00:00') : undefined}
+                          onSelect={(date) => setEndDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                          initialFocus
+                          locale={ptBR}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <div className="pt-2 flex flex-col gap-2">
+                  <Button 
+                    variant="default" 
+                    className="w-full"
+                    onClick={handleApplyFilters}
+                  >
+                    Aplicar filtros
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleClearFilters}
+                  >
+                    Limpar filtros
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
           <Button
             variant="default"
             size="sm"
@@ -87,25 +233,6 @@ export default function SalesPage() {
           >
             <RefreshCcw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
             Atualizar
-          </Button>
-        </div>
-      </div>
-
-      {/* Filter Row */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
-          <Input
-            placeholder="Buscar por produto ou ID..."
-            className="pl-9 h-10 border-muted/60 bg-background focus-visible:ring-primary/20 transition-all"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-10 border-muted/60 bg-background px-3 font-medium hover:bg-muted/5">
-            <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
-            Filtros Avançados
           </Button>
         </div>
       </div>

@@ -9,6 +9,7 @@
  */
 
 import { SmartAccountKit, IndexedDBStorage } from 'smart-account-kit';
+import * as sdk from '@stellar/stellar-sdk';
 import { getStellarConfig } from '@/config/stellar.config';
 import { Client as EscrowClient } from '@/services/escrow';
 import { STELLAR_CONFIG as PAYMENT_STELLAR_CONFIG } from '@/utils/stellar/constants';
@@ -19,6 +20,10 @@ import type {
   ConnectWalletResult,
   StellarNetwork,
 } from '@/types/stellar';
+import {
+  XLM_CONTRACT,
+  USDC_CONTRACT,
+} from '@/utils/stellar/constants';
 
 const ESCROW_CONTRACT_ID = 'CA7KSUEHPBPOY2Z253B5IFY6E6H6JYQ5VL5GEUXLIYRDTX4PTSFMSVKV';
 
@@ -207,23 +212,83 @@ class StellarService {
   }
 
   /**
-   * Get the balance of the connected wallet
-   * @returns Balance as string
+   * Get the balances of the connected wallet for multiple assets
+   * @returns Object with XLM and USDC balances as strings
    */
-  async getBalance(): Promise<string> {
+  async getBalances(): Promise<{ XLM: string; USDC: string }> {
     if (!this.kit || !this.accountId) {
-      return '0';
+      return { XLM: '0', USDC: '0' };
     }
 
     try {
-      // TODO: Implement balance fetching using Stellar SDK
-      // SmartAccountKit doesn't provide a getBalance method
-      // Need to query the Stellar network directly using the accountId
-      return '0';
+      const config = getStellarConfig();
+      const rpc = new sdk.rpc.Server(config.rpcUrl);
+
+      const isMainnet = this.currentNetwork === 'mainnet';
+      const xlmContractId = isMainnet ? XLM_CONTRACT.ADDRESS_PUBLIC : XLM_CONTRACT.ADDRESS_TESTNET;
+      const usdcContractId = isMainnet ? USDC_CONTRACT.ADDRESS_PUBLIC : USDC_CONTRACT.ADDRESS_TESTNET;
+
+      const addressParam = sdk.nativeToScVal(this.accountId, { type: 'address' });
+
+      const fetchBalance = async (contractId: string) => {
+        try {
+          const simulation = await rpc.simulateTransaction(
+            new sdk.TransactionBuilder(
+              new sdk.Account('GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF', '0'),
+              { fee: '100', networkPassphrase: config.networkPassphrase }
+            )
+              .addOperation(
+                sdk.Operation.invokeHostFunction({
+                  func: sdk.xdr.HostFunction.hostFunctionTypeInvokeContract(
+                    new sdk.xdr.InvokeContractArgs({
+                      contractAddress: sdk.Address.fromString(contractId).toScAddress(),
+                      functionName: 'balance',
+                      args: [addressParam],
+                    })
+                  ),
+                  auth: [],
+                })
+              )
+              .setTimeout(0)
+              .build()
+          );
+
+          if (sdk.rpc.Api.isSimulationSuccess(simulation)) {
+            const resultVal = simulation.result?.retval;
+            if (resultVal) {
+              const amountStroops = sdk.scValToBigInt(resultVal);
+              return (Number(amountStroops) / 10_000_000).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 7,
+                useGrouping: false,
+              });
+            }
+          }
+        } catch (e) {
+          console.error(`Error fetching balance for ${contractId}:`, e);
+        }
+        return '0';
+      };
+
+      const [xlmBalance, usdcBalance] = await Promise.all([
+        fetchBalance(xlmContractId),
+        fetchBalance(usdcContractId),
+      ]);
+
+      return { XLM: xlmBalance, USDC: usdcBalance };
     } catch (error) {
-      console.error('Error fetching balance:', error);
-      return '0';
+      console.error('Error in getBalances:', error);
+      return { XLM: '0', USDC: '0' };
     }
+  }
+
+  /**
+   * Get the balance of the connected wallet (Backward compatibility - returns XLM)
+   * @returns Balance as string
+   */
+  async getBalance(): Promise<string> {
+    const balances = await this.getBalances();
+    return balances.XLM;
   }
 
   /**

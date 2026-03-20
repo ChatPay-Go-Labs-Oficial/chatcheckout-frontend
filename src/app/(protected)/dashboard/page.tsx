@@ -1,11 +1,19 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { 
+  DollarSign, 
+  Activity, 
+  CreditCard, 
+  TrendingUp, 
+  PieChart,
+  Zap
+} from 'lucide-react';
 import StellarCard from '@/components/dashboard/StellarCard';
-import FaqCard from '@/components/dashboard/FaqCard';
+import PaymentsBreakdownCard from '@/components/dashboard/PaymentsBreakdownCard';
 import AbandonCard from '@/components/dashboard/AbandonCard';
 import FunnelChart from '@/components/dashboard/FunnelChart';
-import SalesBarChart from '@/components/dashboard/SalesBarChart';
+import SalesAreaChart from '@/components/dashboard/SalesAreaChart';
 import DashboardCard from '@/components/dashboard/DashboardCard';
 import { dashboardService } from '@/services/dashboardService';
 
@@ -110,24 +118,14 @@ export default function DashboardPage() {
 
   const cards = useMemo(() => {
     const summary = state.summary;
-    if (!summary) {
-      return [
-        { title: 'Receita Hoje', value: 'R$ 0,00', subtitle: '0 transações' },
-        { title: 'Taxa de Conversão', value: '0%', subtitle: '0 sessões' },
-        { title: 'Ticket Médio', value: 'R$ 0,00', subtitle: 'por transação' },
-        {
-          title: 'Net Revenue',
-          value: 'R$ 0,00',
-          subtitle: 'líquido após taxas',
-        },
-      ];
-    }
+    if (!summary) return [];
 
     return [
       {
         title: 'Receita Total',
         value: centsToCurrency(summary.totalAmount),
-        subtitle: `${summary.totalOrders} transações`,
+        subtitle: `${summary.totalOrders} transações finalizadas`,
+        icon: DollarSign,
       },
       {
         title: 'Taxa de Conversão',
@@ -139,17 +137,20 @@ export default function DashboardPage() {
               ).toFixed(1)
             : '0.0'
         }%`,
-        subtitle: `${summary.successfulCheckouts}/${summary.sessions} sessões → compras`,
+        subtitle: `${summary.successfulCheckouts}/${summary.sessions} sessões convertidas`,
+        icon: Activity,
       },
       {
         title: 'Ticket Médio',
         value: centsToCurrency(summary.avgTicket),
-        subtitle: 'por transação',
+        subtitle: 'valor médio por venda',
+        icon: CreditCard,
       },
       {
         title: 'Receita Líquida',
         value: centsToCurrency(summary.netAmount),
-        subtitle: `Taxas: ${centsToCurrency(summary.totalFeeAmount)}`,
+        subtitle: `Taxas descontadas: ${centsToCurrency(summary.totalFeeAmount)}`,
+        icon: Zap,
       },
     ];
   }, [state.summary]);
@@ -184,44 +185,56 @@ export default function DashboardPage() {
   }, [state.dailySales]);
 
   return (
-    <main className="flex flex-col min-h-screen w-full bg-[#f7f8fa]">
-      <div className="w-full h-full pt-0 pb-12 px-10">
-        <h1 className="text-3xl font-bold mb-8 text-primary pt-8">Dashboard</h1>
-
-        {state.error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {state.error}
-          </div>
-        )}
-
-        {state.loading && (
-          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-            Carregando dados reais do checkout...
-          </div>
-        )}
-
-        <section className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-12">
-          {cards.map((card, idx) => (
-            <DashboardCard key={idx} {...card} />
-          ))}
-        </section>
-
-        <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
-          <SalesBarChart data={salesData} />
-          <FunnelChart data={state.funnel} />
-        </section>
-
-        <section className="w-full grid grid-cols-1 md:grid-cols-3 gap-10">
-          <StellarCard {...stellarStats} />
-          <FaqCard
-            faqs={state.paymentsBreakdown.map((row) => ({
-              question: `Sucesso ${row.paymentMethod}`,
-              count: row.success,
-            }))}
-          />
-          <AbandonCard reasons={state.abandonment} />
-        </section>
+    <div className="w-full p-8 pt-4 mx-auto pb-6 bg-background min-w-0 max-w-[100vw]">
+      {/* Page Header */}
+      <div className="flex flex-col mb-6 text-left">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        <p className="text-[13px] text-muted-foreground mt-0.5">
+          Visão geral do desempenho e métricas em tempo real.
+        </p>
       </div>
-    </main>
+
+      {state.error && (
+        <div className="mb-4 rounded border border-destructive/20 bg-destructive/5 px-3 py-2 text-[10px] font-bold text-destructive uppercase tracking-wide">
+          Status: {state.error}
+        </div>
+      )}
+
+      {state.loading && (
+        <div className="mb-4 rounded border border-muted/60 bg-muted/20 px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse" />
+          Sincronizando dados...
+        </div>
+      )}
+
+      {/* Main Metrics Row */}
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        {cards.map((card, idx) => (
+          <DashboardCard key={idx} {...card} />
+        ))}
+      </div>
+
+      {/* Charts Visualization Row */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-12 mb-6 items-stretch min-h-[250px]">
+        <div className="lg:col-span-8">
+          <SalesAreaChart data={salesData} />
+        </div>
+        <div className="lg:col-span-4 h-full">
+          <FunnelChart data={state.funnel} />
+        </div>
+      </div>
+
+      {/* Details Row */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+        <StellarCard {...stellarStats} />
+        <PaymentsBreakdownCard 
+          data={state.paymentsBreakdown.map((row) => ({
+            paymentMethod: row.paymentMethod,
+            count: row.success,
+          }))}
+        />
+        <AbandonCard reasons={state.abandonment} />
+      </div>
+    </div>
   );
 }

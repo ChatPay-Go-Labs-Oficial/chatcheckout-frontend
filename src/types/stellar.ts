@@ -13,7 +13,11 @@ export interface StellarWalletState {
   isConnected: boolean;
   accountId: string | null;
   publicKey: string | null;
-  balance: string;
+  balance: string; // Keep for backward compatibility (defaults to XLM)
+  balances: {
+    XLM: string;
+    USDC: string;
+  };
   network: StellarNetwork;
   isLoading: boolean;
   error: string | null;

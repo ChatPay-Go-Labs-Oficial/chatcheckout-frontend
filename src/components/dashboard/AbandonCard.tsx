@@ -1,25 +1,42 @@
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { AlertCircle } from 'lucide-react';
+
 interface AbandonCardProps {
   reasons: { reason: string; count: number }[];
 }
 
 export default function AbandonCard({ reasons }: AbandonCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-2 min-w-[220px]">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg">🔍</span>
-        <span className="font-bold text-base text-[#181b4a]">Análise de Abandono</span>
-      </div>
-      <ul className="mt-2">
-        {reasons.map((item) => (
-          <li
-            key={item.reason}
-            className="flex justify-between items-center py-1 text-sm text-gray-600"
-          >
-            <span>{item.reason}</span>
-            <span className="font-semibold text-red-500">{item.count}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Card className="flex flex-col shadow-sm border-muted/60 bg-card h-full">
+      <CardHeader className="flex flex-row items-center gap-2 pb-6">
+        <AlertCircle className="h-4 w-4 text-muted-foreground/60" />
+        <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground/80">
+          Análise de Abandono
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-4 mt-2">
+          {reasons.length > 0 ? (
+            reasons.map((item) => (
+              <div
+                key={item.reason}
+                className="flex justify-between items-center group"
+              >
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-tight group-hover:text-foreground transition-colors">
+                  {item.reason}
+                </span>
+                <span className="text-xs font-bold text-foreground">
+                  {item.count}
+                </span>
+              </div>
+            ))
+          ) : (
+            <div className="flex items-center justify-center py-4 text-center">
+              <span className="text-[10px] font-medium text-muted-foreground uppercase">Nenhum abandono registrado</span>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

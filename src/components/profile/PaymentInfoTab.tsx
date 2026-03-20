@@ -2,19 +2,32 @@
 
 import { StripeConnectWrapper } from '@/components/stripe/StripeConnectWrapper';
 import { StripeOnboarding } from '@/components/stripe/StripeOnboarding';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { CreditCard } from 'lucide-react';
 
 export default function PaymentInfoTab() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold text-gray-900">Informações de Pagamento</h3>
-        <p className="mt-1 text-sm text-gray-600">Conta Stripe Connect</p>
-      </div>
-      <div className="mt-4">
-        <StripeConnectWrapper>
-          <StripeOnboarding />
-        </StripeConnectWrapper>
-      </div>
+    <div className="w-full max-w-4xl animate-in fade-in duration-300">
+      <Card className="shadow-sm border-muted/60 overflow-hidden">
+        <CardHeader className="py-2.5 px-5 border-b bg-muted/10">
+          <CardTitle className="text-sm font-bold flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-muted-foreground/80" />
+            Informações de Pagamento
+          </CardTitle>
+          <CardDescription className="text-[12px] text-muted-foreground">
+            Gerencie sua conta Stripe Connect e receba suas vendas.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="w-full overflow-y-auto max-h-[380px] p-5 md:p-6">
+            <div className="w-full">
+              <StripeConnectWrapper>
+                <StripeOnboarding />
+              </StripeConnectWrapper>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

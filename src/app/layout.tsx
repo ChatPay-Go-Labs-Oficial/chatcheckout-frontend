@@ -1,28 +1,22 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AuthGuard } from '@/components/AuthGuard';
 import QueryProvider from '@/components/providers/QueryProvider';
 import { StellarWalletProvider } from '@/contexts/StellarWalletContext';
 import { StellarWalletsKitProvider } from '@/app/providers/StellarWalletProvider';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const inter = Inter({
   subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: 'ChatCheckout',
   description: 'ChatCheckout application',
-  icons: {
-    icon: '/favicon.ico',
-  },
 };
 
 export default function RootLayout({
@@ -40,13 +34,15 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${inter.variable} font-sans antialiased`}>
         <QueryProvider>
           <ToastProvider>
             <StellarWalletsKitProvider>
               <StellarWalletProvider>
                 <AuthGuard />
-                {children}
+                <TooltipProvider>
+                  {children}
+                </TooltipProvider>
               </StellarWalletProvider>
             </StellarWalletsKitProvider>
           </ToastProvider>

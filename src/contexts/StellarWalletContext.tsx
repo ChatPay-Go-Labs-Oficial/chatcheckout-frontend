@@ -33,6 +33,7 @@ interface StellarWalletContextValue extends StellarWalletState {
   getFeePayerAddress: () => string | null;
   getBalance: () => Promise<void>;
   refreshConnection: () => Promise<void>;
+  isFetchingBalance: boolean;
 }
 
 const StellarWalletContext = createContext<StellarWalletContextValue | undefined>(undefined);
@@ -48,6 +49,10 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     accountId: null,
     publicKey: null,
     balance: '0',
+    balances: {
+      XLM: '0',
+      USDC: '0',
+    },
     network: 'testnet',
     isLoading: true,
     error: null,
@@ -65,6 +70,10 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
             accountId: stellarService.getAccountId(),
             publicKey: stellarService.getAccountId(),
             balance: '0',
+            balances: {
+              XLM: '0',
+              USDC: '0',
+            },
             network: stellarService.getNetwork(),
             isLoading: false,
             error: null,
@@ -72,8 +81,8 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
 
           // Fetch initial balance
           try {
-            const balance = await stellarService.getBalance();
-            setState((prev) => ({ ...prev, balance }));
+            const balances = await stellarService.getBalances();
+            setState((prev) => ({ ...prev, balance: balances.XLM, balances }));
           } catch (error) {
             console.error('Error fetching initial balance:', error);
           }
@@ -131,6 +140,7 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
         error: null,
       });
       await syncWalletAddress(data.accountId);
+      await getBalance(); // Immediate balance fetch on connect
       toast.success('Carteira Stellar conectada com sucesso!');
     },
     onError: (error: Error) => {
@@ -174,6 +184,10 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
       accountId: null,
       publicKey: null,
       balance: '0',
+      balances: {
+        XLM: '0',
+        USDC: '0',
+      },
       network: 'testnet',
       isLoading: false,
       error: null,
@@ -192,6 +206,10 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
         accountId: null,
         publicKey: null,
         balance: '0',
+        balances: {
+          XLM: '0',
+          USDC: '0',
+        },
         network,
         isLoading: false,
         error: null,
@@ -225,9 +243,9 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
   const balanceQuery = useQuery({
     queryKey: ['stellar-balance', state.accountId],
     queryFn: async () => {
-      const balance = await stellarService.getBalance();
-      setState((prev) => ({ ...prev, balance }));
-      return balance;
+      const balances = await stellarService.getBalances();
+      setState((prev) => ({ ...prev, balance: balances.XLM, balances }));
+      return balances;
     },
     enabled: state.isConnected,
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -267,19 +285,26 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     [sendTransactionMutation],
   );
 
-  const releaseEscrowPayment = useCallback(async (escrowId: number) => {
-    return stellarService.releaseEscrowPayment(escrowId);
-  }, []);
-
-  const getFeePayerAddress = useCallback(() => {
-    return stellarService.getFeePayerAddress();
-  }, []);
-
   const getBalance = useCallback(async () => {
     if (state.isConnected) {
       await balanceQuery.refetch();
     }
   }, [state.isConnected, balanceQuery]);
+
+  const getFeePayerAddress = useCallback(() => {
+    return stellarService.getFeePayerAddress();
+  }, []);
+
+  const releaseEscrowPayment = useCallback(
+    async (escrowId: number) => {
+      const result = await stellarService.releaseEscrowPayment(escrowId);
+      if (result.success) {
+        await getBalance();
+      }
+      return result;
+    },
+    [getBalance],
+  );
 
   const refreshConnection = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true }));
@@ -292,14 +317,18 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
           accountId: stellarService.getAccountId(),
           publicKey: stellarService.getAccountId(),
           balance: '0',
+          balances: {
+            XLM: '0',
+            USDC: '0',
+          },
           network: stellarService.getNetwork(),
           isLoading: false,
           error: null,
         });
 
         // Fetch balance
-        const balance = await stellarService.getBalance();
-        setState((prev) => ({ ...prev, balance }));
+        const balances = await stellarService.getBalances();
+        setState((prev) => ({ ...prev, balance: balances.XLM, balances }));
       } else {
         setState((prev) => ({ ...prev, isLoading: false, isConnected: false }));
       }
@@ -323,6 +352,7 @@ export function StellarWalletProvider({ children }: StellarWalletProviderProps) 
     getFeePayerAddress,
     getBalance,
     refreshConnection,
+    isFetchingBalance: balanceQuery.isLoading || balanceQuery.isFetching,
   };
 
   return <StellarWalletContext.Provider value={value}>{children}</StellarWalletContext.Provider>;

@@ -58,14 +58,5 @@ export default function EditProductPage() {
     );
   }
 
-  return (
-    <div className="w-full flex justify-center">
-      <ProductForm
-        mode="edit"
-        initialProduct={product}
-        onSuccess={handleSuccess}
-        onCancel={handleCancel}
-      />
-    </div>
-  );
+  return <ProductForm mode="update" initialProduct={product} onSuccess={handleSuccess} onCancel={handleCancel} />;
 }

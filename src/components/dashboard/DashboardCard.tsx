@@ -1,27 +1,33 @@
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { LucideIcon } from 'lucide-react';
+
 interface DashboardCardProps {
   title: string;
-  value: string;
-  subtitle?: string;
-  percent?: string;
-  percentColor?: string;
-  score?: string;
+  value: string | number;
+  subtitle: string;
+  icon?: LucideIcon;
 }
 
 export default function DashboardCard({
   title,
   value,
   subtitle,
-  percent,
-  percentColor = 'text-green-500',
-  score,
+  icon: Icon,
 }: DashboardCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-1 min-w-[180px]">
-      <span className="text-sm font-semibold text-gray-500 mb-1">{title}</span>
-      <span className="text-2xl font-bold text-[#181b4a]">{value}</span>
-      {percent && <span className={`text-xs font-semibold ${percentColor}`}>{percent}</span>}
-      {subtitle && <span className="text-xs text-gray-400 mt-1">{subtitle}</span>}
-      {score && <span className="text-xs text-blue-400 mt-1">{score}</span>}
-    </div>
+    <Card className="shadow-sm border-muted/60 bg-card">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+          {title}
+        </CardTitle>
+        {Icon && <Icon className="h-4 w-4 text-muted-foreground/50" />}
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold tracking-tight text-foreground">{value}</div>
+        <p className="text-[10px] text-muted-foreground font-medium mt-1">
+          {subtitle}
+        </p>
+      </CardContent>
+    </Card>
   );
 }

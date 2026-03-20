@@ -1,61 +1,48 @@
-'use client';
-
 import { useState } from 'react';
 import PersonalInfoTab from '@/components/profile/PersonalInfoTab';
 import PaymentInfoTab from '@/components/profile/PaymentInfoTab';
 import PasswordTab from '@/components/profile/PasswordTab';
-
-type TabType = 'personal' | 'payment' | 'password';
-
-const tabs = [
-  {
-    id: 'personal' as TabType,
-    name: 'Informações Pessoais',
-    icon: <span className="material-symbols-outlined text-[18px]">person</span>,
-  },
-  {
-    id: 'payment' as TabType,
-    name: 'Pagamentos',
-    icon: <span className="material-symbols-outlined text-[18px]">credit_card</span>,
-  },
-  {
-    id: 'password' as TabType,
-    name: 'Senha',
-    icon: <span className="material-symbols-outlined text-[18px]">lock</span>,
-  },
-];
+import { User, CreditCard, Lock } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function ProfileForm() {
-  const [activeTab, setActiveTab] = useState<TabType>('personal');
-
   return (
-    <div className="w-full">
-      {/* Tabs */}
-      <div className="flex gap-6 mb-6 border-b border-gray-200">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={`pb-3 px-2 text-sm font-medium transition-colors relative flex items-center gap-2 ${
-              activeTab === tab.id ? 'text-[#6f43d0]' : 'text-gray-500 hover:text-gray-700'
-            }`}
+    <Tabs defaultValue="personal" className="w-full">
+      <div className="p-1 bg-muted rounded-lg flex items-center border shadow-sm w-full sm:w-fit mb-6 overflow-x-auto">
+        <TabsList className="bg-transparent h-auto sm:h-7 p-0 gap-1 min-w-max">
+          <TabsTrigger 
+            value="personal" 
+            className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-semibold"
           >
-            {tab.icon}
-            {tab.name}
-            {activeTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6fdcff] to-[#6f43d0]" />
-            )}
-          </button>
-        ))}
+            <User className="size-3.5 mr-2" />
+            Informações Pessoais
+          </TabsTrigger>
+          <TabsTrigger 
+            value="payment" 
+            className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-semibold"
+          >
+            <CreditCard className="size-3.5 mr-2" />
+            Configuração de Conta de Pagamentos
+          </TabsTrigger>
+          <TabsTrigger 
+            value="password" 
+            className="h-7 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-semibold"
+          >
+            <Lock className="size-3.5 mr-2" />
+            Senha
+          </TabsTrigger>
+        </TabsList>
       </div>
 
-      {/* Conteúdo das Abas */}
-      <div>
-        {activeTab === 'personal' && <PersonalInfoTab />}
-        {activeTab === 'payment' && <PaymentInfoTab />}
-        {activeTab === 'password' && <PasswordTab />}
-      </div>
-    </div>
+      <TabsContent value="personal" className="mt-0 outline-none">
+        <PersonalInfoTab />
+      </TabsContent>
+      <TabsContent value="payment" className="mt-0 outline-none">
+        <PaymentInfoTab />
+      </TabsContent>
+      <TabsContent value="password" className="mt-0 outline-none">
+        <PasswordTab />
+      </TabsContent>
+    </Tabs>
   );
 }

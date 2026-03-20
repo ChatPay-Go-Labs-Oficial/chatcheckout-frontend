@@ -14,9 +14,5 @@ export default function NewProductPage() {
     router.back();
   };
 
-  return (
-    <div className="p-3">
-      <ProductForm mode="create" onSuccess={handleSuccess} onCancel={handleCancel} />
-    </div>
-  );
+  return <ProductForm mode="create" onSuccess={handleSuccess} onCancel={handleCancel} />;
 }

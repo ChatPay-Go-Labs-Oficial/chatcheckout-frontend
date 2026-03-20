@@ -3,340 +3,348 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { salesService } from '@/services/salesService';
-import { SalesPaymentType, SalesSortBy, SalesSortOrder } from '@/types/sales';
+import { SalesSortBy, SalesSortOrder } from '@/types/sales';
+import { RefreshCcw, Filter, Calendar as CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
-const PAGE_SIZE = 10;
 
-function formatDate(isoDate: string): string {
-  return new Intl.DateTimeFormat('pt-BR', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(new Date(isoDate));
-}
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format((cents || 0) / 100);
-}
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
-function getDefaultDateRange() {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(end.getDate() - 30);
+import { Button } from '@/components/ui/button';
+import { StatusBadge } from '@/components/sales/StatusBadge';
+import { Skeleton } from '@/components/ui/skeleton';
 
-  const toInputDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  return {
-    startDate: toInputDate(start),
-    endDate: toInputDate(end),
-  };
-}
-
-function toIsoDateRange(startDate: string, endDate: string) {
-  const toStartOfLocalDayIso = (dateStr: string) => {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day, 0, 0, 0, 0).toISOString();
-  };
-
-  const toEndOfLocalDayIso = (dateStr: string) => {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day, 23, 59, 59, 999).toISOString();
-  };
-
-  return {
-    startDate: startDate ? toStartOfLocalDayIso(startDate) : undefined,
-    endDate: endDate ? toEndOfLocalDayIso(endDate) : undefined,
-  };
-}
-
-function getPaymentLabel(method: SalesPaymentType): string {
-  if (method === 'PIX') return 'Pix';
-  if (method === 'CARD') return 'Cartão';
-  return 'Cripto';
-}
-
-function getStatusLabel(status: 'CREATED' | 'COMPLETED' | 'FAILED'): string {
-  if (status === 'COMPLETED') return 'Concluído';
-  if (status === 'FAILED') return 'Falhou';
-  return 'Criado';
-}
+const PAGE_SIZE = 12;
 
 export default function SalesPage() {
-  const defaultRange = useMemo(() => getDefaultDateRange(), []);
-
-  const [draftPaymentType, setDraftPaymentType] = useState<SalesPaymentType | ''>('');
-  const [draftStartDate, setDraftStartDate] = useState(defaultRange.startDate);
-  const [draftEndDate, setDraftEndDate] = useState(defaultRange.endDate);
-
-  const [paymentType, setPaymentType] = useState<SalesPaymentType | undefined>(undefined);
-  const [startDate, setStartDate] = useState(defaultRange.startDate);
-  const [endDate, setEndDate] = useState(defaultRange.endDate);
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<SalesSortBy>('createdAt');
   const [sortOrder, setSortOrder] = useState<SalesSortOrder>('desc');
+  const [paymentType, setPaymentType] = useState<string>('ALL');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
-  const dateRange = toIsoDateRange(startDate, endDate);
+  const [appliedPaymentType, setAppliedPaymentType] = useState<string>('ALL');
+  const [appliedStartDate, setAppliedStartDate] = useState<string>('');
+  const [appliedEndDate, setAppliedEndDate] = useState<string>('');
 
-  const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: [
-      'my-sales',
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const handleApplyFilters = () => {
+    setAppliedPaymentType(paymentType);
+    setAppliedStartDate(startDate);
+    setAppliedEndDate(endDate);
+    setPage(1);
+    setIsFilterOpen(false);
+  };
+
+  const handleClearFilters = () => {
+    setPaymentType('ALL');
+    setStartDate('');
+    setEndDate('');
+    setAppliedPaymentType('ALL');
+    setAppliedStartDate('');
+    setAppliedEndDate('');
+    setPage(1);
+    setIsFilterOpen(false);
+  };
+
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
+    queryKey: ['sales', page, sortBy, sortOrder, appliedPaymentType, appliedStartDate, appliedEndDate],
+    queryFn: () => salesService.getMySales({
       page,
-      paymentType,
-      dateRange.startDate,
-      dateRange.endDate,
+      limit: PAGE_SIZE,
       sortBy,
       sortOrder,
-    ],
-    queryFn: () =>
-      salesService.getMySales({
-        page,
-        limit: PAGE_SIZE,
-        paymentType,
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        sortBy,
-        sortOrder,
-      }),
+      ...(appliedPaymentType !== 'ALL' ? { paymentType: appliedPaymentType as any } : {}),
+      ...(appliedStartDate ? { startDate: appliedStartDate } : {}),
+      ...(appliedEndDate ? { endDate: appliedEndDate } : {}),
+    }),
   });
 
-  function handleApplyFilters() {
-    setPaymentType(draftPaymentType || undefined);
-    setStartDate(draftStartDate);
-    setEndDate(draftEndDate);
-    setPage(1);
-  }
+  const sales = data?.data || [];
+  const totalPages = data?.totalPages || 1;
 
-  function handleClearFilters() {
-    const nextDefault = getDefaultDateRange();
-    setDraftPaymentType('');
-    setDraftStartDate(nextDefault.startDate);
-    setDraftEndDate(nextDefault.endDate);
-
-    setPaymentType(undefined);
-    setStartDate(nextDefault.startDate);
-    setEndDate(nextDefault.endDate);
-    setPage(1);
-  }
-
-  function toggleSort(field: SalesSortBy) {
-    if (sortBy === field) {
-      setSortOrder((current) => (current === 'asc' ? 'desc' : 'asc'));
-      return;
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "dd 'de' MMM, yyyy • HH:mm", { locale: ptBR });
+    } catch {
+      return dateString;
     }
+  };
 
-    setSortBy(field);
-    setSortOrder('desc');
-  }
-
-  const sales = data?.data ?? [];
-  const total = data?.total ?? 0;
-  const totalPages = data?.totalPages ?? 0;
-  const canPrev = page > 1;
-  const canNext = page < totalPages;
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(amount / 100);
+  };
 
   return (
-    <div className="w-full space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#181b4a]">Vendas</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Filtre e acompanhe suas vendas por período e forma de pagamento
-        </p>
+    <div className="w-full p-8 pt-4 mx-auto pb-6 min-w-0 max-w-[100vw]">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Vendas</h1>
+          <p className="text-[13px] text-muted-foreground mt-0.5">
+            Gerencie e acompanhe todo o seu histórico de transações.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 border-muted/60 bg-background hover:bg-muted/5">
+                <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+                Filtros Avançados
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 p-4 shadow-lg border-muted/60" align="end">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium leading-none mb-1.5">Filtros Avançados</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Refine sua busca pelas vendas.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Método de pagamento</Label>
+                    <Select value={paymentType} onValueChange={(val) => setPaymentType(val)}>
+                      <SelectTrigger className="w-full h-9">
+                        <SelectValue placeholder="Selecione o método" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">Todos os métodos</SelectItem>
+                        <SelectItem value="PIX">Pix</SelectItem>
+                        <SelectItem value="CARD">Cartão de Crédito</SelectItem>
+                        <SelectItem value="CRYPTO">Criptomoedas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2 flex flex-col">
+                    <Label>Data inicial</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-9 justify-start text-left font-normal",
+                            !startDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {startDate ? format(new Date(startDate + 'T12:00:00'), "dd 'de' MMM, yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={startDate ? new Date(startDate + 'T12:00:00') : undefined}
+                          onSelect={(date) => setStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                          initialFocus
+                          locale={ptBR}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="space-y-2 flex flex-col">
+                    <Label>Data final</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-9 justify-start text-left font-normal",
+                            !endDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {endDate ? format(new Date(endDate + 'T12:00:00'), "dd 'de' MMM, yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={endDate ? new Date(endDate + 'T12:00:00') : undefined}
+                          onSelect={(date) => setEndDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                          initialFocus
+                          locale={ptBR}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <div className="pt-2 flex flex-col gap-2">
+                  <Button 
+                    variant="default" 
+                    className="w-full"
+                    onClick={handleApplyFilters}
+                  >
+                    Aplicar filtros
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleClearFilters}
+                  >
+                    Limpar filtros
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <Button
+            variant="default"
+            size="sm"
+            className="h-9 shadow-sm"
+            onClick={() => refetch()}
+          >
+            <RefreshCcw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+        </div>
       </div>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-          <div className="w-full lg:w-56">
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
-              Tipo de pagamento
-            </label>
-            <select
-              value={draftPaymentType}
-              onChange={(event) => setDraftPaymentType(event.target.value as SalesPaymentType | '')}
-              className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#6f43d0] focus:ring-2 focus:ring-[#6f43d0]/20"
-            >
-              <option value="">Todos</option>
-              <option value="PIX">Pix</option>
-              <option value="CARD">Cartão</option>
-              <option value="CRYPTO">Cripto</option>
-            </select>
+      {/* Main Table Content */}
+      <Card className="shadow-sm border-muted/60 overflow-hidden bg-background py-0 gap-0 w-full max-w-[calc(100vw-2rem)] sm:max-w-full">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b bg-muted/30 p-4 sm:px-6 sm:py-4 rounded-none">
+          <div className="space-y-0.5">
+            <CardTitle className="text-base font-semibold">Histórico de Pedidos</CardTitle>
+            <CardDescription className="text-xs">
+              Exibindo as vendas mais recentes da sua conta.
+            </CardDescription>
           </div>
-
-          <div className="w-full lg:w-56">
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Data inicial</label>
-            <input
-              type="date"
-              value={draftStartDate}
-              onChange={(event) => setDraftStartDate(event.target.value)}
-              className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#6f43d0] focus:ring-2 focus:ring-[#6f43d0]/20"
-            />
+          <div className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+            Total de {data?.total || 0} registros
           </div>
-
-          <div className="w-full lg:w-56">
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Data final</label>
-            <input
-              type="date"
-              value={draftEndDate}
-              onChange={(event) => setDraftEndDate(event.target.value)}
-              className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#6f43d0] focus:ring-2 focus:ring-[#6f43d0]/20"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleApplyFilters}
-              className="rounded-xl bg-gradient-to-r from-[#6f43d0] to-[#6fdcff] px-4 py-2.5 text-sm font-semibold text-white shadow hover:opacity-95"
-            >
-              Aplicar
-            </button>
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Limpar
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <h2 className="text-lg font-semibold text-[#181b4a]">Lista de vendas</h2>
-          <span className="text-sm text-gray-500">
-            {isFetching ? 'Atualizando...' : `${total} resultado(s)`}
-          </span>
-        </div>
-
-        {error && (
-          <div className="px-5 py-6 text-sm text-red-600">
-            {(error as Error).message || 'Não foi possível carregar as vendas.'}
-          </div>
-        )}
-
-        {!error && (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1"
-                      onClick={() => toggleSort('createdAt')}
-                    >
-                      Data
-                      <span className="text-[10px]">
-                        {sortBy === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+        </CardHeader>
+        <CardContent className="p-0 overflow-x-auto w-full">
+          <Table className="min-w-[800px]">
+            <TableHeader className="bg-muted/10">
+              <TableRow className="hover:bg-transparent border-muted/20">
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Data e Hora</TableHead>
+                <TableHead className="w-[250px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Produto</TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Valor</TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-center">Status</TableHead>
+                <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6 text-right">Método</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i} className="border-muted/10">
+                    <TableCell className="px-6 py-4"><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell className="px-6 py-4"><Skeleton className="h-4 w-48" /></TableCell>
+                    <TableCell className="px-6 py-4"><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell className="px-6 py-4"><div className="flex justify-center"><Skeleton className="h-6 w-24 rounded-full" /></div></TableCell>
+                    <TableCell className="px-6 py-4 text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : isError ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-32 text-center text-destructive font-medium">
+                    Ocorreu um erro ao carregar as vendas.
+                  </TableCell>
+                </TableRow>
+              ) : sales.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                    Nenhuma venda encontrada no período selecionado.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sales.map((sale) => (
+                  <TableRow key={sale.orderId} className="group border-muted/10 hover:bg-muted/5 transition-colors">
+                    <TableCell className="text-[12px] font-medium text-foreground py-3 px-6">
+                      {formatDate(sale.createdAt)}
+                    </TableCell>
+                    <TableCell className="py-3 px-6">
+                      <div className="flex flex-col">
+                        <span className="text-[13px] font-semibold text-foreground truncate">
+                          {sale.productName || 'Produto não encontrado'}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-mono">
+                          ID: {sale.orderId.substring(0, 8)}...
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-[13px] font-bold text-foreground py-3 px-6">
+                      {formatCurrency(sale.totalAmount)}
+                    </TableCell>
+                    <TableCell className="py-3 px-6">
+                      <div className="flex justify-center items-center">
+                        <StatusBadge status={sale.status} />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right py-3 px-6">
+                      <span className="text-[11px] font-bold text-muted-foreground/80 bg-muted/30 px-2 py-0.5 rounded border border-muted/20 uppercase">
+                        {sale.paymentType}
                       </span>
-                    </button>
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Produto
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Método
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1"
-                      onClick={() => toggleSort('totalAmount')}
-                    >
-                      Valor bruto
-                      <span className="text-[10px]">
-                        {sortBy === 'totalAmount' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-                      </span>
-                    </button>
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Taxa
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Líquido
-                  </th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {isLoading && (
-                  <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-gray-500">
-                      Carregando vendas...
-                    </td>
-                  </tr>
-                )}
-
-                {!isLoading && sales.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-gray-500">
-                      Nenhuma venda encontrada para os filtros selecionados.
-                    </td>
-                  </tr>
-                )}
-
-                {!isLoading &&
-                  sales.map((sale) => (
-                    <tr key={sale.orderId} className="hover:bg-gray-50/70">
-                      <td className="whitespace-nowrap px-5 py-3 text-sm text-gray-700">
-                        {formatDate(sale.createdAt)}
-                      </td>
-                      <td className="px-5 py-3 text-sm text-gray-700">{sale.productName}</td>
-                      <td className="px-5 py-3 text-sm text-gray-700">
-                        {getPaymentLabel(sale.paymentType)}
-                      </td>
-                      <td className="px-5 py-3 text-sm font-medium text-gray-800">
-                        {formatCurrency(sale.totalAmount)}
-                      </td>
-                      <td className="px-5 py-3 text-sm text-gray-700">
-                        {formatCurrency(sale.feeAmount)}
-                      </td>
-                      <td className="px-5 py-3 text-sm font-medium text-emerald-700">
-                        {formatCurrency(sale.netAmount)}
-                      </td>
-                      <td className="px-5 py-3 text-sm text-gray-700">
-                        {getStatusLabel(sale.status)}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between border-t border-gray-100 px-5 py-4">
-          <span className="text-sm text-gray-500">
-            Página {page} de {Math.max(totalPages, 1)}
-          </span>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t bg-muted/20 p-4 sm:px-6 sm:py-3">
+          <p className="text-[11px] font-medium text-muted-foreground">
+            Página {page} de {totalPages}
+          </p>
           <div className="flex gap-2">
-            <button
-              type="button"
-              disabled={!canPrev}
-              onClick={() => setPage((current) => current - 1)}
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-[11px] font-semibold border-muted/60 bg-background hover:bg-muted/5 disabled:opacity-50"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
             >
               Anterior
-            </button>
-            <button
-              type="button"
-              disabled={!canNext}
-              onClick={() => setPage((current) => current + 1)}
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-[11px] font-semibold border-muted/60 bg-background hover:bg-muted/5 disabled:opacity-50"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
             >
-              Próxima
-            </button>
+              Próximo
+            </Button>
           </div>
         </div>
-      </section>
+      </Card>
     </div>
   );
 }

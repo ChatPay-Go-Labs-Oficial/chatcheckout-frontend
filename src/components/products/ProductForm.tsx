@@ -1,310 +1,369 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { FormField } from '@/components/FormField';
-import { TextAreaField } from '@/components/TextAreaField';
-import { SelectField, SelectOption } from '@/components/SelectField';
+import React, { useState } from 'react';
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { FileUploadField } from './FileUploadField';
 import { CheckoutLinkModal } from './CheckoutLinkModal';
-import { useProductForm, FormMode } from '@/hooks/useProductForm';
-import { Product, CURRENCY_LABELS } from '@/types/product';
-import { VALIDATION_RULES } from '@/utils/validations/validation-rules';
+import { useFileUpload } from '@/hooks/useFileUpload';
+import { FILE_VALIDATIONS, Product, Currency } from '@/types/product';
 import { useGlobalToast } from '@/contexts/ToastContext';
+import { Lock, FileArchive, Info, Package, Sparkles, Layout, RefreshCcw, ArrowLeft } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { productService } from '@/services/productService';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+const productFormSchema = z.object({
+  name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100),
+  description: z.string().min(10, 'Descrição deve ter no mínimo 10 caracteres'),
+  price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, 'Valor inválido'),
+  currency: z.string(),
+  salesPageUrl: z.string().url('URL inválida').optional().or(z.literal('')),
+  aiTrainingPrompt: z.string().optional(),
+});
+
+type ProductFormValues = z.infer<typeof productFormSchema>;
 
 interface ProductFormProps {
-  mode: FormMode;
+  mode: 'create' | 'update';
   initialProduct?: Product;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-/**
- * Formulário completo de produto (criação e edição)
- * Integra todos os campos e validações
- */
 export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: ProductFormProps) {
-  const {
-    formData,
-    errors,
-    isSubmitting,
-    submitError,
-    imageUpload,
-    productFileUpload,
-    handleChange,
-    handleSubmit,
-  } = useProductForm(mode, initialProduct, undefined); // Não passa onSuccess aqui, vamos controlar manualmente
-
   const toast = useGlobalToast();
+  const queryClient = useQueryClient();
 
-  // Estado para controlar o modal de link de checkout
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [createdProduct, setCreatedProduct] = useState<Product | null>(null);
 
-  // Mostra toast quando houver erro de submissão
-  useEffect(() => {
-    if (submitError) {
-      toast.error(submitError);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [submitError]); // toast é estável, não precisa estar nas dependências
-
-  const currencyOptions: SelectOption[] = Object.entries(CURRENCY_LABELS).map(([value, label]) => ({
-    value,
-    label,
-  }));
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const result = await handleSubmit();
-
-    // Se produto foi criado/atualizado com sucesso
-    if (result) {
-      setCreatedProduct(result);
-      setShowCheckoutModal(true);
-
-      if (isCreate) {
-        toast.success('Produto criado com sucesso!');
-      } else {
-        toast.success('Produto atualizado com sucesso!');
-      }
-    }
-  };
-
-  const handleCloseModal = () => {
-    setShowCheckoutModal(false);
-    setCreatedProduct(null);
-    // Redireciona para lista após fechar o modal
-    onSuccess();
-  };
+  const imageUpload = useFileUpload('image', FILE_VALIDATIONS.image);
+  const productFileUpload = useFileUpload('product', FILE_VALIDATIONS.product);
 
   const isCreate = mode === 'create';
   const title = isCreate ? 'Novo Produto' : 'Edição de Produto';
   const subtitle = isCreate
-    ? 'Preencha os detalhes do seu produto digital'
-    : 'Atualize os detalhes do seu produto abaixo';
-  const submitButtonText = isCreate ? 'Salvar Produto' : 'Salvar Alterações';
+    ? 'Preencha os detalhes do seu produto digital para começar a vender.'
+    : 'Atualize as informações do seu produto abaixo.';
+  const submitButtonText = isCreate ? 'Criar Produto' : 'Salvar Alterações';
+
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: {
+      name: initialProduct?.name || '',
+      description: initialProduct?.description || '',
+      price: initialProduct?.price?.toString() || '',
+      currency: initialProduct?.currency || 'BRL',
+      salesPageUrl: initialProduct?.salesPageUrl || '',
+      aiTrainingPrompt: initialProduct?.promptAi || '',
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: ProductFormValues) => {
+      if (isCreate && !productFileUpload.file) {
+        throw new Error('Arquivo do produto é obrigatório');
+      }
+
+      return productService.createProduct(
+        {
+          name: data.name,
+          description: data.description,
+          price: parseFloat(data.price),
+          currency: data.currency as Currency,
+          salesPageUrl: data.salesPageUrl || '',
+          promptAi: data.aiTrainingPrompt || '',
+        },
+        imageUpload.file || undefined,
+        productFileUpload.file || undefined,
+      );
+    },
+    onSuccess: (product) => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setCreatedProduct(product);
+      setShowCheckoutModal(true);
+      toast.success('Produto criado com sucesso!');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erro ao criar produto');
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (data: ProductFormValues) => {
+      if (!initialProduct?.id) throw new Error('ID não encontrado');
+
+      return productService.updateProduct(
+        initialProduct.id,
+        {
+          name: data.name,
+          description: data.description,
+          price: parseFloat(data.price),
+          currency: data.currency as Currency,
+          salesPageUrl: data.salesPageUrl || '',
+          promptAi: data.aiTrainingPrompt || '',
+        },
+        imageUpload.file || undefined,
+      );
+    },
+    onSuccess: (product) => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product', product.id] });
+      setCreatedProduct(product);
+      setShowCheckoutModal(true);
+      toast.success('Produto atualizado com sucesso!');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Erro ao atualizar produto');
+    },
+  });
+
+  const onSubmit = (values: ProductFormValues) => {
+    if (isCreate && !productFileUpload.file && !productFileUpload.error) {
+      toast.error('O arquivo do produto é obrigatório na criação.');
+      return;
+    }
+
+    if (imageUpload.error) {
+      toast.error(imageUpload.error);
+      return;
+    }
+
+    if (isCreate) {
+      createMutation.mutate(values);
+    } else {
+      updateMutation.mutate(values);
+    }
+  };
+
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-3">
-        <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-        <p className="text-sm text-gray-600 mt-1">{subtitle}</p>
+    <div className="w-full p-8 pt-4 mx-auto pb-6 min-w-0 max-w-[100vw]">
+      <div className="flex flex-col mb-6">
+        <div className="flex items-center gap-2 mb-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 -ml-2 text-muted-foreground hover:text-foreground"
+            onClick={onCancel}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">{title}</h2>
+        </div>
+        <p className="text-[13px] text-muted-foreground ml-8">{subtitle}</p>
       </div>
 
-      {/* Formulário em 2 colunas */}
-      <form onSubmit={onSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Coluna Esquerda - Campos */}
-        <div className="space-y-3">
-          {/* Nome do Produto */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nome do produto</label>
-            <FormField
-              name="name"
-              type="text"
-              placeholder="Ex: Curso Completo de Python"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              hasError={!!errors.name}
-              errorMessage={errors.name}
-              required
-            />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {/* Linha 1: 3 Colunas com Altura Uniforme */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            {/* Coluna 1: Informações Básicas */}
+            <Card className="shadow-sm border-muted/60 h-full flex flex-col bg-background">
+              <CardHeader className="py-3 px-5 border-b bg-transparent">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Package className="w-4 h-4 text-muted-foreground" />
+                  Informações Básicas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pt-3 pb-5 flex-1 flex flex-col space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Nome do produto</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Masterclass de Design Digital" {...field} className="bg-muted/30 focus-visible:ring-1 h-10 text-sm border-muted/60" />
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem className="flex-1 flex flex-col">
+                      <FormLabel className="text-xs">Descrição Completa</FormLabel>
+                      <FormControl className="flex-1">
+                        <Textarea
+                          placeholder="Ex: Neste treinamento completo, você aprenderá as estratégias fundamentais para escalar suas vendas digitais, desde o tráfego pago até a conversão em alta escala, com foco 100% prático e cases reais..."
+                          className="min-h-[100px] h-full bg-muted/30 focus-visible:ring-1 resize-none text-sm flex-1 border-muted/60"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Coluna 2: Vendas & Checkout */}
+            <Card className="shadow-sm border-muted/60 h-full flex flex-col bg-background">
+              <CardHeader className="py-3 px-5 border-b bg-transparent">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Layout className="w-4 h-4 text-muted-foreground" />
+                  Vendas & Checkout
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 px-5 pt-3 pb-5 flex-1">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Valor de Venda</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">R$</span>
+                          <Input type="number" step="0.01" placeholder="0,00" {...field} className="pl-10 bg-muted/30 focus-visible:ring-1 h-10 text-sm border-muted/60" />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormItem>
+                  <FormLabel className="text-xs">Moeda</FormLabel>
+                  <div className="flex items-center px-3 h-10 bg-muted/20 border border-muted/60 rounded-md text-[13px] font-medium text-muted-foreground/70 cursor-not-allowed select-none">
+                    <span>BRL — Real Brasileiro</span>
+                    <Lock className="w-3 h-3 ml-auto opacity-50" />
+                  </div>
+                </FormItem>
+
+                <FormField
+                  control={form.control}
+                  name="salesPageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Página de Vendas (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input type="url" placeholder="https://seu-produto.com" {...field} className="bg-muted/30 focus-visible:ring-1 h-10 text-sm border-muted/60" />
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Coluna 3: Treinamento IA */}
+            <Card className="shadow-sm border-muted/60 h-full flex flex-col bg-background">
+              <CardHeader className="py-3 px-5 border-b bg-transparent">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-muted-foreground" />
+                  Treinamento IA (Opcional)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pt-3 pb-5 flex-1 flex flex-col">
+                <FormField
+                  control={form.control}
+                  name="aiTrainingPrompt"
+                  render={({ field }) => (
+                    <FormItem className="flex-1 flex flex-col">
+                      <FormLabel className="text-xs">Contexto para Treinamento</FormLabel>
+                      <FormControl className="flex-1">
+                        <Textarea
+                          placeholder="Ex: Este produto é um eBook focado em marketing de afiliados. Ele aborda ferramentas de automação, escolha de nichos lucrativos e copywriting persuasivo. Utilize um tom mentor e profissional para tirar dúvidas dos clientes."
+                          className="min-h-[145px] h-full bg-muted/30 focus-visible:ring-1 resize-none text-sm flex-1 border-muted/60"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Descrição */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
-            <TextAreaField
-              name="description"
-              placeholder="Descreva os detalhes do seu produto aqui..."
-              value={formData.description}
-              rows={2}
-              maxLength={VALIDATION_RULES.product.description.maxLength}
-              onChange={(e) => handleChange('description', e.target.value)}
-              hasError={!!errors.description}
-              errorMessage={errors.description}
-              required
-            />
-          </div>
-
-          {/* Valor e Moeda */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Valor */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Valor</label>
-              <FormField
-                name="price"
-                type="number"
-                placeholder="199,90"
-                value={formData.price}
-                onChange={(e) => handleChange('price', e.target.value)}
-                hasError={!!errors.price}
-                errorMessage={errors.price}
-                required
-              />
-            </div>
-
-            {/* Moeda */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Moeda</label>
-              <div className="flex items-center px-3 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 cursor-not-allowed select-none">
-                <span>BRL — Real Brasileiro</span>
-                <span className="ml-auto material-symbols-outlined text-base text-gray-400">
-                  lock
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Link da Página de Vendas */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Link da página de vendas
-            </label>
-            <FormField
-              name="salesPageUrl"
-              type="url"
-              placeholder="https://seusite.com/produto"
-              value={formData.salesPageUrl}
-              onChange={(e) => handleChange('salesPageUrl', e.target.value)}
-              hasError={!!errors.salesPageUrl}
-              errorMessage={errors.salesPageUrl}
-            />
-          </div>
-
-          {/* Prompt para Treinamento de IA */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Prompt para treinamento de IA <span className="text-gray-400">(opcional)</span>
-            </label>
-            <TextAreaField
-              name="aiTrainingPrompt"
-              placeholder="Ex: Curso online para iniciantes em Python. Público-alvo: estudantes e profissionais que buscam nova carreira."
-              value={formData.aiTrainingPrompt ?? ''}
-              rows={2}
-              maxLength={VALIDATION_RULES.product.aiPrompt.maxLength}
-              onChange={(e) => handleChange('aiTrainingPrompt', e.target.value)}
-              hasError={!!errors.aiTrainingPrompt}
-              errorMessage={errors.aiTrainingPrompt}
-            />
-          </div>
-        </div>
-
-        {/* Coluna Direita - Uploads */}
-        <div className="space-y-3">
-          {/* Card de Uploads */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
-            <div className="mb-3">
-              <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                <svg
-                  className="w-4 h-4 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                  />
-                </svg>
-                Arquivos do Produto
-              </h3>
-              <p className="text-xs text-gray-600 mt-1">
-                Faça upload da imagem de capa e do arquivo digital do seu produto
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {/* Upload de Imagem do Produto */}
-              <div className="bg-white rounded-lg p-3 border border-gray-200">
+          {/* Linha 2: Arquivos (Lado a Lado) */}
+          <Card className="shadow-sm border-muted/60 bg-background">
+            <CardHeader className="py-3 px-5 border-b bg-transparent">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <FileArchive className="w-4 h-4 text-muted-foreground" />
+                Arquivos & Entrega
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FileUploadField
-                  label="Imagem do produto"
-                  accept=".png,.jpg,.jpeg,.gif,.webp"
+                  label="Capa do Produto"
+                  accept=".png,.jpg,.jpeg,.webp"
                   maxSize={10 * 1024 * 1024}
+                  helpText="600px x 600px (Máx 10MB)"
                   file={imageUpload.file}
                   preview={imageUpload.preview}
-                  error={imageUpload.error || errors.imageFile}
+                  error={imageUpload.error}
                   currentFileUrl={initialProduct?.imageUrl}
-                  helpText="PNG, JPG ou até 10MB"
                   onFileSelect={imageUpload.selectFile}
                   onFileRemove={imageUpload.removeFile}
                 />
-              </div>
 
-              {/* Upload do Produto */}
-              <div className="bg-white rounded-lg p-3 border border-gray-200">
                 <FileUploadField
-                  label="Upload do produto"
-                  accept=".pdf,.zip,.epub,.mp4,.mp3"
+                  label="Arquivo Digital"
+                  accept=".pdf,.zip,.epub,.mp4"
                   maxSize={500 * 1024 * 1024}
                   required={isCreate}
                   file={productFileUpload.file}
-                  error={productFileUpload.error || errors.productFile}
+                  error={productFileUpload.error}
                   currentFileUrl={initialProduct?.productUrl}
-                  helpText="PDF, ZIP, etc. até 500MB"
                   onFileSelect={productFileUpload.selectFile}
                   onFileRemove={productFileUpload.removeFile}
                 />
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Dicas de Upload */}
-            <div className="mt-3 bg-blue-100 rounded-md p-2.5">
-              <p className="text-xs text-blue-800 font-medium flex items-start gap-2">
-                <svg
-                  className="w-3.5 h-3.5 mt-0.5 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span>
-                  A imagem será exibida na página de vendas. O arquivo do produto será entregue ao
-                  comprador após a confirmação do pagamento.
+          {/* Action Buttons */}
+          <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-muted/30">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              className="text-muted-foreground font-medium h-10 text-sm w-full sm:w-auto" 
+              onClick={onCancel} 
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="submit"
+              className="shadow-md px-8 h-10 font-bold text-sm bg-primary hover:bg-primary/90 w-full sm:w-auto" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <RefreshCcw className="w-4 h-4 animate-spin" />
+                  Processando...
                 </span>
-              </p>
-            </div>
+              ) : submitButtonText}
+            </Button>
           </div>
-        </div>
+        </form>
+      </Form>
 
-        {/* Botões de Ação - Full Width */}
-        <div className="lg:col-span-2 flex items-center justify-end gap-4 pt-3 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSubmitting}
-            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Cancelar
-          </button>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#6f43d0] to-[#6fdcff] rounded-xl hover:scale-[1.02] hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {isSubmitting && (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            )}
-            {isSubmitting ? 'Salvando...' : submitButtonText}
-          </button>
-        </div>
-      </form>
-
-      {/* Modal de Link de Checkout */}
       {createdProduct && (
         <CheckoutLinkModal
           product={createdProduct}
           checkoutUrl={`${process.env.NEXT_PUBLIC_CHECKOUT_URL}?hash=${createdProduct.productHash}`}
           isOpen={showCheckoutModal}
-          onClose={handleCloseModal}
-          mode={mode === 'create' ? 'create' : 'update'}
+          onClose={() => {
+            setShowCheckoutModal(false);
+            onSuccess();
+          }}
+          mode={mode}
           hashChanged={!isCreate && initialProduct?.productHash !== createdProduct.productHash}
         />
       )}

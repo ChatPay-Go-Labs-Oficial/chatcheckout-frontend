@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { StellarWalletsKit } from '@jsr/creit-tech__stellar-wallets-kit/sdk';
-import { KitEventType, Networks } from '@jsr/creit-tech__stellar-wallets-kit/types';
+import { StellarWalletsKit } from '@creit-tech/stellar-wallets-kit/sdk';
+import { KitEventType, Networks } from '@creit-tech/stellar-wallets-kit/types';
 import { STELLAR_CONFIG } from '@/utils/stellar/constants';
 
 /**

@@ -8,6 +8,9 @@
  */
 
 import { useStellarWallet } from '@/contexts/StellarWalletContext';
+import { Button } from '@/components/ui/button';
+import { Globe2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function NetworkSwitcher() {
   const { network, switchNetwork, isLoading } = useStellarWallet();
@@ -19,31 +22,44 @@ export function NetworkSwitcher() {
   };
 
   return (
-    <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-      <span className="text-sm font-medium text-gray-700">Rede:</span>
-      <div className="flex gap-2">
-        <button
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-muted/20">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-lg bg-background border flex items-center justify-center text-muted-foreground/80">
+          <Globe2 className="w-5 h-5" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-foreground">Rede de Operação</p>
+          <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+            Stellar {network === 'mainnet' ? 'Main Network' : 'Test Network'}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex gap-2 p-1 rounded-lg bg-muted/20 border">
+        <Button
+          variant={network === 'testnet' ? 'default' : 'ghost'}
+          size="sm"
           onClick={() => handleNetworkChange('testnet')}
           disabled={isLoading}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
-            network === 'testnet'
-              ? 'bg-green-100 text-green-700 border border-green-300'
-              : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
-          }`}
+          className={cn(
+            "h-7 px-4 text-[11px] font-bold uppercase tracking-wide transition-all",
+            network === 'testnet' && "shadow-sm bg-primary hover:bg-primary/90"
+          )}
         >
           Testnet
-        </button>
-        <button
+        </Button>
+        <Button
+          variant={network === 'mainnet' ? 'default' : 'ghost'}
+          size="sm"
           onClick={() => handleNetworkChange('mainnet')}
           disabled={isLoading}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
-            network === 'mainnet'
-              ? 'bg-purple-100 text-purple-700 border border-purple-300'
-              : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
-          }`}
+          className={cn(
+            "h-7 px-4 text-[11px] font-bold uppercase tracking-wide transition-all",
+            network === 'mainnet' && "shadow-sm bg-primary hover:bg-primary/90"
+          )}
         >
           Mainnet
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -44,7 +44,7 @@ export default function SalesAreaChart({ data }: SalesAreaChartProps) {
         <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground/80">
           Vendas da Semana
         </CardTitle>
-        <CardDescription className="flex items-baseline gap-2">
+        <CardDescription className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-2xl font-bold text-foreground">
             {new Intl.NumberFormat('pt-BR', {
               style: 'currency',

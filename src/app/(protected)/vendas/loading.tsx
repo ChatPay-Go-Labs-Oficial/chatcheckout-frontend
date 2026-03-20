@@ -4,22 +4,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 export default function VendasLoading() {
   return (
-    <div className="flex-1 space-y-4 p-8 pt-4">
-      <div className="flex items-center justify-between">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-4 w-full min-w-0 max-w-[100vw]">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground">Vendas</h2>
           <p className="text-sm text-muted-foreground">
             Gerencie e acompanhe todo o seu histórico de transações.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Skeleton className="h-9 w-[150px]" />
           <Skeleton className="h-9 w-[100px]" />
         </div>
       </div>
 
-      <Card className="shadow-sm border-muted/60 overflow-hidden bg-background py-0 gap-0">
-        <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30 px-6 py-4 rounded-none">
+      <Card className="shadow-sm border-muted/60 overflow-hidden bg-background py-0 gap-0 w-full max-w-[calc(100vw-2rem)] sm:max-w-full">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b bg-muted/30 p-4 sm:px-6 sm:py-4 rounded-none">
           <div className="space-y-0.5">
             <CardTitle className="text-base font-semibold">Histórico de Pedidos</CardTitle>
             <CardDescription className="text-xs">
@@ -28,8 +28,8 @@ export default function VendasLoading() {
           </div>
           <Skeleton className="h-6 w-32" />
         </CardHeader>
-        <CardContent className="p-0">
-          <Table>
+        <CardContent className="p-0 overflow-x-auto w-full">
+          <Table className="min-w-[800px]">
             <TableHeader className="bg-muted/10">
               <TableRow className="hover:bg-transparent border-muted/20">
                 <TableHead className="w-[140px] text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80 h-10 px-6">Data e Hora</TableHead>
@@ -52,7 +52,7 @@ export default function VendasLoading() {
             </TableBody>
           </Table>
         </CardContent>
-        <div className="flex items-center justify-between border-t bg-muted/20 px-6 py-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t bg-muted/20 p-4 sm:px-6 sm:py-3">
           <Skeleton className="h-4 w-24" />
           <div className="flex gap-2">
             <Skeleton className="h-8 w-20" />

@@ -4,6 +4,7 @@
 
 import { ProductInfo, ChatAiResponse, CustomerData, PaymentMethod } from '@/types/checkout';
 import { paymentService } from './paymentService';
+import { getOrCreateSessionId } from '@/utils/session';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -51,6 +52,7 @@ export async function sendChatMessage(
     body: JSON.stringify({
       productHash,
       message,
+      sessionId: getOrCreateSessionId(),
     }),
   });
 

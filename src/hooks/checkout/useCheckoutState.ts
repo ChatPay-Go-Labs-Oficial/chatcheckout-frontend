@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   CheckoutState,
   Message,
@@ -16,6 +16,7 @@ import {
   MessageComponentType,
 } from '@/types/checkout';
 import { removeComponentFromMessages, updateMessageById } from './checkoutHelpers';
+import { getOrCreateSessionId } from '@/utils/session';
 
 export interface CheckoutStateActions {
   setLoading: (loading: boolean) => void;
@@ -59,6 +60,42 @@ export function useCheckoutState() {
     sellerInfo: null, // Adicionado para satisfazer o tipo CheckoutState
     aiTypingMessage: '', // Adicionado para satisfazer o tipo CheckoutState
   });
+
+  // Restaurar estado da UI (mensagens e tela) na montagem
+  useEffect(() => {
+    const sessionId = getOrCreateSessionId();
+    if (!sessionId) return;
+    
+    const savedStateStr = sessionStorage.getItem(`checkout_ui_${sessionId}`);
+    if (savedStateStr) {
+      try {
+        const savedState = JSON.parse(savedStateStr);
+        setState((prev) => ({
+          ...prev,
+          messages: savedState.messages || [],
+          mode: savedState.mode || prev.mode,
+          checkoutStep: savedState.checkoutStep || prev.checkoutStep,
+          showMessageInput: savedState.showMessageInput ?? prev.showMessageInput
+        }));
+      } catch (e) {
+        console.error('Failed to parse checkout ui state', e);
+      }
+    }
+  }, []);
+
+  // Salvar estado da UI a cada nova mensagem ou mudança de tela
+  useEffect(() => {
+    const sessionId = getOrCreateSessionId();
+    if (!sessionId) return;
+    
+    const stateToSave = {
+      messages: state.messages,
+      mode: state.mode,
+      checkoutStep: state.checkoutStep,
+      showMessageInput: state.showMessageInput
+    };
+    sessionStorage.setItem(`checkout_ui_${sessionId}`, JSON.stringify(stateToSave));
+  }, [state.messages, state.mode, state.checkoutStep, state.showMessageInput]);
 
   const setLoading = useCallback((loading: boolean) => {
     setState((prev) => ({ ...prev, loading }));

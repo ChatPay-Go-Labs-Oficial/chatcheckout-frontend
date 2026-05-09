@@ -50,7 +50,9 @@ export function MessageBubble({ message, checkout }: MessageBubbleProps) {
 
       <div className="flex-1 min-w-0">
         <div className="bg-gray-50 border border-gray-200 rounded-lg rounded-tl-none px-4 py-3 shadow-sm">
-          <p className="text-sm text-gray-800 break-words whitespace-pre-wrap text-justify leading-relaxed">{message.content}</p>
+          <p className="text-sm text-gray-800 break-words whitespace-pre-wrap text-justify leading-relaxed">
+            {message.content}
+          </p>
         </div>
 
         {/* Renderiza componentes inline baseado no tipo - só após typing terminar */}

@@ -65,7 +65,7 @@ export function useCheckoutState() {
   useEffect(() => {
     const sessionId = getOrCreateSessionId();
     if (!sessionId) return;
-    
+
     const savedStateStr = sessionStorage.getItem(`checkout_ui_${sessionId}`);
     if (savedStateStr) {
       try {
@@ -75,7 +75,7 @@ export function useCheckoutState() {
           messages: savedState.messages || [],
           mode: savedState.mode || prev.mode,
           checkoutStep: savedState.checkoutStep || prev.checkoutStep,
-          showMessageInput: savedState.showMessageInput ?? prev.showMessageInput
+          showMessageInput: savedState.showMessageInput ?? prev.showMessageInput,
         }));
       } catch (e) {
         console.error('Failed to parse checkout ui state', e);
@@ -87,12 +87,12 @@ export function useCheckoutState() {
   useEffect(() => {
     const sessionId = getOrCreateSessionId();
     if (!sessionId) return;
-    
+
     const stateToSave = {
       messages: state.messages,
       mode: state.mode,
       checkoutStep: state.checkoutStep,
-      showMessageInput: state.showMessageInput
+      showMessageInput: state.showMessageInput,
     };
     sessionStorage.setItem(`checkout_ui_${sessionId}`, JSON.stringify(stateToSave));
   }, [state.messages, state.mode, state.checkoutStep, state.showMessageInput]);

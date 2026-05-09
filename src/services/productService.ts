@@ -128,7 +128,12 @@ class ProductService {
    * @returns Produto atualizado
    * @throws Error se a atualização falhar
    */
-  async updateProduct(id: string, data: UpdateProductDTO, imageFile?: File, productFile?: File): Promise<Product> {
+  async updateProduct(
+    id: string,
+    data: UpdateProductDTO,
+    imageFile?: File,
+    productFile?: File,
+  ): Promise<Product> {
     try {
       let body: FormData | string;
       const headers: Record<string, string> = {};

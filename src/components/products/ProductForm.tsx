@@ -127,6 +127,7 @@ export function ProductForm({ mode, initialProduct, onSuccess, onCancel }: Produ
           promptAi: data.aiTrainingPrompt || '',
         },
         imageUpload.file || undefined,
+        productFileUpload.file || undefined,
       );
     },
     onSuccess: (product) => {

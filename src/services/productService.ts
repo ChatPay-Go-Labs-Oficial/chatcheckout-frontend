@@ -128,20 +128,21 @@ class ProductService {
    * @returns Produto atualizado
    * @throws Error se a atualização falhar
    */
-  async updateProduct(id: string, data: UpdateProductDTO, imageFile?: File): Promise<Product> {
+  async updateProduct(id: string, data: UpdateProductDTO, imageFile?: File, productFile?: File): Promise<Product> {
     try {
       let body: FormData | string;
       const headers: Record<string, string> = {};
 
-      if (imageFile) {
-        // Usa FormData para enviar arquivo junto com os dados
+      if (imageFile || productFile) {
+        // Usa FormData para enviar arquivos junto com os dados
         const formData = new FormData();
         Object.entries(data).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
             formData.append(key, String(value));
           }
         });
-        formData.append('productImage', imageFile);
+        if (imageFile) formData.append('productImage', imageFile);
+        if (productFile) formData.append('productFile', productFile);
         body = formData;
         // Não setar Content-Type: o browser define o boundary correto automaticamente
       } else {

@@ -43,14 +43,14 @@ export function MessageBubble({ message, checkout }: MessageBubbleProps) {
 
   // Mensagem da IA
   return (
-    <div className="flex items-start space-x-3 max-w-lg">
+    <div className="flex items-start space-x-3 max-w-lg min-w-0">
       <div className="flex-shrink-0 w-8 h-8 rounded-full gradient-bg flex items-center justify-center">
         <span className="material-symbols-outlined text-white text-lg">support_agent</span>
       </div>
 
-      <div className="flex-1">
-        <div className="bg-white rounded-lg rounded-tl-none p-3 shadow-sm">
-          <p className="text-sm text-gray-800">{message.content}</p>
+      <div className="flex-1 min-w-0">
+        <div className="bg-gray-50 border border-gray-200 rounded-lg rounded-tl-none px-4 py-3 shadow-sm">
+          <p className="text-sm text-gray-800 break-words whitespace-pre-wrap text-justify leading-relaxed">{message.content}</p>
         </div>
 
         {/* Renderiza componentes inline baseado no tipo - só após typing terminar */}

@@ -81,21 +81,22 @@ export async function sendChatMessage(
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
-            const content = line.substring(6).trimStart();
-            if (content === STREAM_FILTER_PATTERNS.DONE_MARKER) break;
+            const rawContent = line.substring(6);
+            const trimmed = rawContent.trim();
+            if (trimmed === STREAM_FILTER_PATTERNS.DONE_MARKER) break;
 
             // Filters out API metadata, error markers, and debug information from the Python streaming response
             if (
-              content &&
-              content !== STREAM_FILTER_PATTERNS.ERROR_MARKER &&
-              content !== STREAM_FILTER_PATTERNS.NONE_VALUE &&
-              !content.includes(STREAM_FILTER_PATTERNS.API_DEBUG_FUNCTION) &&
-              !content.includes(STREAM_FILTER_PATTERNS.API_DEBUG_TIMING)
+              trimmed &&
+              trimmed !== STREAM_FILTER_PATTERNS.ERROR_MARKER &&
+              trimmed !== STREAM_FILTER_PATTERNS.NONE_VALUE &&
+              !trimmed.includes(STREAM_FILTER_PATTERNS.API_DEBUG_FUNCTION) &&
+              !trimmed.includes(STREAM_FILTER_PATTERNS.API_DEBUG_TIMING)
             ) {
-              fullResponse += content;
+              fullResponse += rawContent;
               // Chama callback com cada chunk (streaming real)
               if (onChunk) {
-                onChunk(content);
+                onChunk(rawContent);
               }
             }
           }
